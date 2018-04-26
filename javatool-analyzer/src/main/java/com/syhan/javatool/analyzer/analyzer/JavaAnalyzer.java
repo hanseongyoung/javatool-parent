@@ -6,7 +6,7 @@ import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.syhan.javatool.analyzer.store.JavaDependencyStore;
-import com.syhan.javatool.share.config.ToolConfiguration;
+import com.syhan.javatool.share.config.ProjectConfiguration;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,10 +14,10 @@ import java.io.IOException;
 
 public class JavaAnalyzer implements Analyzer {
     //
-    private ToolConfiguration configuration;
+    private ProjectConfiguration configuration;
     private JavaDependencyStore store;
 
-    public JavaAnalyzer(ToolConfiguration configuration, JavaDependencyStore store) {
+    public JavaAnalyzer(ProjectConfiguration configuration, JavaDependencyStore store) {
         //
         this.configuration = configuration;
         this.store = store;
@@ -26,7 +26,7 @@ public class JavaAnalyzer implements Analyzer {
     @Override
     public void analyze(String sourceFile) throws IOException {
         //
-        String physicalSourceFile = configuration.getPhysicalSourceFilePath(sourceFile);
+        String physicalSourceFile = configuration.makePhysicalJavaSourceFilePath(sourceFile);
         CompilationUnit cu = JavaParser.parse(new FileInputStream(physicalSourceFile));
 
         VoidVisitor importVisitor = new ImportPrinter(toSourceName(sourceFile), store);

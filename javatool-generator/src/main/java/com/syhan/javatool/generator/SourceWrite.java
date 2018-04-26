@@ -10,21 +10,22 @@ import com.github.javaparser.ast.type.VoidType;
 import com.syhan.javatool.generator.source.JavaSource;
 import com.syhan.javatool.generator.writer.JavaWriter;
 import com.syhan.javatool.generator.writer.Writer;
-import com.syhan.javatool.share.config.ToolConfiguration;
+import com.syhan.javatool.share.config.ConfigurationType;
+import com.syhan.javatool.share.config.ProjectConfiguration;
 
 import java.util.EnumSet;
 
 public class SourceWrite {
     //
-    private static final String SOURCE_PATH = "/Users/daniel/Documents/work/source_gen/source-gen-work/source-project";
-    private static final String TARGET_PATH = "/Users/daniel/Documents/work/source_gen/source-gen-work/target-project";
+    private static final String TARGET_PROJECT_PATH = "/Users/daniel/Documents/work/source_gen/source-gen-work/target-project";
 
     public static void main(String[] args) throws Exception {
         //
-        ToolConfiguration configuration = new ToolConfiguration(SOURCE_PATH, TARGET_PATH);
+        ProjectConfiguration targetConfiguration = new ProjectConfiguration(ConfigurationType.Target, TARGET_PROJECT_PATH);
+
         // 1. java file write
         JavaSource source = createSampleJavaSource();
-        Writer writer = new JavaWriter(configuration);
+        Writer writer = new JavaWriter(targetConfiguration);
         writer.write(source);
     }
 

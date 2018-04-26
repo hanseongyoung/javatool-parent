@@ -1,15 +1,15 @@
 package com.syhan.javatool.generator.writer;
 
 import com.syhan.javatool.generator.source.JavaSource;
-import com.syhan.javatool.share.config.ToolConfiguration;
+import com.syhan.javatool.share.config.ProjectConfiguration;
 
 import java.io.IOException;
 
 public class JavaWriter implements Writer {
     //
-    private ToolConfiguration configuration;
+    private ProjectConfiguration configuration;
 
-    public JavaWriter(ToolConfiguration configuration) {
+    public JavaWriter(ProjectConfiguration configuration) {
         //
         this.configuration = configuration;
     }
@@ -18,7 +18,7 @@ public class JavaWriter implements Writer {
     public void write(JavaSource source) throws IOException {
         //
         String targetFilePath = source.getSourceFilePath();
-        String physicalTargetFilePath = configuration.getPhysicalTargetFilePath(targetFilePath);
+        String physicalTargetFilePath = configuration.makePhysicalJavaSourceFilePath(targetFilePath);
         writeSource(source, physicalTargetFilePath);
     }
 

@@ -1,7 +1,7 @@
 package com.syhan.javatool.analyzer.analyzer;
 
 import com.syhan.javatool.analyzer.store.JavaDependencyStore;
-import com.syhan.javatool.share.config.ToolConfiguration;
+import com.syhan.javatool.share.config.ProjectConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,11 +15,11 @@ import java.util.stream.Stream;
 
 public class PackageAnalyzer implements Analyzer {
     //
-    private ToolConfiguration configuration;
+    private ProjectConfiguration configuration;
     private JavaDependencyStore store;
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public PackageAnalyzer(ToolConfiguration configuration, JavaDependencyStore store) {
+    public PackageAnalyzer(ProjectConfiguration configuration, JavaDependencyStore store) {
         //
         this.configuration = configuration;
         this.store = store;
@@ -29,7 +29,7 @@ public class PackageAnalyzer implements Analyzer {
     public void analyze(String packageName) throws IOException {
         // packageName : com.foo.bar
         String packagePath = convertPath(packageName);
-        String physicalSourcePath = configuration.getPhysicalSourceFilePath(packagePath);
+        String physicalSourcePath = configuration.makePhysicalJavaSourceFilePath(packagePath);
 
         try (Stream<Path> paths = Files.walk(Paths.get(physicalSourcePath))) {
             paths
@@ -42,7 +42,7 @@ public class PackageAnalyzer implements Analyzer {
         return path -> {
             try {
                 String physicalPathName = path.toString();
-                String sourceFile = configuration.getSourceFilePath(physicalPathName);
+                String sourceFile = configuration.extractSourceFilePath(physicalPathName);
 
                 new JavaAnalyzer(configuration, store).analyze(sourceFile);
             } catch (IOException e) {

@@ -1,31 +1,33 @@
 package com.syhan.javatool.generator.converter;
 
 import com.syhan.javatool.generator.source.JavaSource;
-import com.syhan.javatool.share.config.ToolConfiguration;
+import com.syhan.javatool.share.config.ProjectConfiguration;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class JavaConverter implements Converter {
     //
-    private ToolConfiguration configuration;
+    private ProjectConfiguration sourceConfiguration;
+    private ProjectConfiguration targetConfiguration;
 
-    public JavaConverter(ToolConfiguration configuration) {
+    public JavaConverter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetConfiguration) {
         //
-        this.configuration = configuration;
+        this.sourceConfiguration = sourceConfiguration;
+        this.targetConfiguration = targetConfiguration;
     }
 
     @Override
     public void convert(String sourceFilePath) throws IOException {
         // sourceFile : com/foo/bar/SampleService.java
         System.out.println("sourceFilePath:"+sourceFilePath);
-        String physicalSourceFilePath = configuration.getPhysicalSourceFilePath(sourceFilePath);
+        String physicalSourceFilePath = sourceConfiguration.makePhysicalJavaSourceFilePath(sourceFilePath);
         System.out.println("physicalSourceFilePath:"+physicalSourceFilePath);
         JavaSource source = readSource(physicalSourceFilePath);
 
         String targetFilePath = sourceFilePath;
         System.out.println("targetFilePath:"+targetFilePath);
-        String physicalTargetFilePath = configuration.getPhysicalTargetFilePath(targetFilePath);
+        String physicalTargetFilePath = targetConfiguration.makePhysicalJavaSourceFilePath(targetFilePath);
         System.out.println("physicalTargetFilePath:"+physicalTargetFilePath);
         writeSource(source, physicalTargetFilePath);
     }

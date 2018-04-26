@@ -1,0 +1,18 @@
+package com.syhan.javatool.project;
+
+import com.syhan.javatool.project.creator.ProjectCreator;
+import com.syhan.javatool.project.model.ProjectModel;
+
+public class ProjectCreate {
+    //
+    private static final String SOURCE_PATH = "/Users/daniel/Documents/work/source_gen/javatool-parent/source-project";
+    private static final String TARGET_PATH = "/Users/daniel/Documents/work/source_gen/javatool-parent";
+
+    public static void main(String[] args) throws Exception {
+        //
+        ProjectModel model = new ProjectModel("sample-project", "com.sample");
+        ProjectCreator creator = new ProjectCreator(TARGET_PATH);
+        creator.create(model);
+    }
+
+}

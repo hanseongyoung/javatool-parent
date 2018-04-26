@@ -13,6 +13,7 @@
         <module>javatool-share</module>
         <module>javatool-analyzer</module>
         <module>javatool-generator</module>
+        <module>javatool-project</module>
     </modules>
 
     <dependencies>
