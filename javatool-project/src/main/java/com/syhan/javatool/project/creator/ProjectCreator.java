@@ -10,6 +10,7 @@ public class ProjectCreator {
     private String targetHomePath;
 
     public ProjectCreator(String targetHomePath) {
+        //
         this.targetHomePath = targetHomePath;
     }
 
@@ -21,7 +22,7 @@ public class ProjectCreator {
         // make source folder
         makeSourceFolder(configuration);
         // make pom
-        makePom(model);
+        makePom(model, configuration);
     }
 
     private void makeProjectHome(ProjectConfiguration configuration) {
@@ -37,7 +38,9 @@ public class ProjectCreator {
         FolderUtil.mkdir(configuration.getPhysicalTestResourcesPath());
     }
 
-    private void makePom(ProjectModel model) {
-
+    private void makePom(ProjectModel model, ProjectConfiguration configuration) {
+        //
+        PomCreator pomCreator = new PomCreator(configuration);
+        pomCreator.create(model);
     }
 }
