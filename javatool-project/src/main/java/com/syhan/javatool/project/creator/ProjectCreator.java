@@ -3,7 +3,7 @@ package com.syhan.javatool.project.creator;
 import com.syhan.javatool.project.model.ProjectModel;
 import com.syhan.javatool.share.config.ConfigurationType;
 import com.syhan.javatool.share.config.ProjectConfiguration;
-import com.syhan.javatool.share.util.FolderUtil;
+import com.syhan.javatool.share.util.file.FolderUtil;
 
 public class ProjectCreator {
     //

@@ -20,15 +20,11 @@ public class JavaConverter implements Converter {
     @Override
     public void convert(String sourceFilePath) throws IOException {
         // sourceFile : com/foo/bar/SampleService.java
-        System.out.println("sourceFilePath:"+sourceFilePath);
         String physicalSourceFilePath = sourceConfiguration.makePhysicalJavaSourceFilePath(sourceFilePath);
-        System.out.println("physicalSourceFilePath:"+physicalSourceFilePath);
         JavaSource source = readSource(physicalSourceFilePath);
 
         String targetFilePath = sourceFilePath;
-        System.out.println("targetFilePath:"+targetFilePath);
         String physicalTargetFilePath = targetConfiguration.makePhysicalJavaSourceFilePath(targetFilePath);
-        System.out.println("physicalTargetFilePath:"+physicalTargetFilePath);
         writeSource(source, physicalTargetFilePath);
     }
 

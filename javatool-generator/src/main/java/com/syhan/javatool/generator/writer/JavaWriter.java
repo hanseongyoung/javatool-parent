@@ -5,7 +5,7 @@ import com.syhan.javatool.share.config.ProjectConfiguration;
 
 import java.io.IOException;
 
-public class JavaWriter implements Writer {
+public class JavaWriter implements Writer<JavaSource> {
     //
     private ProjectConfiguration configuration;
 

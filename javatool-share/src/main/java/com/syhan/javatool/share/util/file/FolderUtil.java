@@ -1,4 +1,4 @@
-package com.syhan.javatool.share.util;
+package com.syhan.javatool.share.util.file;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -1,0 +1,302 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 처방타이틀 -->
+<mapper namespace="com.foo.bar.store.mapper.OrdrTitl">
+
+    <!-- 처방타이틀조회(단건) -->
+    <select id="retrieveOrdrTitl"
+            parameterType="com.foo.bar.spec.sdo.OrdrTitlVO"
+            resultType="com.foo.bar.spec.sdo.OrdrTitlVO">
+        <![CDATA[
+            SELECT /* SQLID=com.foo.bar.dao.OrdrTitlDao.retrieveOrdrTitl */
+                   OT.PATNO                   AS PATNO                   /* 병원등록번호 */
+                 , OT.VIST_SN                 AS VIST_SN                 /* 내원일련번호 */
+                 , OT.ORDR_DIRECT_DT          AS ORDR_DIRECT_DT          /* 처방지시일자 */
+                 , OT.ORDR_TITL_SN            AS ORDR_TITL_SN            /* 처방제목일련번호 */
+                 , OT.VALD_YN                 AS VALD_YN                 /* 유효여부 */
+                 , OT.ORDR_TITL_CD            AS ORDR_TITL_CD            /* 처방제목코드 */
+                 , ZC.CD_VAL_NM               AS ORDR_TITL_CD_NM
+                 , OT.ORDR_TITL_NM            AS ORDR_TITL_NM            /* 처방제목명 */
+                 , OT.ORDR_TITL_ADD_NM        AS ORDR_TITL_ADD_NM        /* 처방제목부가명 */
+                 , OT.ORDR_TITL_HANDL_CD      AS ORDR_TITL_HANDL_CD      /* 처방제목처리코드 */
+                 , OT.ORDR_TITL_TYP_CD        AS ORDR_TITL_TYP_CD        /* 처방제목유형코드 */
+                 , OT.MDEX_DIV_CD             AS MDEX_DIV_CD             /* 진료구분코드 */
+                 , OT.MDDP_CD                 AS MDDP_CD                 /* 진료과코드 */
+                 , OT.ESEN_ORDR_CNT           AS ESEN_ORDR_CNT           /* 필수처방건수 */
+                 , OT.MEDI_ORDR_CNT           AS MEDI_ORDR_CNT           /* 의약품처방건수 */
+                 , OT.TPN_ORDR_CNT            AS TPN_ORDR_CNT            /* TPN처방건수 */
+                 , OT.DGI_ORDR_CNT            AS DGI_ORDR_CNT            /* 진단검사처방건수 */
+                 , OT.EXAM_ORDR_CNT           AS EXAM_ORDR_CNT           /* 검사처방건수 */
+                 , OT.TRET_ORDR_CNT           AS TRET_ORDR_CNT           /* 치료처방건수 */
+                 , OT.BLDTR_ORDR_CNT          AS BLDTR_ORDR_CNT          /* 수혈처방건수 */
+                 , OT.CONSULT_CNT             AS CONSULT_CNT             /* 타과진료의뢰건수 */
+                 , OT.TEXT_ORDR_CNT           AS TEXT_ORDR_CNT           /* 텍스트처방건수 */
+                 , OT.DIET_ORDR_CNT           AS DIET_ORDR_CNT           /* 식사처방건수 */
+                 , OT.STOD_KND_CD             AS STOD_KND_CD             /* 약속처방종류코드 */
+                 , OT.STOD_NO                 AS STOD_NO                 /* 약속처방번호 */
+                 , OT.PRTCOL_CD               AS PRTCOL_CD               /* 프로토콜코드 */
+                 , OT.DAY_TURNO               AS DAY_TURNO               /* 일차수 */
+              FROM OOODMTITL OT
+                 , V_ZZANDCDVL_ALL ZC
+             WHERE OT.PATNO = #{patno}
+               AND OT.VIST_SN = #{vistSn}
+               AND OT.ORDR_DIRECT_DT = #{ordrDirectDt}
+               AND OT.ORDR_TITL_SN = #{ordrTitlSn}
+               AND ZC.CD_NO = 'OO0228'
+		       AND OT.ORDR_TITL_CD = ZC.CD_VAL
+        ]]>
+    </select>
+
+    <!-- 처방타이틀등록 -->
+    <insert id="registerOrdrTitl" parameterType="com.foo.bar.spec.sdo.OrdrTitlVO">
+        <selectKey keyProperty="ordrTitlSn" resultType="Long" order="BEFORE">
+            SELECT NVL(MAX(ORDR_TITL_SN), 0) + 1
+            FROM OOODMTITL
+            WHERE PATNO = #{patno}
+            AND VIST_SN = #{vistSn}
+            AND ORDR_DIRECT_DT = #{ordrDirectDt}
+        </selectKey>
+        <![CDATA[
+            INSERT /* SQLID=com.foo.bar.dao.OrdrTitlDao.registerOrdrTitl */
+              INTO OOODMTITL
+            (
+              PATNO, VIST_SN, ORDR_DIRECT_DT, ORDR_TITL_SN, VALD_YN
+            , ORDR_TITL_CD, ORDR_TITL_NM, ORDR_TITL_ADD_NM, ORDR_TITL_HANDL_CD, ORDR_TITL_TYP_CD
+            , MDEX_DIV_CD, MDDP_CD, ESEN_ORDR_CNT, MEDI_ORDR_CNT, TPN_ORDR_CNT
+            , DGI_ORDR_CNT, EXAM_ORDR_CNT, TRET_ORDR_CNT, BLDTR_ORDR_CNT, CONSULT_CNT
+            , TEXT_ORDR_CNT, DIET_ORDR_CNT, STOD_KND_CD, STOD_NO, PRTCOL_CD,PRTCOL_APPLY_SN, DAY_TURNO
+            , FRST_ENTR_EMPNO, FRST_ENTR_DTM, FINL_UPID_EMPNO, FINL_UPDT_DTM
+            )
+            VALUES
+            (
+              #{patno}, #{vistSn}, #{ordrDirectDt}, #{ordrTitlSn}, #{valdYn}
+            , #{ordrTitlCd}, #{ordrTitlNm}, #{ordrTitlAddNm, jdbcType=VARCHAR}, #{ordrTitlHandlCd, jdbcType=VARCHAR}, #{ordrTitlTypCd, jdbcType=VARCHAR}
+            , #{mdexDivCd}, #{mddpCd}
+            , NVL(#{esenOrdrCnt, jdbcType=DECIMAL}, 0)
+            , NVL(#{mediOrdrCnt, jdbcType=DECIMAL}, 0)
+            , NVL(#{tpnOrdrCnt, jdbcType=DECIMAL}, 0)
+            , NVL(#{dgiOrdrCnt, jdbcType=DECIMAL}, 0)
+            , NVL(#{examOrdrCnt, jdbcType=DECIMAL}, 0)
+            , NVL(#{tretOrdrCnt, jdbcType=DECIMAL}, 0)
+            , NVL(#{bldtrOrdrCnt, jdbcType=DECIMAL}, 0)
+            , NVL(#{consultCnt, jdbcType=DECIMAL}, 0)
+            , NVL(#{textOrdrCnt, jdbcType=DECIMAL}, 0)
+            , NVL(#{dietOrdrCnt, jdbcType=DECIMAL}, 0)
+            , #{stodKndCd, jdbcType=VARCHAR}, #{stodNo, jdbcType=VARCHAR}, #{prtcolCd, jdbcType=VARCHAR}
+            , #{prtcolApplySn, jdbcType=VARCHAR} , #{dayTurno, jdbcType=DECIMAL}
+            , #{frstEntrEmpno}, SYSDATE, #{finlUpidEmpno}, SYSDATE
+            )
+        ]]>
+    </insert>
+
+    <!-- 처방타이틀수정 -->
+    <update id="updateOrdrTitl" parameterType="com.foo.bar.spec.sdo.OrdrTitlVO">
+        <![CDATA[
+            UPDATE /* SQLID=com.foo.bar.dao.OrdrTitlDao.updateOrdrTitl */
+                   OOODMTITL
+               SET VALD_YN = CASE
+                                 WHEN ORDR_TITL_TYP_CD = 'R' THEN
+                                      NVL(#{valdYn, jdbcType=VARCHAR}, 'N')
+                                 WHEN (NVL(#{esenOrdrCnt},0) + NVL(#{mediOrdrCnt},0) + NVL(#{tpnOrdrCnt},0) +
+                                       NVL(#{dgiOrdrCnt},0) + NVL(#{examOrdrCnt},0) + NVL(#{tretOrdrCnt},0) +
+                                       NVL(#{bldtrOrdrCnt},0) + NVL(#{consultCnt},0) + NVL(#{textOrdrCnt},0) +
+                                       NVL(#{dietOrdrCnt},0) > 0) THEN 'Y'
+                                 WHEN MDEX_DIV_CD = 'I' THEN
+                                     DECODE(ORDR_TITL_TYP_CD, 'T', 'Y', 'N')
+                                 ELSE 'Y'
+                             END
+                 , ORDR_TITL_CD = #{ordrTitlCd}
+                 , ORDR_TITL_NM  = #{ordrTitlNm}
+                 , ORDR_TITL_ADD_NM  = NVL(#{ordrTitlAddNm, jdbcType=VARCHAR}, ORDR_TITL_ADD_NM)
+                 , ORDR_TITL_HANDL_CD = NVL(#{ordrTitlHandlCd, jdbcType=VARCHAR}, ORDR_TITL_HANDL_CD)
+                 , ORDR_TITL_TYP_CD = DECODE(VALD_YN, 'N', #{ordrTitlTypCd, jdbcType=VARCHAR}, ORDR_TITL_TYP_CD)
+                 , MDDP_CD = DECODE(#{mdexDivCd}, 'O', #{mddpCd, jdbcType=VARCHAR}, MDDP_CD)
+                 , ESEN_ORDR_CNT = NVL(#{esenOrdrCnt},0)
+                 , MEDI_ORDR_CNT = NVL(#{mediOrdrCnt},0)
+                 , TPN_ORDR_CNT = NVL(#{tpnOrdrCnt},0)
+                 , DGI_ORDR_CNT = NVL(#{dgiOrdrCnt},0)
+                 , EXAM_ORDR_CNT = NVL(#{examOrdrCnt},0)
+                 , TRET_ORDR_CNT = NVL(#{tretOrdrCnt},0)
+                 , BLDTR_ORDR_CNT = NVL(#{bldtrOrdrCnt},0)
+                 , CONSULT_CNT = NVL(#{consultCnt},0)
+                 , TEXT_ORDR_CNT = NVL(#{textOrdrCnt},0)
+                 , DIET_ORDR_CNT = NVL(#{dietOrdrCnt},0)
+                 , STOD_KND_CD = NVL(#{stodKndCd, jdbcType=VARCHAR}, STOD_KND_CD)
+                 , STOD_NO = NVL(#{stodNo, jdbcType=VARCHAR}, STOD_NO)
+                 , PRTCOL_CD = NVL(#{prtcolCd, jdbcType=VARCHAR}, PRTCOL_CD)
+                 , PRTCOL_APPLY_SN = NVL(#{prtcolApplySn, jdbcType=VARCHAR},PRTCOL_APPLY_SN)
+                 , DAY_TURNO = NVL(#{dayTurno, jdbcType=DECIMAL}, DAY_TURNO)
+                 , FINL_UPID_EMPNO = #{finlUpidEmpno}
+                 , FINL_UPDT_DTM = SYSDATE
+             WHERE PATNO = #{patno}
+               AND VIST_SN = #{vistSn}
+               AND ORDR_DIRECT_DT = #{ordrDirectDt}
+               AND ORDR_TITL_SN = #{ordrTitlSn}
+        ]]>
+    </update>
+
+    <!-- 처방테이블별 유효처방 건수 조회 -->
+    <select id="retrieveOrdrCnt" parameterType="com.foo.bar.spec.sdo.OrdrTitlVO" resultType="com.foo.bar.spec.sdo.OrdrTitlVO">
+        <![CDATA[
+            SELECT /* SQLID=com.foo.bar.dao.OrdrTitlDao.retrieveOrdrCnt */
+                   NVL((SELECT COUNT(*)
+                          FROM OOODMGNRL
+                         WHERE PATNO = #{patno}
+                           AND VIST_SN = #{vistSn}
+                           AND ORDR_DIRECT_DT = #{ordrDirectDt}
+                           AND ORDR_TITL_SN = #{ordrTitlSn}
+                           AND VALD_YN = 'Y'
+                           AND ORDR_CANCEL_CD = 'N'
+                           AND HLIN_ORDR_TYP_CD IN ('1','2','3')
+                   ),0) AS  ESEN_ORDR_CNT
+                 , NVL((SELECT COUNT(*)
+                          FROM OOODMMEDI
+                         WHERE PATNO = #{patno}
+                           AND VIST_SN = #{vistSn}
+                           AND ORDR_DIRECT_DT = #{ordrDirectDt}
+                           AND ORDR_TITL_SN = #{ordrTitlSn}
+                           AND VALD_YN = 'Y'
+                           AND ORDR_CANCEL_CD = 'N'
+                   ),0) AS  MEDI_ORDR_CNT
+                 , NVL((SELECT COUNT(*)
+                          FROM OOODMTPNX
+                         WHERE PATNO = #{patno}
+                           AND VIST_SN = #{vistSn}
+                           AND ORDR_DIRECT_DT = #{ordrDirectDt}
+                           AND ORDR_TITL_SN = #{ordrTitlSn}
+                           AND VALD_YN = 'Y'
+                           AND ORDR_CANCEL_CD = 'N'
+                   ),0) AS  TPN_ORDR_CNT
+                 , NVL((SELECT COUNT(*)
+                          FROM OOODMEXAM OE
+                             , OOOTDHIPT OH
+                         WHERE OE.PATNO = #{patno}
+                           AND OE.VIST_SN = #{vistSn}
+                           AND OE.ORDR_DIRECT_DT = #{ordrDirectDt}
+                           AND OE.ORDR_TITL_SN = #{ordrTitlSn}
+                           AND OE.VALD_YN = 'Y'
+                           AND OE.ORDR_CANCEL_CD = 'N'
+                           AND OE.ORDR_CD = OH.ORDR_CD
+                           AND OE.HLIN_PFORM_PART_CD = OH.HLIN_PFORM_PART_CD
+                           AND OH.ORDR_DELI_SYSM_CD = 'L'
+                   ),0) AS  DGI_ORDR_CNT
+                 , NVL((SELECT COUNT(*)
+                          FROM OOODMEXAM OE
+                             , OOOTDHIPT OH
+                         WHERE OE.PATNO = #{patno}
+                           AND OE.VIST_SN = #{vistSn}
+                           AND OE.ORDR_DIRECT_DT = #{ordrDirectDt}
+                           AND OE.ORDR_TITL_SN = #{ordrTitlSn}
+                           AND OE.VALD_YN = 'Y'
+                           AND OE.ORDR_CANCEL_CD = 'N'
+                           AND OE.ORDR_CD = OH.ORDR_CD
+                           AND OE.HLIN_PFORM_PART_CD = OH.HLIN_PFORM_PART_CD
+                           AND OH.ORDR_DELI_SYSM_CD = 'R'
+                   ),0) AS  EXAM_ORDR_CNT
+                 , NVL((SELECT COUNT(*)
+                          FROM OOODMEXAM OE
+                             , OOOTDHIPT OH
+                         WHERE OE.PATNO = #{patno}
+                           AND OE.VIST_SN = #{vistSn}
+                           AND OE.ORDR_DIRECT_DT = #{ordrDirectDt}
+                           AND OE.ORDR_TITL_SN = #{ordrTitlSn}
+                           AND OE.VALD_YN = 'Y'
+                           AND OE.ORDR_CANCEL_CD = 'N'
+                           AND OE.ORDR_CD = OH.ORDR_CD
+                           AND OE.HLIN_PFORM_PART_CD = OH.HLIN_PFORM_PART_CD
+                           AND NVL(OH.ORDR_DELI_SYSM_CD,'*') NOT IN ('L','R')
+                   ),0) AS  TRET_ORDR_CNT
+                 , NVL((SELECT COUNT(*)
+                          FROM OOODMBLOD
+                         WHERE PATNO = #{patno}
+                           AND VIST_SN = #{vistSn}
+                           AND ORDR_DIRECT_DT = #{ordrDirectDt}
+                           AND ORDR_TITL_SN = #{ordrTitlSn}
+                           AND VALD_YN = 'Y'
+                           AND ORDR_CANCEL_CD = 'N'
+                   ),0) AS  BLDTR_ORDR_CNT
+                 , NVL((SELECT COUNT(*)
+                          FROM OOODMRQST
+                         WHERE PATNO = #{patno}
+                           AND VIST_SN = #{vistSn}
+                           AND ORDR_DIRECT_DT = #{ordrDirectDt}
+                           AND ORDR_TITL_SN = #{ordrTitlSn}
+                           AND VALD_YN = 'Y'
+                           AND ORDR_CANCEL_CD = 'N'
+                   ),0) AS  CONSULT_CNT
+                 , NVL((SELECT COUNT(*)
+                          FROM OOODMCMMT
+                         WHERE PATNO = #{patno}
+                           AND VIST_SN = #{vistSn}
+                           AND ORDR_DIRECT_DT = #{ordrDirectDt}
+                           AND ORDR_TITL_SN = #{ordrTitlSn}
+                           AND VALD_YN = 'Y'
+                           AND ORDR_CANCEL_CD = 'N'
+                   ),0) AS  TEXT_ORDR_CNT
+                 , NVL((SELECT COUNT(*)
+                          FROM OOODMMEAL
+                         WHERE PATNO = #{patno}
+                           AND VIST_SN = #{vistSn}
+                           AND ORDR_DIRECT_DT = #{ordrDirectDt}
+                           AND ORDR_TITL_SN = #{ordrTitlSn}
+                           AND VALD_YN = 'Y'
+                           AND ORDR_CANCEL_CD = 'N'
+                   ),0) AS  DIET_ORDR_CNT
+              FROM DUAL
+        ]]>
+    </select>
+
+    <!-- 처방타이틀 정보를 최신 데이터로 업데이트 -->
+    <update id="updateRcncData" parameterType="com.foo.bar.spec.sdo.OrdrTitlVO">
+        <![CDATA[
+            UPDATE /* SQLID=com.foo.bar.dao.OrdrTitlDao.updateRcncData */
+                   OOODMTITL OT
+               SET OT.VALD_YN = CASE
+                                    WHEN (NVL(#{esenOrdrCnt},0) + NVL(#{mediOrdrCnt},0) + NVL(#{tpnOrdrCnt},0) +
+                                          NVL(#{dgiOrdrCnt},0) + NVL(#{examOrdrCnt},0) + NVL(#{tretOrdrCnt},0) +
+                                          NVL(#{bldtrOrdrCnt},0) + NVL(#{consultCnt},0) + NVL(#{textOrdrCnt},0) +
+                                          NVL(#{dietOrdrCnt},0) > 0) THEN 'Y'
+                                    WHEN OT.MDEX_DIV_CD = 'I' THEN
+                                        DECODE(OT.ORDR_TITL_TYP_CD, 'T', 'Y', 'R', OT.VALD_YN, 'N')
+                                    ELSE 'N'
+                                END
+                 , OT.ESEN_ORDR_CNT = NVL(#{esenOrdrCnt},0)
+                 , OT.MEDI_ORDR_CNT = NVL(#{mediOrdrCnt},0)
+                 , OT.TPN_ORDR_CNT = NVL(#{tpnOrdrCnt},0)
+                 , OT.DGI_ORDR_CNT = NVL(#{dgiOrdrCnt},0)
+                 , OT.EXAM_ORDR_CNT = NVL(#{examOrdrCnt},0)
+                 , OT.TRET_ORDR_CNT = NVL(#{tretOrdrCnt},0)
+                 , OT.BLDTR_ORDR_CNT = NVL(#{bldtrOrdrCnt},0)
+                 , OT.CONSULT_CNT = NVL(#{consultCnt},0)
+                 , OT.TEXT_ORDR_CNT = NVL(#{textOrdrCnt},0)
+                 , OT.DIET_ORDR_CNT = NVL(#{dietOrdrCnt},0)
+                 , OT.FINL_UPDT_DTM = SYSDATE
+             WHERE OT.PATNO = #{patno}
+               AND OT.VIST_SN = #{vistSn}
+               AND OT.ORDR_DIRECT_DT = #{ordrDirectDt}
+               AND OT.ORDR_TITL_SN = #{ordrTitlSn}
+        ]]>
+    </update>
+
+    <!-- 처방타이틀유무 조회 -->
+    <select id="retrieveOrdrTitlPa"
+            parameterType="com.foo.bar.spec.sdo.OrdrTitlVO"
+            resultType="com.foo.bar.spec.sdo.OrdrTitlVO">
+        <![CDATA[
+          SELECT /* SQLID=com.foo.bar.dao.OrdrTitlDao.retrieveOrdrTitlPa */
+                 ORDR_TITL_SN
+               , VALD_YN
+            FROM (SELECT ORDR_TITL_SN
+                       , VALD_YN
+                    FROM OOODMTITL
+                   WHERE PATNO = #{patno}
+                     AND VIST_SN = #{vistSn}
+                     AND ORDR_DIRECT_DT = #{ordrDirectDt}
+                     AND ORDR_TITL_CD = #{ordrTitlCd}
+                   ORDER BY VALD_YN DESC, ORDR_TITL_SN DESC
+                 )
+           WHERE ROWNUM = 1
+        ]]>
+    </select>
+
+</mapper>

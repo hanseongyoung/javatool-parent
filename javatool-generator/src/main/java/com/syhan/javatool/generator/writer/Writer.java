@@ -1,10 +1,8 @@
 package com.syhan.javatool.generator.writer;
 
-import com.syhan.javatool.generator.source.JavaSource;
-
 import java.io.IOException;
 
-public interface Writer {
+public interface Writer<T> {
     //
-    void write(JavaSource source) throws IOException;
+    void write(T source) throws IOException;
 }

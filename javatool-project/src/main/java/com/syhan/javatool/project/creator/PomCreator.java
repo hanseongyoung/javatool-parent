@@ -1,85 +1,33 @@
 package com.syhan.javatool.project.creator;
 
+import com.syhan.javatool.generator.source.XmlSource;
 import com.syhan.javatool.project.model.ProjectModel;
 import com.syhan.javatool.share.config.ProjectConfiguration;
+import com.syhan.javatool.share.util.xml.DomUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.TransformerException;
 import java.io.File;
 
 public class PomCreator {
     //
     private static final String POM_FILE = "pom.xml";
-    private DocumentBuilder builder;
-    private Transformer transformer;
     private ProjectConfiguration configuration;
 
     public PomCreator(ProjectConfiguration configuration) {
         //
-        this.builder = newBuilder();
-        this.transformer = newTransformer();
         this.configuration = configuration;
-    }
-
-    private DocumentBuilder newBuilder() {
-        //
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = null;
-        try {
-            builder = factory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
-        return builder;
-    }
-
-    private Transformer newTransformer() {
-        //
-        TransformerFactory factory = TransformerFactory.newInstance();
-        Transformer transformer = null;
-        try {
-            transformer = factory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-        } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
-        }
-        return transformer;
     }
 
     public void create(ProjectModel model) {
         //
-        if (this.builder == null) throw new RuntimeException("Problem with DocumentBuilder.");
-
         Document document = createDocument(model);
-
-        DOMSource source = new DOMSource(document);
-        writeFile(source);
-        writeConsole(source);
-    }
-
-    private void writeFile(DOMSource source) {
-        //
-        StreamResult result = new StreamResult(new File(configuration.getProjectHomePath() + File.separator + POM_FILE));
+        XmlSource xmlSource = new XmlSource(document);
         try {
-            transformer.transform(source, result);
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void writeConsole(DOMSource source) {
-        //
-        StreamResult result = new StreamResult(System.out);
-        try {
-            transformer.transform(source, result);
+            xmlSource.write(configuration.getProjectHomePath() + File.separator + POM_FILE);
         } catch (TransformerException e) {
             e.printStackTrace();
         }
@@ -87,6 +35,13 @@ public class PomCreator {
 
     private Document createDocument(ProjectModel model) {
         //
+        DocumentBuilder builder = null;
+        try {
+            builder = DomUtil.newBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException("Can't create DocumentBuilder.", e);
+        }
+
         Document document = builder.newDocument();
         document.setXmlStandalone(true);
 

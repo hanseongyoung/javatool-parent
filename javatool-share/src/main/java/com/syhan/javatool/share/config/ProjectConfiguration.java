@@ -49,6 +49,12 @@ public class ProjectConfiguration {
         return physicalJavaPath + PATH_DELIM + sourceFilePath;
     }
 
+    // com/foo/bar/SampleSqlMap.xml -> C://Users/user/Documents/.../src/main/java/com/foo/bar/SampleSqlMap.xml
+    public String makePhysicalResourceFilePath(String sourceFilePath) {
+        //
+        return physicalResourcesPath + PATH_DELIM + sourceFilePath;
+    }
+
     // C://Users/user/Documents/.../src/main/java/com/foo/bar/SampleService.java -> com/foo/bar/SampleService.java
     public String extractSourceFilePath(String physicalSourceFilePath) {
         //
