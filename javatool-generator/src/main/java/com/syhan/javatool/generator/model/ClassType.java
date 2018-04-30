@@ -2,14 +2,31 @@ package com.syhan.javatool.generator.model;
 
 public class ClassType {
     //
+    public static final String PRIMITIVE_INT = "INT";
+    public static final String PRIMITIVE_BOOLEAN = "BOOLEAN";
+    public static final String PRIMITIVE_CHAR = "CHAR";
+    public static final String PRIMITIVE_BYTE = "BYTE";
+    public static final String PRIMITIVE_SHORT = "SHORT";
+    public static final String PRIMITIVE_LONG = "LONG";
+    public static final String PRIMITIVE_FLOAT = "FLOAT";
+    public static final String PRIMITIVE_DOUBLE = "DOUBLE";
+
     private String name;
     private String packageName;
+    private boolean primitive;
 
     public ClassType(String className) {
         //
         int lastDotIndex = className.lastIndexOf(".");
-        this.packageName = className.substring(0, lastDotIndex);
-        this.name = className.substring(lastDotIndex + 1, className.length());
+        if (lastDotIndex > 0) {
+            this.packageName = className.substring(0, lastDotIndex);
+            this.name = className.substring(lastDotIndex + 1, className.length());
+            this.primitive = false;
+        } else {
+            this.name = className;
+            this.packageName = null;
+            this.primitive = true;
+        }
     }
 
     public ClassType(String name, String packageName) {
@@ -20,9 +37,11 @@ public class ClassType {
 
     public String getClassName() {
         //
+        if (packageName == null) {
+            return name;
+        }
         return packageName + "." + name;
     }
-
 
     public String getRecommendedVariableName() {
         //
@@ -52,6 +71,10 @@ public class ClassType {
 
     public void setPackageName(String packageName) {
         this.packageName = packageName;
+    }
+
+    public boolean isPrimitive() {
+        return primitive;
     }
 
     public static void main(String[] args) {

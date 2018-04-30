@@ -6,6 +6,7 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VoidType;
 import com.syhan.javatool.generator.model.ClassType;
@@ -69,6 +70,8 @@ public class JavaSource {
         Type returnType = null;
         if (methodModel.isVoid()) {
             returnType = new VoidType();
+        } else if (methodModel.isPrimitive()) {
+            returnType = new PrimitiveType(PrimitiveType.Primitive.valueOf(methodModel.getReturnType().getName()));
         } else {
             returnType = JavaParser.parseClassOrInterfaceType(methodModel.getReturnType().getName());
         }

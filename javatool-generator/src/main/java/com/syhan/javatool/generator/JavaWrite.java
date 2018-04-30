@@ -11,7 +11,7 @@ import com.syhan.javatool.share.config.ProjectConfiguration;
 
 public class JavaWrite {
     //
-    private static final String TARGET_PROJECT_PATH = "/Users/daniel/Documents/work/source_gen/javatool-parent/source-project";
+    private static final String TARGET_PROJECT_PATH = "./source-project";
 
     public static void main(String[] args) throws Exception {
         //

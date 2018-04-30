@@ -5,13 +5,14 @@ import java.io.File;
 public class ProjectConfiguration {
     //
     private static final String PATH_DELIM = File.separator;
-    private static final String SRC_MAIN_JAVA      = String.format("src%smain%sjava", PATH_DELIM, PATH_DELIM);    // src/main/java
-    private static final String SRC_MAIN_RESOURCES = String.format("src%smain%sresources", PATH_DELIM, PATH_DELIM);    // src/main/java
-    private static final String SRC_TEST_JAVA      = String.format("src%stest%sjava", PATH_DELIM, PATH_DELIM);    // src/main/java
-    private static final String SRC_TEST_RESOURCES = String.format("src%stest%sresources", PATH_DELIM, PATH_DELIM);    // src/main/java
+    private static final String SRC_MAIN_JAVA      = String.format("src%smain%sjava", PATH_DELIM, PATH_DELIM);          // src/main/java
+    private static final String SRC_MAIN_RESOURCES = String.format("src%smain%sresources", PATH_DELIM, PATH_DELIM);     // src/main/resources
+    private static final String SRC_TEST_JAVA      = String.format("src%stest%sjava", PATH_DELIM, PATH_DELIM);          // src/test/java
+    private static final String SRC_TEST_RESOURCES = String.format("src%stest%sresources", PATH_DELIM, PATH_DELIM);     // src/test/resources
 
     private final ConfigurationType type;
     private final String projectHomePath;
+
     private final String physicalJavaPath;
     private final String physicalResourcesPath;
     private final String physicalTestPath;
@@ -58,13 +59,29 @@ public class ProjectConfiguration {
     // C://Users/user/Documents/.../src/main/java/com/foo/bar/SampleService.java -> com/foo/bar/SampleService.java
     public String extractSourceFilePath(String physicalSourceFilePath) {
         //
-        String physicalJavaSourcePrefix = physicalJavaPath + PATH_DELIM;
+        int sourceFilePathIndex = computeSourceFilePathIndex(physicalSourceFilePath);
 
-        if (!physicalSourceFilePath.startsWith(physicalJavaSourcePrefix)) {
+        if (sourceFilePathIndex < 0) {
             throw new RuntimeException("physicalSourceFilePath is not correct! : " + physicalSourceFilePath);
         }
 
-        return physicalSourceFilePath.substring(physicalJavaSourcePrefix.length());
+        return physicalSourceFilePath.substring(sourceFilePathIndex);
+    }
+
+    private int computeSourceFilePathIndex(String physicalSourceFilePath) {
+        // if it contains src/main/java (ex ./source-project/src/main/java/foo/bar/Sample.java)
+        int index = physicalSourceFilePath.indexOf(SRC_MAIN_JAVA);
+        if (index >= 0) {
+            return index + SRC_MAIN_JAVA.length() + 1;
+        }
+
+        // if it contains src/main/resources (ex ./source-project/src/main/resources/foo/bar/SampleSqlMap.xml)
+        index = physicalSourceFilePath.indexOf(SRC_MAIN_RESOURCES);
+        if (index >= 0) {
+            return index + SRC_MAIN_RESOURCES.length() + 1;
+        }
+
+        return -1;
     }
 
     public ConfigurationType getType() {

@@ -6,15 +6,11 @@ import com.syhan.javatool.share.config.ProjectConfiguration;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-public class JavaConverter implements Converter {
+public class JavaConverter extends ProjectItemConverter {
     //
-    private ProjectConfiguration sourceConfiguration;
-    private ProjectConfiguration targetConfiguration;
-
     public JavaConverter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetConfiguration) {
         //
-        this.sourceConfiguration = sourceConfiguration;
-        this.targetConfiguration = targetConfiguration;
+        super(sourceConfiguration, targetConfiguration, ProjectItemType.Java);
     }
 
     @Override

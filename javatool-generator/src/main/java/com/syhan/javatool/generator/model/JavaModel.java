@@ -72,7 +72,7 @@ public class JavaModel {
 
         for (MethodModel methodModel : methods) {
             ClassType returnType = methodModel.getReturnType();
-            if (returnType != null) {
+            if (returnType != null && !returnType.isPrimitive()) {
                 classNames.add(returnType.getClassName());
             }
             for (ClassType parameterType : methodModel.getParameterTypes()) {

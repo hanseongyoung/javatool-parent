@@ -25,6 +25,12 @@ public class MethodModel {
         return returnType == null;
     }
 
+    public boolean isPrimitive() {
+        //
+        if (returnType == null) return false;
+        return returnType.isPrimitive();
+    }
+
     public String getName() {
         return name;
     }

@@ -19,15 +19,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyBatisMapperCreator implements Converter {
+public class MyBatisMapperCreator extends ProjectItemConverter {
     //
-    private ProjectConfiguration sourceConfiguration;
-    private ProjectConfiguration targetConfiguration;
-
     public MyBatisMapperCreator(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetConfiguration) {
         //
-        this.sourceConfiguration = sourceConfiguration;
-        this.targetConfiguration = targetConfiguration;
+        super(sourceConfiguration, targetConfiguration, ProjectItemType.MyBatisMapper);
     }
 
     @Override
@@ -66,10 +62,12 @@ public class MyBatisMapperCreator implements Converter {
         javaModel.setAnnotation(new AnnotationType("org.apache.ibatis.annotation.Mapper"));
         List<Element> sqlElements = findSqlElements(xmlSource);
         for (Element element : sqlElements) {
+            String tagName = element.getTagName();
             String methodName = element.getAttribute("id");
             String parameterClassName = element.getAttribute("parameterType");
             String returnClassName = element.getAttribute("resultType");
-            MethodModel methodModel = new MethodModel(methodName, StringUtil.isNotEmpty(returnClassName) ? new ClassType(returnClassName) : null);
+
+            MethodModel methodModel = new MethodModel(methodName, computeReturnClassType(returnClassName, tagName));
             if (StringUtil.isNotEmpty(parameterClassName)) {
                 methodModel.addParameterType(new ClassType(parameterClassName));
             }
@@ -77,6 +75,20 @@ public class MyBatisMapperCreator implements Converter {
             javaModel.addMethodModel(methodModel);
         }
         return javaModel;
+    }
+
+    private ClassType computeReturnClassType(String returnClassName, String tagName) {
+        //
+        if (StringUtil.isNotEmpty(returnClassName)) {
+            return new ClassType(returnClassName);
+        }
+
+        // returnClassName is empty.
+        if ("update".equals(tagName) || "insert".equals(tagName) || "delete".equals(tagName)) {
+            return new ClassType(ClassType.PRIMITIVE_INT);
+        }
+
+        return null;
     }
 
     private List<Element> findSqlElements(XmlSource xmlSource) {

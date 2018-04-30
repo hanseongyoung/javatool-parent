@@ -1,7 +1,5 @@
 package com.syhan.javatool.generator.converter;
 
-import com.syhan.javatool.share.config.ProjectConfiguration;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,36 +8,43 @@ import java.nio.file.Paths;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-public class PackageConverter implements Converter {
+public class PackageConverter {
     //
-    private ProjectConfiguration sourceConfiguration;
-    private ProjectConfiguration targetConfiguration;
+    private ProjectItemConverter converter;
 
-    public PackageConverter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetConfiguration) {
-        this.sourceConfiguration = sourceConfiguration;
-        this.targetConfiguration = targetConfiguration;
+    public PackageConverter(ProjectItemConverter converter) {
+        this.converter = converter;
     }
 
-    @Override
     public void convert(String packageName) throws IOException {
-        // packageName : com.foo.bar
-        String packagePath = convertPath(packageName);
-        String physicalSourcePath = sourceConfiguration.makePhysicalJavaSourceFilePath(packagePath);
+        // packageName : com.foo.bar -> path : com/foo/bar
+        String packagePath = convertPackageNameToPath(packageName);
+        String physicalSourcePath = getPhysicalSourcePath(packagePath);
 
         try (Stream<Path> paths = Files.walk(Paths.get(physicalSourcePath))) {
             paths
-                    .filter(p -> p.toString().endsWith(".java"))
-                    .forEach(javaConvert());
+                    .filter(p -> p.toString().endsWith("." + converter.getItemExtension()))
+                    .forEach(pathConsumer());
         }
     }
 
-    private Consumer<Path> javaConvert() {
+    private String getPhysicalSourcePath(String sourcePath) {
+        //
+        if (converter.projectItemType == ProjectItemType.Java) {
+            return converter.sourceConfiguration.makePhysicalJavaSourceFilePath(sourcePath);
+        } else {
+            return converter.sourceConfiguration.makePhysicalResourceFilePath(sourcePath);
+        }
+    }
+
+    private Consumer<Path> pathConsumer() {
         return path -> {
             try {
                 String physicalPathName = path.toString();
-                String sourceFile = sourceConfiguration.extractSourceFilePath(physicalPathName);
+                String sourceFile = converter.sourceConfiguration.extractSourceFilePath(physicalPathName);
+                System.out.println("* sourceFile --> "+sourceFile);
 
-                new JavaConverter(sourceConfiguration, targetConfiguration).convert(sourceFile);
+                converter.convert(sourceFile);
             } catch (IOException e) {
                 // TODO : 파일 로깅 처리하고 계속 진행함.
                 e.printStackTrace();
@@ -47,7 +52,7 @@ public class PackageConverter implements Converter {
         };
     }
 
-    private String convertPath(String packageName) {
+    private String convertPackageNameToPath(String packageName) {
         //
         return packageName.replace(".", File.separator);
     }
