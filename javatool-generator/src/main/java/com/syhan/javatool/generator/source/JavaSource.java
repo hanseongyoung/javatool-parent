@@ -50,6 +50,9 @@ public class JavaSource {
         // Class
         EnumSet<Modifier> modifiers = EnumSet.of(Modifier.PUBLIC);
         ClassOrInterfaceDeclaration classType = new ClassOrInterfaceDeclaration(modifiers, model.isInterface(), model.getName());
+        if (model.hasAnnotation()) {
+            classType.addMarkerAnnotation(model.getAnnotation().getName());
+        }
 
         // Method
         for (MethodModel methodModel : model.getMethods()) {

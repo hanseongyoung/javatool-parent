@@ -6,6 +6,7 @@ import java.util.List;
 public class JavaModel {
     //
     private ClassType classType;
+    private AnnotationType annotation;
     private boolean isInterface;
 
     private List<MethodModel> methods;
@@ -39,9 +40,14 @@ public class JavaModel {
         this.methods.add(methodModel);
     }
 
+    public boolean hasAnnotation() {
+        //
+        return this.annotation != null;
+    }
+
     public List<String> computeImports() {
         //
-        List<String> usingClassNames = extractClassNames();
+        List<String> usingClassNames = extractUsingClassNames();
         return removeDuplicate(usingClassNames);
     }
 
@@ -56,9 +62,14 @@ public class JavaModel {
         return resultList;
     }
 
-    private List<String> extractClassNames() {
+    private List<String> extractUsingClassNames() {
         //
         List<String> classNames = new ArrayList<>();
+
+        if (annotation != null) {
+            classNames.add(annotation.getClassName());
+        }
+
         for (MethodModel methodModel : methods) {
             ClassType returnType = methodModel.getReturnType();
             if (returnType != null) {
@@ -77,6 +88,14 @@ public class JavaModel {
 
     public void setClassType(ClassType classType) {
         this.classType = classType;
+    }
+
+    public AnnotationType getAnnotation() {
+        return annotation;
+    }
+
+    public void setAnnotation(AnnotationType annotation) {
+        this.annotation = annotation;
     }
 
     public boolean isInterface() {

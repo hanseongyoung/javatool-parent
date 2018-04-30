@@ -1,5 +1,6 @@
 package com.syhan.javatool.generator.converter;
 
+import com.syhan.javatool.generator.model.AnnotationType;
 import com.syhan.javatool.generator.model.ClassType;
 import com.syhan.javatool.generator.model.JavaModel;
 import com.syhan.javatool.generator.model.MethodModel;
@@ -51,8 +52,18 @@ public class MyBatisMapperCreator implements Converter {
     private JavaSource computeMapperInterfaceSource(XmlSource xmlSource) {
         //
         // XmlSource -> JavaModel
+        JavaModel myBatisMapperJavaModel = createMyBatisMapperJavaModel(xmlSource);
+
+        // JavaModel -> JavaSource
+        return new JavaSource(myBatisMapperJavaModel);
+    }
+
+    private JavaModel createMyBatisMapperJavaModel(XmlSource xmlSource) {
+        //
         String mapperClassName = findMapperNamespace(xmlSource);
+
         JavaModel javaModel = new JavaModel(mapperClassName, true);
+        javaModel.setAnnotation(new AnnotationType("org.apache.ibatis.annotation.Mapper"));
         List<Element> sqlElements = findSqlElements(xmlSource);
         for (Element element : sqlElements) {
             String methodName = element.getAttribute("id");
@@ -65,9 +76,7 @@ public class MyBatisMapperCreator implements Converter {
 
             javaModel.addMethodModel(methodModel);
         }
-
-        // JavaModel -> JavaSource
-        return new JavaSource(javaModel);
+        return javaModel;
     }
 
     private List<Element> findSqlElements(XmlSource xmlSource) {
