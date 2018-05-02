@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.regex.Matcher;
 
 public class JavaSource {
     //
@@ -92,7 +93,7 @@ public class JavaSource {
         //
         String packageName = compilationUnit.getPackageDeclaration().get().getNameAsString();
         String typeName = compilationUnit.getType(0).getNameAsString();
-        return packageName.replaceAll("\\.", File.separator) + File.separator + typeName + ".java";
+        return packageName.replaceAll("\\.", Matcher.quoteReplacement(File.separator)) + File.separator + typeName + ".java";
     }
 
     public void write(String physicalTargetFilePath) throws IOException {
@@ -100,5 +101,12 @@ public class JavaSource {
         File file = new File(physicalTargetFilePath);
         System.out.println(compilationUnit.toString());
         FileUtils.writeStringToFile(file, compilationUnit.toString(), "UTF-8");
+    }
+
+    public static void main(String[] args) {
+        // In the case of Windows replaceAll with File.separator causes 'character to be escaped is missing' error.
+        String packageName = "com.foo.bar";
+        //System.out.println(packageName.replaceAll("\\.", File.separator));
+        System.out.println(packageName.replaceAll("\\.", Matcher.quoteReplacement(File.separator)));
     }
 }
