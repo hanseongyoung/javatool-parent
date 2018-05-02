@@ -5,10 +5,6 @@ import java.io.File;
 public class ProjectConfiguration {
     //
     private static final String PATH_DELIM = File.separator;
-    private static final String SRC_MAIN_JAVA      = String.format("src%smain%sjava", PATH_DELIM, PATH_DELIM);          // src/main/java
-    private static final String SRC_MAIN_RESOURCES = String.format("src%smain%sresources", PATH_DELIM, PATH_DELIM);     // src/main/resources
-    private static final String SRC_TEST_JAVA      = String.format("src%stest%sjava", PATH_DELIM, PATH_DELIM);          // src/test/java
-    private static final String SRC_TEST_RESOURCES = String.format("src%stest%sresources", PATH_DELIM, PATH_DELIM);     // src/test/resources
 
     private final ConfigurationType type;
     private final String projectHomePath;
@@ -38,10 +34,10 @@ public class ProjectConfiguration {
         //
         this.type = type;
         this.projectHomePath = projectHomePath;
-        this.physicalJavaPath = projectHomePath + PATH_DELIM + SRC_MAIN_JAVA;
-        this.physicalResourcesPath = projectHomePath + PATH_DELIM + SRC_MAIN_RESOURCES;
-        this.physicalTestPath = projectHomePath + PATH_DELIM + SRC_TEST_JAVA;
-        this.physicalTestResourcesPath = projectHomePath + PATH_DELIM + SRC_TEST_RESOURCES;
+        this.physicalJavaPath = projectHomePath + PATH_DELIM + ProjectSources.SRC_MAIN_JAVA;
+        this.physicalResourcesPath = projectHomePath + PATH_DELIM + ProjectSources.SRC_MAIN_RESOURCES;
+        this.physicalTestPath = projectHomePath + PATH_DELIM + ProjectSources.SRC_TEST_JAVA;
+        this.physicalTestResourcesPath = projectHomePath + PATH_DELIM + ProjectSources.SRC_TEST_RESOURCES;
     }
 
     // com/foo/bar/SampleService.java -> C://Users/user/Documents/.../src/main/java/com/foo/bar/SampleService.java
@@ -54,34 +50,6 @@ public class ProjectConfiguration {
     public String makePhysicalResourceFilePath(String sourceFilePath) {
         //
         return physicalResourcesPath + PATH_DELIM + sourceFilePath;
-    }
-
-    // C://Users/user/Documents/.../src/main/java/com/foo/bar/SampleService.java -> com/foo/bar/SampleService.java
-    public String extractSourceFilePath(String physicalSourceFilePath) {
-        //
-        int sourceFilePathIndex = computeSourceFilePathIndex(physicalSourceFilePath);
-
-        if (sourceFilePathIndex < 0) {
-            throw new RuntimeException("physicalSourceFilePath is not correct! : " + physicalSourceFilePath);
-        }
-
-        return physicalSourceFilePath.substring(sourceFilePathIndex);
-    }
-
-    private int computeSourceFilePathIndex(String physicalSourceFilePath) {
-        // if it contains src/main/java (ex ./source-project/src/main/java/foo/bar/Sample.java)
-        int index = physicalSourceFilePath.indexOf(SRC_MAIN_JAVA);
-        if (index >= 0) {
-            return index + SRC_MAIN_JAVA.length() + 1;
-        }
-
-        // if it contains src/main/resources (ex ./source-project/src/main/resources/foo/bar/SampleSqlMap.xml)
-        index = physicalSourceFilePath.indexOf(SRC_MAIN_RESOURCES);
-        if (index >= 0) {
-            return index + SRC_MAIN_RESOURCES.length() + 1;
-        }
-
-        return -1;
     }
 
     public ConfigurationType getType() {
