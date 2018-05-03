@@ -19,7 +19,7 @@ public class JavaWrite {
 
         // 1. java file write
         JavaSource source = createSampleJavaSource();
-        Writer writer = new JavaWriter(targetConfiguration);
+        Writer<JavaSource> writer = new JavaWriter(targetConfiguration);
         writer.write(source);
     }
 

@@ -18,8 +18,8 @@ public class XmlRead {
         //
         ProjectConfiguration configuration = new ProjectConfiguration(ConfigurationType.Source, SOURCE_PROJECT_PATH);
 
-        Reader reader = new XmlReader(configuration);
-        XmlSource source = (XmlSource) reader.read("foo/bar/SampleSqlMap.xml");
+        Reader<XmlSource> reader = new XmlReader(configuration);
+        XmlSource source = reader.read("foo/bar/SampleSqlMap.xml");
         viewXmlSource(source);
     }
 
