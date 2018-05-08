@@ -65,8 +65,8 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
     }
 
     private String toDaoFilePath(String xmlSourceFilePath, int skipPackageCount) {
-        //
-        String[] paths = xmlSourceFilePath.split(ProjectSources.PATH_DELIM);
+        // for Windows.
+        String[] paths = xmlSourceFilePath.split(ProjectSources.PATH_DELIM.equals("\\") ? "\\\\" : ProjectSources.PATH_DELIM);
         int length = paths.length;
 
         String daoFilePath = "";

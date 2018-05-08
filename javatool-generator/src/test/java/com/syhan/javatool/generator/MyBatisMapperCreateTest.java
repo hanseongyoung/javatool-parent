@@ -29,7 +29,7 @@ public class MyBatisMapperCreateTest {
 
     @Test
     public void testDaoPath() {
-        // TODO : Windows Test
+        //
         String xmlSourceFilePath = String.format("com%sfoo%sbar%sSample.xml", PATH_DELIM, PATH_DELIM, PATH_DELIM);
 
         String daoFilePath1 = toDaoFilePath(xmlSourceFilePath, 0);
@@ -39,8 +39,8 @@ public class MyBatisMapperCreateTest {
     }
 
     private String toDaoFilePath(String xmlSourceFilePath, int skipPackageCount) {
-        //
-        String[] paths = xmlSourceFilePath.split(PATH_DELIM);
+        // for Windows.
+        String[] paths = xmlSourceFilePath.split(PATH_DELIM.equals("\\") ? "\\\\" : PATH_DELIM);
         int length = paths.length;
 
         String daoFilePath = "";
