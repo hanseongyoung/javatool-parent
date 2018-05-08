@@ -4,7 +4,7 @@ import java.io.File;
 
 public abstract class ProjectSources {
     //
-    private static final String PATH_DELIM = File.separator;
+    public static final String PATH_DELIM = File.separator;
     public static final String SRC_MAIN_JAVA      = String.format("src%smain%sjava", PATH_DELIM, PATH_DELIM);          // src/main/java
     public static final String SRC_MAIN_RESOURCES = String.format("src%smain%sresources", PATH_DELIM, PATH_DELIM);     // src/main/resources
     public static final String SRC_TEST_JAVA      = String.format("src%stest%sjava", PATH_DELIM, PATH_DELIM);          // src/test/java

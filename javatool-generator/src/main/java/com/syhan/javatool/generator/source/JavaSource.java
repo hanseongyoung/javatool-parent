@@ -1,11 +1,12 @@
 package com.syhan.javatool.generator.source;
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.expr.Name;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VoidType;
@@ -20,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 
 public class JavaSource {
@@ -34,6 +36,71 @@ public class JavaSource {
     public JavaSource(JavaModel model) {
         //
         this.compilationUnit = createCompilationUnit(model);
+    }
+
+    public JavaModel toModel() {
+        //
+        ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
+        String name = classType.getNameAsString();
+        String packageName = compilationUnit.getPackageDeclaration()
+                .map(PackageDeclaration::getName)
+                .map(Name::asString)
+                .get();
+        boolean isInterface = classType.isInterface();
+
+        JavaModel javaModel = new JavaModel(name, packageName, isInterface);
+
+        for (Object member : classType.getMembers()) {
+            if (member instanceof MethodDeclaration) {
+                MethodDeclaration method = (MethodDeclaration) member;
+                javaModel.addMethodModel(toMethodModel(method));
+            }
+        }
+        return javaModel;
+    }
+
+    private MethodModel toMethodModel(MethodDeclaration method) {
+        //
+        String name = method.getNameAsString();
+        String returnTypeName = ((ClassOrInterfaceType)method.getType()).getName().asString();
+        String returnTypeFullName = findFullName(returnTypeName);
+        ClassType returnType = new ClassType(returnTypeFullName);
+
+        // if return type has Generic type (List<SampleDTO>)
+        ClassType typeArgument = toReturnTypeArgument(method);
+        returnType.setTypeArgument(typeArgument);
+
+        MethodModel methodModel = new MethodModel(name, returnType);
+        return methodModel;
+    }
+
+    private ClassType toReturnTypeArgument(MethodDeclaration method) {
+        //
+        Optional<NodeList<Type>> returnTypeArguments = ((ClassOrInterfaceType) method.getType()).getTypeArguments();
+        if (!returnTypeArguments.isPresent()) {
+            return null;
+        }
+        String returnTypeArgumentName = returnTypeArguments.get().get(0).asString();
+        String returnTypeArgumentFullName = findFullName(returnTypeArgumentName);
+        return new ClassType(returnTypeArgumentFullName);
+    }
+
+    private String findFullName(String returnTypeName) {
+        //
+        for (Object obj : compilationUnit.getImports()) {
+            ImportDeclaration importDeclaration = (ImportDeclaration) obj;
+            String packageName = importDeclaration.getName().asString();
+            if (packageName.endsWith(returnTypeName)) {
+                return packageName;
+            }
+        }
+        return returnTypeName;
+    }
+
+    public static boolean exists(String physicalSourceFile) {
+        //
+        File file = new File(physicalSourceFile);
+        return file.exists() && !file.isDirectory();
     }
 
     private CompilationUnit createCompilationUnit(JavaModel model) {
@@ -74,7 +141,7 @@ public class JavaSource {
         } else if (methodModel.isPrimitive()) {
             returnType = new PrimitiveType(PrimitiveType.Primitive.valueOf(methodModel.getReturnType().getName()));
         } else {
-            returnType = JavaParser.parseClassOrInterfaceType(methodModel.getReturnType().getName());
+            returnType = createClassReturnType(methodModel);
         }
 
         MethodDeclaration method = new MethodDeclaration(EnumSet.noneOf(Modifier.class), returnType, methodModel.getName());
@@ -86,6 +153,20 @@ public class JavaSource {
             method.addParameter(parameter);
         }
         return method;
+    }
+
+    private ClassOrInterfaceType createClassReturnType(MethodModel methodModel) {
+        //
+        ClassOrInterfaceType returnType = JavaParser.parseClassOrInterfaceType(methodModel.getReturnType().getName());
+
+        ClassType modelReturnType = methodModel.getReturnType();
+        if (modelReturnType.hasTypeArgument()) {
+            ClassType modelArgumentType = modelReturnType.getTypeArgument();
+            NodeList<Type> typeArguments = new NodeList<>();
+            typeArguments.add(JavaParser.parseClassOrInterfaceType(modelArgumentType.getName()));
+            returnType.setTypeArguments(typeArguments);
+        }
+        return returnType;
     }
 
     // com/foo/bar/SampleService.java
@@ -101,6 +182,10 @@ public class JavaSource {
         File file = new File(physicalTargetFilePath);
         System.out.println(compilationUnit.toString());
         FileUtils.writeStringToFile(file, compilationUnit.toString(), "UTF-8");
+    }
+
+    public CompilationUnit getCompilationUnit() {
+        return compilationUnit;
     }
 
     public static void main(String[] args) {

@@ -25,6 +25,19 @@ public class JavaModel {
         this.methods = new ArrayList<>();
     }
 
+    public MethodModel findMethodByName(String methodName) {
+        if (methods == null || methods.isEmpty()) {
+            return null;
+        }
+
+        for (MethodModel methodModel : methods) {
+            if(methodModel.getName().equals(methodName)) {
+                return methodModel;
+            }
+        }
+        return null;
+    }
+
     public String getName() {
         //
         return classType.getName();

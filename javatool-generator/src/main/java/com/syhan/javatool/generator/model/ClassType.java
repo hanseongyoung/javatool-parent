@@ -14,6 +14,7 @@ public class ClassType {
     private String name;
     private String packageName;
     private boolean primitive;
+    private ClassType typeArgument;
 
     public ClassType(String className) {
         //
@@ -26,6 +27,16 @@ public class ClassType {
             this.name = className;
             this.packageName = null;
             this.primitive = true;
+        }
+    }
+
+    public ClassType(ClassType other) {
+        //
+        this.name = other.getName();
+        this.packageName = other.getPackageName();
+        this.primitive = other.isPrimitive();
+        if (other.hasTypeArgument()) {
+            this.typeArgument = new ClassType(other.getTypeArgument());
         }
     }
 
@@ -57,6 +68,11 @@ public class ClassType {
         return new String(c);
     }
 
+    public boolean hasTypeArgument() {
+        //
+        return typeArgument != null;
+    }
+
     public String getName() {
         return name;
     }
@@ -75,6 +91,14 @@ public class ClassType {
 
     public boolean isPrimitive() {
         return primitive;
+    }
+
+    public ClassType getTypeArgument() {
+        return typeArgument;
+    }
+
+    public void setTypeArgument(ClassType typeArgument) {
+        this.typeArgument = typeArgument;
     }
 
     public static void main(String[] args) {

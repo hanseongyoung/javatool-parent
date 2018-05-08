@@ -4,57 +4,95 @@ import com.syhan.javatool.generator.model.AnnotationType;
 import com.syhan.javatool.generator.model.ClassType;
 import com.syhan.javatool.generator.model.JavaModel;
 import com.syhan.javatool.generator.model.MethodModel;
+import com.syhan.javatool.generator.reader.JavaReader;
+import com.syhan.javatool.generator.reader.XmlReader;
 import com.syhan.javatool.generator.source.JavaSource;
 import com.syhan.javatool.generator.source.XmlSource;
+import com.syhan.javatool.generator.writer.JavaWriter;
 import com.syhan.javatool.share.config.ProjectConfiguration;
+import com.syhan.javatool.share.config.ProjectSources;
 import com.syhan.javatool.share.util.string.StringUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MyBatisMapperCreator extends ProjectItemConverter {
     //
+    private XmlReader xmlReader;
+    private JavaReader javaReader;
+    private JavaWriter javaWriter;
+
     public MyBatisMapperCreator(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetConfiguration) {
         //
         super(sourceConfiguration, targetConfiguration, ProjectItemType.MyBatisMapper);
+        this.xmlReader = new XmlReader(sourceConfiguration);
+        this.javaReader = new JavaReader(sourceConfiguration);
+        this.javaWriter = new JavaWriter(targetConfiguration);
     }
 
     @Override
     public void convert(String sourceFilePath) throws IOException {
         //
-        String phyicalSourceFilePath = sourceConfiguration.makePhysicalResourceFilePath(sourceFilePath);
-        try {
-            XmlSource xmlSource = new XmlSource(phyicalSourceFilePath);
-            JavaSource javaSource = computeMapperInterfaceSource(xmlSource);
+        XmlSource xmlSource = xmlReader.read(sourceFilePath);
+        JavaModel daoModel = findDaoModel(sourceFilePath);
 
-            String targetFilePath = javaSource.getSourceFilePath();
-            String physicalTargetFilePath = targetConfiguration.makePhysicalJavaSourceFilePath(targetFilePath);
-            javaSource.write(physicalTargetFilePath);
-
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException(e);
-        } catch (SAXException e) {
-            throw new RuntimeException(e);
-        }
+        JavaSource javaSource = computeMapperInterfaceSource(xmlSource, daoModel);
+        javaWriter.write(javaSource);
     }
 
-    private JavaSource computeMapperInterfaceSource(XmlSource xmlSource) {
+    private JavaModel findDaoModel(String xmlSourceFilePath) throws IOException {
+        // xmlSourceFilePath : com/foo/bar/Sample.xml
+        // find dao: com/foo/bar/SampleDao.java or com/foo/SampleDao.java
+
+        // find com/foo/bar/SampleDao.java
+        String daoFilePath1 = toDaoFilePath(xmlSourceFilePath, 0);
+        if (javaReader.exists(daoFilePath1)) {
+            return javaReader.read(daoFilePath1).toModel();
+        }
+
+        // find com/foo/SampleDao.java
+        String daoFilePath2 = toDaoFilePath(xmlSourceFilePath, 1);
+        if (javaReader.exists(daoFilePath2)) {
+            return javaReader.read(daoFilePath2).toModel();
+        }
+
+        return null;
+    }
+
+    private String toDaoFilePath(String xmlSourceFilePath, int skipPackageCount) {
+        //
+        String[] paths = xmlSourceFilePath.split(ProjectSources.PATH_DELIM);
+        int length = paths.length;
+
+        String daoFilePath = "";
+        for (int i = 0; i < length - 1 - skipPackageCount; i++) {
+            daoFilePath += paths[i];
+            daoFilePath += ProjectSources.PATH_DELIM;
+        }
+        daoFilePath += toJava(paths[length - 1]);
+
+        return daoFilePath;
+    }
+
+    private String toJava(String fileName) {
+        return fileName.replaceAll("\\.xml", "Dao.java");
+    }
+
+    private JavaSource computeMapperInterfaceSource(XmlSource xmlSource, JavaModel daoModel) {
         //
         // XmlSource -> JavaModel
-        JavaModel myBatisMapperJavaModel = createMyBatisMapperJavaModel(xmlSource);
+        JavaModel myBatisMapperJavaModel = createMyBatisMapperJavaModel(xmlSource, daoModel);
 
         // JavaModel -> JavaSource
         return new JavaSource(myBatisMapperJavaModel);
     }
 
-    private JavaModel createMyBatisMapperJavaModel(XmlSource xmlSource) {
+    private JavaModel createMyBatisMapperJavaModel(XmlSource xmlSource, JavaModel daoModel) {
         //
         String mapperClassName = findMapperNamespace(xmlSource);
 
@@ -67,7 +105,8 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
             String parameterClassName = element.getAttribute("parameterType");
             String returnClassName = element.getAttribute("resultType");
 
-            MethodModel methodModel = new MethodModel(methodName, computeReturnClassType(returnClassName, tagName));
+            MethodModel daoMethodModel = findDaoMethodModel(daoModel, methodName);
+            MethodModel methodModel = new MethodModel(methodName, computeReturnClassType(returnClassName, tagName, daoMethodModel));
             if (StringUtil.isNotEmpty(parameterClassName)) {
                 methodModel.addParameterType(new ClassType(parameterClassName));
             }
@@ -77,8 +116,38 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
         return javaModel;
     }
 
-    private ClassType computeReturnClassType(String returnClassName, String tagName) {
+    private MethodModel findDaoMethodModel(JavaModel daoModel, String methodName) {
         //
+        if (daoModel == null) {
+            return null;
+        }
+        return daoModel.findMethodByName(methodName);
+    }
+
+    private ClassType computeReturnClassType(String returnClassName, String tagName, MethodModel daoMethodModel) {
+        //
+//        System.out.println("methodName:"+methodName);
+//        CompilationUnit cu = daoSource.getCompilationUnit();
+//        TypeDeclaration typeDeclaration = cu.getType(0);
+//        for (Object member : typeDeclaration.getMembers()) {
+//            if (member instanceof MethodDeclaration) {
+//                MethodDeclaration method = (MethodDeclaration) member;
+//                if (methodName.equals(method.getNameAsString())) {
+//                    ClassOrInterfaceType methodType = (ClassOrInterfaceType) method.getType();
+//                    System.out.println(methodType);
+//                    if (methodType.getTypeArguments().isPresent()) {
+//                        for (Object argType : methodType.getTypeArguments().get()) {
+//                            System.out.println(argType);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+
+        if (daoMethodModel != null) {
+            return new ClassType(daoMethodModel.getReturnType());
+        }
+
         if (StringUtil.isNotEmpty(returnClassName)) {
             return new ClassType(returnClassName);
         }
