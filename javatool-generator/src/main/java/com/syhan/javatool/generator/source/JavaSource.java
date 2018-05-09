@@ -1,8 +1,10 @@
 package com.syhan.javatool.generator.source;
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.*;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.expr.Name;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.syhan.javatool.generator.ast.AstMapper;
 import com.syhan.javatool.generator.model.JavaModel;
 import org.apache.commons.io.FileUtils;
@@ -63,6 +65,48 @@ public class JavaSource {
         String packageName = compilationUnit.getPackageDeclaration().get().getNameAsString();
         String typeName = compilationUnit.getType(0).getNameAsString();
         return packageName.replaceAll("\\.", Matcher.quoteReplacement(File.separator)) + File.separator + typeName + ".java";
+    }
+
+    public String getName() {
+        //
+        return compilationUnit.getType(0).getNameAsString();
+    }
+
+    public String getClassName() {
+        //
+        return getPackageName() + "." + getName();
+    }
+
+    public void setName(String name) {
+        //
+        ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
+        classType.setName(name);
+    }
+
+    public String getPackageName() {
+        //
+        PackageDeclaration packageDeclaration = compilationUnit.getPackageDeclaration().get();
+        return packageDeclaration.getNameAsString();
+    }
+
+    public void setPackageName(String packageName) {
+        //
+        PackageDeclaration packageDeclaration = compilationUnit.getPackageDeclaration().get();
+        packageDeclaration.setName(new Name(packageName));
+    }
+
+    public void setImplementedType(String name, String packageName) {
+        //
+        ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
+        NodeList<ClassOrInterfaceType> nodeList = new NodeList<>();
+        nodeList.add(JavaParser.parseClassOrInterfaceType(name));
+        classType.setImplementedTypes(nodeList);
+
+        compilationUnit.addImport(packageName + "." + name);
+    }
+
+    public CompilationUnit getCompilationUnit() {
+        return compilationUnit;
     }
 
     public void write(String physicalTargetFilePath) throws IOException {

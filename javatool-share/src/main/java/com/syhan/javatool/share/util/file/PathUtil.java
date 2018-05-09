@@ -5,6 +5,75 @@ import com.syhan.javatool.share.util.string.StringUtil;
 
 public abstract class PathUtil {
     //
+    // com.foo.bar.SampleDto -> com/foo/bar/SampleDto.java
+    public static String toSourceFileName(String className, String extension) {
+        //
+        String[] packageFrags = className.split("\\.");
+        int length = packageFrags.length;
+
+        StringBuffer sb = new StringBuffer();
+
+
+        for (int i = 0; i < length; i++) {
+            sb.append(packageFrags[i]);
+            if (i < length - 1) {
+                sb.append(ProjectSources.PATH_DELIM);
+            }
+        }
+
+        sb.append(".");
+
+        // add extension
+        if (StringUtil.isNotEmpty(extension)) {
+            sb.append(extension);
+        }
+        return sb.toString();
+    }
+
+    // SampleService -> SampleLogic
+    public static String changeName(String name, String skipPostFix, String addPostFix) {
+        //
+        StringBuffer sb = new StringBuffer();
+        if (skipPostFix != null && name.endsWith(skipPostFix)) {
+            String sub = name.substring(0, name.length() - skipPostFix.length());
+            sb.append(sub);
+        } else {
+            sb.append(name);
+        }
+
+        if (addPostFix != null) {
+            sb.append(addPostFix);
+        }
+
+        return sb.toString();
+    }
+    // com.foo.bar --> com.foo.spec
+    public static String changePackage(String packageName, int skipPackageCount, String[] addPackages) {
+        //
+        String[] packageFrags = packageName.split("\\.");
+        int length = packageFrags.length;
+
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < length - skipPackageCount; i++) {
+            sb.append(packageFrags[i]);
+            sb.append(".");
+        }
+
+        if (addPackages != null && addPackages.length > 0) {
+            for (int i = 0; i < addPackages.length; i++) {
+                sb.append(addPackages[i]);
+                sb.append(".");
+            }
+        }
+
+        // remove last '.'
+        String result = sb.toString();
+        if (result.endsWith(".")) {
+            result = result.substring(0, result.length() - 1);
+        }
+        return result;
+    }
+
     // com/foo/bar/Sample.xml --> com/foo/bar/SampleDao.java
     public static String changeFileName(String sourceFilePath, String namePostFix, String extension) {
         //

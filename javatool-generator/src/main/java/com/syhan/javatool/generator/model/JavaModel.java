@@ -65,6 +65,13 @@ public class JavaModel {
         return removePrimitiveType(usingClassNames);
     }
 
+    public List<String> computeMethodUsingClasses() {
+        //
+        List<String> usingClassNames = extractMethodUsingClassNames();
+        usingClassNames = removeDuplicate(usingClassNames);
+        return removePrimitiveType(usingClassNames);
+    }
+
     private List<String> removePrimitiveType(List<String> nameList) {
         //
         List<String> resultList = new ArrayList<>();
@@ -101,6 +108,14 @@ public class JavaModel {
         if (annotation != null) {
             classNames.add(annotation.getClassName());
         }
+
+        classNames.addAll(extractMethodUsingClassNames());
+        return classNames;
+    }
+
+    private List<String> extractMethodUsingClassNames() {
+        //
+        List<String> classNames = new ArrayList<>();
 
         for (MethodModel methodModel : methods) {
             ClassType returnType = methodModel.getReturnType();
