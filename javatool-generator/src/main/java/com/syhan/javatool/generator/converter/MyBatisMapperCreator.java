@@ -10,7 +10,7 @@ import com.syhan.javatool.generator.source.JavaSource;
 import com.syhan.javatool.generator.source.XmlSource;
 import com.syhan.javatool.generator.writer.JavaWriter;
 import com.syhan.javatool.share.config.ProjectConfiguration;
-import com.syhan.javatool.share.config.ProjectSources;
+import com.syhan.javatool.share.util.file.PathUtil;
 import com.syhan.javatool.share.util.string.StringUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -64,23 +64,10 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
         return null;
     }
 
-    private String toDaoFilePath(String xmlSourceFilePath, int skipPackageCount) {
+    // com/foo/bar/Sample.xml -> com/foo/bar/SampleDao.java or com/foo/SampleDao.java
+    private String toDaoFilePath(String xmlSourceFilePath, int skipFolderCount) {
         // for Windows.
-        String[] paths = xmlSourceFilePath.split(ProjectSources.PATH_DELIM.equals("\\") ? "\\\\" : ProjectSources.PATH_DELIM);
-        int length = paths.length;
-
-        String daoFilePath = "";
-        for (int i = 0; i < length - 1 - skipPackageCount; i++) {
-            daoFilePath += paths[i];
-            daoFilePath += ProjectSources.PATH_DELIM;
-        }
-        daoFilePath += toJava(paths[length - 1]);
-
-        return daoFilePath;
-    }
-
-    private String toJava(String fileName) {
-        return fileName.replaceAll("\\.xml", "Dao.java");
+        return PathUtil.changePath(xmlSourceFilePath, skipFolderCount, null, "Dao", "java");
     }
 
     private JavaSource computeMapperInterfaceSource(XmlSource xmlSource, JavaModel daoModel) {
@@ -108,7 +95,7 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
             MethodModel daoMethodModel = findDaoMethodModel(daoModel, methodName);
             MethodModel methodModel = new MethodModel(methodName, computeReturnClassType(returnClassName, tagName, daoMethodModel));
             if (StringUtil.isNotEmpty(parameterClassName)) {
-                methodModel.addParameterType(new ClassType(parameterClassName));
+                methodModel.addParameterType(ClassType.newClassType(parameterClassName));
             }
 
             javaModel.addMethodModel(methodModel);
@@ -126,35 +113,17 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
 
     private ClassType computeReturnClassType(String returnClassName, String tagName, MethodModel daoMethodModel) {
         //
-//        System.out.println("methodName:"+methodName);
-//        CompilationUnit cu = daoSource.getCompilationUnit();
-//        TypeDeclaration typeDeclaration = cu.getType(0);
-//        for (Object member : typeDeclaration.getMembers()) {
-//            if (member instanceof MethodDeclaration) {
-//                MethodDeclaration method = (MethodDeclaration) member;
-//                if (methodName.equals(method.getNameAsString())) {
-//                    ClassOrInterfaceType methodType = (ClassOrInterfaceType) method.getType();
-//                    System.out.println(methodType);
-//                    if (methodType.getTypeArguments().isPresent()) {
-//                        for (Object argType : methodType.getTypeArguments().get()) {
-//                            System.out.println(argType);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-
         if (daoMethodModel != null) {
             return new ClassType(daoMethodModel.getReturnType());
         }
 
         if (StringUtil.isNotEmpty(returnClassName)) {
-            return new ClassType(returnClassName);
+            return ClassType.newClassType(returnClassName);
         }
 
         // returnClassName is empty.
         if ("update".equals(tagName) || "insert".equals(tagName) || "delete".equals(tagName)) {
-            return new ClassType(ClassType.PRIMITIVE_INT);
+            return ClassType.newPrimitiveType(ClassType.PRIMITIVE_INT);
         }
 
         return null;

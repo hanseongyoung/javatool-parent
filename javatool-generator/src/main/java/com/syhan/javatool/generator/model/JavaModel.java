@@ -13,14 +13,14 @@ public class JavaModel {
 
     public JavaModel(String className, boolean isInterface) {
         //
-        this.classType = new ClassType(className);
+        this.classType = ClassType.newClassType(className);
         this.isInterface = isInterface;
         this.methods = new ArrayList<>();
     }
 
     public JavaModel(String name, String packageName, boolean isInterface) {
         //
-        this.classType = new ClassType(name, packageName);
+        this.classType = ClassType.newClassType(name, packageName);
         this.isInterface = isInterface;
         this.methods = new ArrayList<>();
     }
@@ -61,7 +61,26 @@ public class JavaModel {
     public List<String> computeImports() {
         //
         List<String> usingClassNames = extractUsingClassNames();
-        return removeDuplicate(usingClassNames);
+        usingClassNames = removeDuplicate(usingClassNames);
+        return removePrimitiveType(usingClassNames);
+    }
+
+    private List<String> removePrimitiveType(List<String> nameList) {
+        //
+        List<String> resultList = new ArrayList<>();
+        for (int i = 0; i < nameList.size(); i++) {
+            String name = nameList.get(i);
+            if (name.toUpperCase().equals("INT")
+                    || name.toUpperCase().equals("LONG")
+                    || name.toUpperCase().equals("CHAR")
+                    || name.toUpperCase().equals("BOOLEAN")
+                    || name.toUpperCase().equals("STRING")) {
+                //
+            } else {
+                resultList.add(name);
+            }
+        }
+        return resultList;
     }
 
     private List<String> removeDuplicate(List<String> nameList) {

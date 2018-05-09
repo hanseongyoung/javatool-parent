@@ -27,8 +27,8 @@ public class JavaWrite {
         //
         JavaModel javaModel = new JavaModel("com.foo.bar.Test", true);
 
-        MethodModel methodModel = new MethodModel("hello", new ClassType("com.foo.bar.ResultDTO"));
-        methodModel.addParameterType(new ClassType("com.foo.bar.TestDTO"));
+        MethodModel methodModel = new MethodModel("hello", ClassType.newClassType("com.foo.bar.ResultDTO"));
+        methodModel.addParameterType(ClassType.newClassType("com.foo.bar.TestDTO"));
         javaModel.addMethodModel(methodModel);
 
         return new JavaSource(javaModel);

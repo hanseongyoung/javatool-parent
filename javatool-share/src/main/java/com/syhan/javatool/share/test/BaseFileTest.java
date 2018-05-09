@@ -11,8 +11,6 @@ public class BaseFileTest {
 
     protected BaseFileTest() {
         //
-//        config = new PagesXmlConfig();
-//        config.setBaseLocation(testDirName);
     }
 
     @Before

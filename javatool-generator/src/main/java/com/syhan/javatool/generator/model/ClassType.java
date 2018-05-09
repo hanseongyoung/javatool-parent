@@ -16,18 +16,40 @@ public class ClassType {
     private boolean primitive;
     private ClassType typeArgument;
 
-    public ClassType(String className) {
+    public static ClassType newClassType(String className) {
+        //
+        return new ClassType(className);
+    }
+
+    public static ClassType newClassType(String name, String packageName) {
+        //
+        return new ClassType(name, packageName);
+    }
+
+    public static ClassType newPrimitiveType(String primitiveName) {
+        //
+        return new ClassType(primitiveName, true);
+    }
+
+    protected ClassType(String className) {
         //
         int lastDotIndex = className.lastIndexOf(".");
         if (lastDotIndex > 0) {
             this.packageName = className.substring(0, lastDotIndex);
             this.name = className.substring(lastDotIndex + 1, className.length());
-            this.primitive = false;
         } else {
             this.name = className;
             this.packageName = null;
-            this.primitive = true;
         }
+        this.primitive = false;
+    }
+
+    private ClassType(String name, boolean primitive) {
+        //
+        this.name = name;
+        this.primitive = primitive;
+        this.packageName = null;
+        this.typeArgument = null;
     }
 
     public ClassType(ClassType other) {
@@ -40,7 +62,7 @@ public class ClassType {
         }
     }
 
-    public ClassType(String name, String packageName) {
+    private ClassType(String name, String packageName) {
         //
         this.name = name;
         this.packageName = packageName;
@@ -62,6 +84,10 @@ public class ClassType {
     private String toFirstLowerCase(String str) {
         //
         if (str == null) return null;
+
+        if (Character.isLowerCase(str.charAt(0))) {
+            return str;
+        }
 
         char c[] = str.toCharArray();
         c[0] += 32;
