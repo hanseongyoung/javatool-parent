@@ -43,14 +43,6 @@ public class JavaConverter extends ProjectItemConverter {
         writeSource(source, physicalTargetFilePath);
     }
 
-    private String adjustPackage(String packageName) {
-        //
-        if (packageRule == null) {
-            return packageName;
-        }
-        return packageRule.changePackage(packageName);
-    }
-
     private JavaSource readSource(String physicalSourceFilePath) throws FileNotFoundException {
         //
         return new JavaSource(physicalSourceFilePath);
