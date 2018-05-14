@@ -47,7 +47,8 @@ public class ComplexProjectConverter {
         ProjectConfiguration skeletonConfig = model.findBySuffix(PROJECT_SUFFIX_SKELETON).configuration(ConfigurationType.Target);
         ProjectConfiguration serviceConfig = model.findBySuffix(PROJECT_SUFFIX_SERVICE).configuration(ConfigurationType.Target);
 
-        JavaInterfaceAbstracter abstracter = new JavaInterfaceAbstracter(sourceConfig, stubConfig, skeletonConfig, javaAbstractPackageRule);
+        JavaInterfaceAbstracter abstracter = new JavaInterfaceAbstracter(sourceConfig, stubConfig, skeletonConfig,
+                javaAbstractPackageRule, param.getSourceBasePackage());
         JavaConverter javaConverter = new JavaConverter(sourceConfig, serviceConfig, javaConvertPackageRule);
 
         PackageConverter packageConverter = new PackageConverter(new ProjectItemConverter(sourceConfig, ProjectItemType.Java) {
@@ -71,14 +72,12 @@ public class ComplexProjectConverter {
             return false;
         }
 
-        System.out.println("convertExtService --> " + sourceFileName);
         abstracter.convert(sourceFileName);
         return true;
     }
 
     private boolean convertJava(String sourceFileName, JavaConverter javaConverter) throws IOException {
         //
-        System.out.println("convertJava --> " + sourceFileName);
         javaConverter.convert(sourceFileName);
         return true;
     }

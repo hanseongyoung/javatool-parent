@@ -24,6 +24,7 @@ public class ComplexProjectConverterTest extends BaseFileTest {
         parameter.setNewProjectName2("order");
         parameter.setNewBasePackage("kr.amc.amis");
         parameter.setSourcePackage("amis3.mc.oo");
+        parameter.setSourceBasePackage("amis3");
         parameter.setSourceProjectHomePath(SOURCE_PROJECT_HOME);
         parameter.setTargetWorkspace(super.testDirName);
 

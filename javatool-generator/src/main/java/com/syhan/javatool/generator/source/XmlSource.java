@@ -57,8 +57,9 @@ public class XmlSource {
         transformer.transform(source, result);
 
         // Console write
-        StreamResult consoleResult = new StreamResult(System.out);
-        transformer.transform(source, consoleResult);
+        // TODO : using Logger
+        //StreamResult consoleResult = new StreamResult(System.out);
+        //transformer.transform(source, consoleResult);
     }
 
     public String getSourceFilePath() {

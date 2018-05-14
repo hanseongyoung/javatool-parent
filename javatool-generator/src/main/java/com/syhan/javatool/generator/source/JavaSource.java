@@ -131,6 +131,10 @@ public class JavaSource {
 
     public void changeImports(PackageRule packageRule) {
         //
+        if (packageRule == null) {
+            return;
+        }
+
         for (ImportDeclaration importD : compilationUnit.getImports()) {
             String newName = packageRule.changePackage(importD.getNameAsString());
             importD.setName(newName);
@@ -144,7 +148,8 @@ public class JavaSource {
     public void write(String physicalTargetFilePath) throws IOException {
         //
         File file = new File(physicalTargetFilePath);
-        System.out.println(compilationUnit.toString());
+        // TODO : using Logger
+        //System.out.println(compilationUnit.toString());
         FileUtils.writeStringToFile(file, compilationUnit.toString(), "UTF-8");
     }
 

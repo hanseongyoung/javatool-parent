@@ -10,6 +10,7 @@ import com.syhan.javatool.share.util.file.PathUtil;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 // com.foo.bar.SomeService
 // -->
@@ -23,13 +24,17 @@ public class JavaInterfaceAbstracter {
     private JavaWriter javaWriterForLogic;
 
     private PackageRule packageRule;
+    private String sourceBasePackage;
 
-    public JavaInterfaceAbstracter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetInterfaceConfiguration, ProjectConfiguration targetLogicConfiguration, PackageRule packageRule) {
+    public JavaInterfaceAbstracter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetInterfaceConfiguration,
+                                   ProjectConfiguration targetLogicConfiguration, PackageRule packageRule,
+                                   String sourceBasePackage) {
         //
         this.javaReader = new JavaReader(sourceConfiguration);
         this.javaWriterForInterface = new JavaWriter(targetInterfaceConfiguration);
         this.javaWriterForLogic = new JavaWriter(targetLogicConfiguration);
         this.packageRule = packageRule;
+        this.sourceBasePackage = sourceBasePackage;
     }
 
     public void convert(String sourceFileName) throws IOException {
@@ -40,7 +45,11 @@ public class JavaInterfaceAbstracter {
         interfaceModel.changePackage(packageRule);
 
         // write dto
-        List<String> dtoClassNames = interfaceModel.computeMethodUsingClasses();
+        List<String> dtoClassNames = interfaceModel.computeMethodUsingClasses()
+                .stream()
+                .filter(s -> s.startsWith(sourceBasePackage))
+                .collect(Collectors.toList());
+
         for (String dtoClassName : dtoClassNames) {
             String dtoSourceFileName = PathUtil.toSourceFileName(dtoClassName, "java");
             JavaSource dtoSource = javaReader.read(dtoSourceFileName);

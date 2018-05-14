@@ -4,7 +4,8 @@ public class ConvertParameter {
     //
     // 소스 프로젝트 홈, 소스 패키지, 프로젝트 명칭 1/2레벨, 대상 폴더
     private String sourceProjectHomePath;
-    private String sourcePackage; // com.foo.bar
+    private String sourcePackage;       // com.foo.bar
+    private String sourceBasePackage;   // com
     private String newProjectName0;
     private String newProjectName1;
     private String newProjectName2;
@@ -65,5 +66,13 @@ public class ConvertParameter {
 
     public void setNewBasePackage(String newBasePackage) {
         this.newBasePackage = newBasePackage;
+    }
+
+    public String getSourceBasePackage() {
+        return sourceBasePackage;
+    }
+
+    public void setSourceBasePackage(String sourceBasePackage) {
+        this.sourceBasePackage = sourceBasePackage;
     }
 }

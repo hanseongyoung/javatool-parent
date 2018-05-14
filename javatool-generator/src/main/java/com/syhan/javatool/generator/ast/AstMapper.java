@@ -117,6 +117,8 @@ public abstract class AstMapper {
         if (type.isPrimitiveType()) {
             String primitiveName = type.asString();
             return ClassType.newPrimitiveType(primitiveName);
+        } else if (type.isVoidType()) {
+            return null;
         }
 
         String returnTypeName = ((ClassOrInterfaceType)type).getName().asString();

@@ -112,9 +112,12 @@ public class JavaModel {
             String name = nameList.get(i);
             if (name.toUpperCase().equals("INT")
                     || name.toUpperCase().equals("LONG")
+                    || name.toUpperCase().equals("DOUBLE")
+                    || name.toUpperCase().equals("FLOAT")
                     || name.toUpperCase().equals("CHAR")
                     || name.toUpperCase().equals("BOOLEAN")
-                    || name.toUpperCase().equals("STRING")) {
+                    || name.toUpperCase().equals("STRING")
+                    ) {
                 //
             } else {
                 resultList.add(name);
