@@ -1,6 +1,5 @@
 package com.syhan.javatool.project.model;
 
-import com.sun.tools.javac.util.Assert;
 import com.syhan.javatool.share.config.ConfigurationType;
 import com.syhan.javatool.share.config.ProjectConfiguration;
 
@@ -36,7 +35,7 @@ public class ProjectModel {
 
     public ProjectConfiguration configuration(ConfigurationType configurationType) {
         //
-        Assert.checkNonNull(workspacePath);
+        assert workspacePath != null : "The workspacePath can't be null.";
         return new ProjectConfiguration(configurationType, workspacePath, name);
     }
 
