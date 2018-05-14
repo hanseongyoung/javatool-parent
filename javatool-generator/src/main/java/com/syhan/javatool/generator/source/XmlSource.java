@@ -16,6 +16,8 @@ import java.io.IOException;
 public class XmlSource {
     //
     private Document document;
+    private String sourceFilePath;
+    private boolean resourceFile;
 
     public XmlSource(String physicalSourceFile) throws ParserConfigurationException, IOException, SAXException {
         //
@@ -23,11 +25,22 @@ public class XmlSource {
         DocumentBuilder builder = DomUtil.newBuilder();
         this.document = builder.parse(file);
         this.document.getDocumentElement().normalize();
+        this.resourceFile = true;
     }
 
-    public XmlSource(Document document) {
+    public XmlSource(Document document, String sourceFilePath) {
         //
         this.document = document;
+        this.sourceFilePath = sourceFilePath;
+        this.resourceFile = true;
+    }
+
+    public boolean isResourceFile() {
+        return resourceFile;
+    }
+
+    public void setResourceFile(boolean resourceFile) {
+        this.resourceFile = resourceFile;
     }
 
     public Document getDocument() {
@@ -46,5 +59,10 @@ public class XmlSource {
         // Console write
         StreamResult consoleResult = new StreamResult(System.out);
         transformer.transform(source, consoleResult);
+    }
+
+    public String getSourceFilePath() {
+        //
+        return sourceFilePath;
     }
 }

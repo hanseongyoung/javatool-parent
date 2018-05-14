@@ -8,6 +8,11 @@ public abstract class ProjectItemConverter implements Converter {
     protected ProjectConfiguration targetConfiguration;
     protected ProjectItemType projectItemType;
 
+    public ProjectItemConverter(ProjectConfiguration sourceConfiguration, ProjectItemType projectItemType) {
+        //
+        this(sourceConfiguration, null, projectItemType);
+    }
+
     public ProjectItemConverter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetConfiguration, ProjectItemType projectItemType) {
         //
         this.sourceConfiguration = sourceConfiguration;

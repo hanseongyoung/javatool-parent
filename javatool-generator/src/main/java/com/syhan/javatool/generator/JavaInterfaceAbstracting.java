@@ -14,7 +14,7 @@ public class JavaInterfaceAbstracting {
         ProjectConfiguration sourceConfiguration = new ProjectConfiguration(ConfigurationType.Source, sourceProjectHome);
         ProjectConfiguration targetConfiguration = new ProjectConfiguration(ConfigurationType.Target, targetProjectHome);
 
-        JavaInterfaceAbstracter abstracter = new JavaInterfaceAbstracter(sourceConfiguration, targetConfiguration);
+        JavaInterfaceAbstracter abstracter = new JavaInterfaceAbstracter(sourceConfiguration, targetConfiguration, targetConfiguration, null);
         abstracter.convert(sourceFileName);
     }
 

@@ -1,12 +1,17 @@
 package com.syhan.javatool.generator.source;
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.*;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.syhan.javatool.generator.ast.AstMapper;
 import com.syhan.javatool.generator.model.JavaModel;
+import com.syhan.javatool.share.rule.PackageRule;
+import com.syhan.javatool.share.util.file.PathUtil;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -103,6 +108,33 @@ public class JavaSource {
         classType.setImplementedTypes(nodeList);
 
         compilationUnit.addImport(packageName + "." + name);
+    }
+
+    public void changeName(String skipPostFix, String addPostFix) {
+        //
+        String name = getName();
+        String newName = PathUtil.changeName(name, skipPostFix, addPostFix);
+        setName(newName);
+    }
+
+    public void changePackage(PackageRule packageRule) {
+        //
+        if (packageRule == null) {
+            return;
+        }
+
+        String packageName = getPackageName();
+        String name = getName();
+        String newPackageName = packageRule.changePackage(packageName, name);
+        setPackageName(newPackageName);
+    }
+
+    public void changeImports(PackageRule packageRule) {
+        //
+        for (ImportDeclaration importD : compilationUnit.getImports()) {
+            String newName = packageRule.changePackage(importD.getNameAsString());
+            importD.setName(newName);
+        }
     }
 
     public CompilationUnit getCompilationUnit() {

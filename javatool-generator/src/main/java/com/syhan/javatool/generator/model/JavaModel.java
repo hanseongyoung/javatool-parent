@@ -1,5 +1,7 @@
 package com.syhan.javatool.generator.model;
 
+import com.syhan.javatool.share.rule.PackageRule;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +27,32 @@ public class JavaModel {
         this.methods = new ArrayList<>();
     }
 
+    public void changePackage(PackageRule packageRule) {
+        //
+        if (packageRule == null) {
+            return;
+        }
+
+        classType.changePackage(packageRule);
+    }
+
+    public void changeMethodUsingClassPackageName(PackageRule packageRule) {
+        //
+        if (packageRule == null) {
+            return;
+        }
+
+        for (MethodModel methodModel : methods) {
+            ClassType returnType = methodModel.getReturnType();
+            if (returnType != null) {
+                returnType.changePackage(packageRule);
+            }
+            for (ClassType parameterType : methodModel.getParameterTypes()) {
+                parameterType.changePackage(packageRule);
+            }
+        }
+    }
+
     public MethodModel findMethodByName(String methodName) {
         if (methods == null || methods.isEmpty()) {
             return null;
@@ -46,6 +74,11 @@ public class JavaModel {
     public String getPackageName() {
         //
         return classType.getPackageName();
+    }
+
+    public void setPackageName(String packageName) {
+        //
+        classType.setPackageName(packageName);
     }
 
     public void addMethodModel(MethodModel methodModel) {

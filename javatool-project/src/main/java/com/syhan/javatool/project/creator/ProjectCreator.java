@@ -5,6 +5,8 @@ import com.syhan.javatool.share.config.ConfigurationType;
 import com.syhan.javatool.share.config.ProjectConfiguration;
 import com.syhan.javatool.share.util.file.FolderUtil;
 
+import java.io.IOException;
+
 public class ProjectCreator {
     //
     private String targetHomePath;
@@ -17,10 +19,15 @@ public class ProjectCreator {
     public void create(ProjectModel model) {
         //
         ProjectConfiguration configuration = new ProjectConfiguration(ConfigurationType.Target, targetHomePath, model.getName());
+
         // make project home
         makeProjectHome(configuration);
+
         // make source folder
-        makeSourceFolder(configuration);
+        if (!model.isPom()) {
+            makeSourceFolder(configuration);
+        }
+
         // make pom
         makePom(model, configuration);
     }
@@ -41,6 +48,10 @@ public class ProjectCreator {
     private void makePom(ProjectModel model, ProjectConfiguration configuration) {
         //
         PomCreator pomCreator = new PomCreator(configuration);
-        pomCreator.create(model);
+        try {
+            pomCreator.create(model);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

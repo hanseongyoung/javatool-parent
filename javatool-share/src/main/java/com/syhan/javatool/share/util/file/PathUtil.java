@@ -47,6 +47,7 @@ public abstract class PathUtil {
 
         return sb.toString();
     }
+
     // com.foo.bar --> com.foo.spec
     public static String changePackage(String packageName, int skipPackageCount, String[] addPackages) {
         //

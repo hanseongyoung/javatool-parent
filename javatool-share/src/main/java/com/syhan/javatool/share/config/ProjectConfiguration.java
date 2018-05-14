@@ -52,6 +52,12 @@ public class ProjectConfiguration {
         return physicalResourcesPath + PATH_DELIM + sourceFilePath;
     }
 
+    // pom.xml -> C://Users/user/Documents/.../SomeProject/pom.xml
+    public String makePhysicalHomeFilePath(String sourceFilePath) {
+        //
+        return projectHomePath + PATH_DELIM + sourceFilePath;
+    }
+
     public ConfigurationType getType() {
         return type;
     }

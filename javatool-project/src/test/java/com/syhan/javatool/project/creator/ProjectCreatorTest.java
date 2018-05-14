@@ -12,8 +12,8 @@ public class ProjectCreatorTest extends BaseFileTest {
         String targetHomePath = super.testDirName;
         ProjectCreator projectCreator = new ProjectCreator(targetHomePath);
 
-        ProjectModel model = new ProjectModel("SampleProject", "com.foo.bar", "1.0-SNAPSHOT");
-        model.setParent(new ProjectModel("ParentProject", "com.foo.bar", "1.0-SNAPSHOT"));
+        ProjectModel model = new ProjectModel("SampleProject", "com.foo.bar", "1.0-SNAPSHOT", "pom");
+        model.setParent(new ProjectModel("ParentProject", "com.foo.bar", "1.0-SNAPSHOT", "pom"));
         projectCreator.create(model);
     }
 }

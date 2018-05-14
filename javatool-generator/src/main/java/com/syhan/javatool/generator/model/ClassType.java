@@ -1,5 +1,7 @@
 package com.syhan.javatool.generator.model;
 
+import com.syhan.javatool.share.rule.PackageRule;
+
 public class ClassType {
     //
     public static final String PRIMITIVE_INT = "INT";
@@ -68,6 +70,14 @@ public class ClassType {
         this.packageName = packageName;
     }
 
+    public void changePackage(PackageRule packageRule) {
+        //
+        if (primitive) {
+            return;
+        }
+        this.packageName = packageRule.changePackage(packageName, name);
+    }
+
     public String getClassName() {
         //
         if (packageName == null) {
@@ -133,5 +143,6 @@ public class ClassType {
         System.out.println(classType.getName());
         System.out.println(classType.getPackageName());
     }
+
 
 }

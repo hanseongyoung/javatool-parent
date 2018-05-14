@@ -9,7 +9,7 @@ public class ProjectCreate {
 
     public static void main(String[] args) throws Exception {
         //
-        ProjectModel model = new ProjectModel("sample-project", "com.sample", "1.0-SNAPSHOT");
+        ProjectModel model = new ProjectModel("sample-project", "com.sample", "1.0-SNAPSHOT", "pom");
         ProjectCreator creator = new ProjectCreator(TARGET_PATH);
         creator.create(model);
     }

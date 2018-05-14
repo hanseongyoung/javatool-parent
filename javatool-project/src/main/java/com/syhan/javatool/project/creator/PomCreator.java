@@ -1,6 +1,7 @@
 package com.syhan.javatool.project.creator;
 
 import com.syhan.javatool.generator.source.XmlSource;
+import com.syhan.javatool.generator.writer.XmlWriter;
 import com.syhan.javatool.project.model.ProjectModel;
 import com.syhan.javatool.share.config.ProjectConfiguration;
 import com.syhan.javatool.share.util.xml.DomUtil;
@@ -9,28 +10,25 @@ import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 public class PomCreator {
     //
     private static final String POM_FILE = "pom.xml";
-    private ProjectConfiguration configuration;
+    private XmlWriter xmlWriter;
 
     public PomCreator(ProjectConfiguration configuration) {
         //
-        this.configuration = configuration;
+        this.xmlWriter = new XmlWriter(configuration);
     }
 
-    public void create(ProjectModel model) {
+    public void create(ProjectModel model) throws IOException {
         //
         Document document = createDocument(model);
-        XmlSource xmlSource = new XmlSource(document);
-        try {
-            xmlSource.write(configuration.getProjectHomePath() + File.separator + POM_FILE);
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        }
+        XmlSource xmlSource = new XmlSource(document, POM_FILE);
+        xmlSource.setResourceFile(false);
+        xmlWriter.write(xmlSource);
     }
 
     private Document createDocument(ProjectModel model) {
@@ -61,16 +59,26 @@ public class PomCreator {
         project.appendChild(DomUtil.createTextElement(document, "modelVersion", "4.0.0"));
 
         // create parent element
-        ProjectModel parentModel = model.getParent();
-        if (parentModel != null) {
+        if (model.hasParent()) {
+            ProjectModel parentModel = model.getParent();
             Element parent = createParentElement(document, parentModel);
             project.appendChild(parent);
         }
 
         project.appendChild(DomUtil.createTextElement(document, "artifactId", model.getName()));
+
+        if (model.getPackaging() != null) {
+            project.appendChild(DomUtil.createTextElement(document, "packaging", model.getPackaging()));
+        }
+
         if (!model.hasParent()) {
             project.appendChild(DomUtil.createTextElement(document, "groupId", model.getGroupId()));
             project.appendChild(DomUtil.createTextElement(document, "version", model.getVersion()));
+        }
+
+        if (model.hasChildren()) {
+            Element modules = createModulesElement(document, model.getChildren());
+            project.appendChild(modules);
         }
 
         return project;
@@ -85,5 +93,14 @@ public class PomCreator {
         parent.appendChild(DomUtil.createTextElement(document, "version", model.getVersion()));
 
         return parent;
+    }
+
+    private Element createModulesElement(Document document, List<ProjectModel> models) {
+        //
+        Element modules = document.createElement("modules");
+        for (ProjectModel model : models) {
+            modules.appendChild(DomUtil.createTextElement(document, "module", model.getName()));
+        }
+        return modules;
     }
 }

@@ -5,8 +5,8 @@ import com.syhan.javatool.generator.reader.JavaReader;
 import com.syhan.javatool.generator.source.JavaSource;
 import com.syhan.javatool.generator.writer.JavaWriter;
 import com.syhan.javatool.share.config.ProjectConfiguration;
+import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.util.file.PathUtil;
-import com.syhan.javatool.share.util.json.JsonUtil;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,49 +16,62 @@ import java.util.List;
 // [Interface]com.foo.bar.spec.SomeService
 // [Class]    com.foo.bar.logic.SomeLogic
 // [DTO]      com.foo.bar.spec.sdo.SomeDTO
-public class JavaInterfaceAbstracter extends ProjectItemConverter {
+public class JavaInterfaceAbstracter {
     //
     private JavaReader javaReader;
-    private JavaWriter javaWriter;
+    private JavaWriter javaWriterForInterface;
+    private JavaWriter javaWriterForLogic;
 
-    public JavaInterfaceAbstracter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetConfiguration) {
+    private PackageRule packageRule;
+
+    public JavaInterfaceAbstracter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetInterfaceConfiguration, ProjectConfiguration targetLogicConfiguration, PackageRule packageRule) {
         //
-        super(sourceConfiguration, targetConfiguration, ProjectItemType.Java);
         this.javaReader = new JavaReader(sourceConfiguration);
-        this.javaWriter = new JavaWriter(targetConfiguration);
+        this.javaWriterForInterface = new JavaWriter(targetInterfaceConfiguration);
+        this.javaWriterForLogic = new JavaWriter(targetLogicConfiguration);
+        this.packageRule = packageRule;
     }
 
-    @Override
     public void convert(String sourceFileName) throws IOException {
         //
         JavaSource source = javaReader.read(sourceFileName);
 
-        // write interface
         JavaModel interfaceModel = createJavaInterfaceModel(source);
-        javaWriter.write(new JavaSource(interfaceModel));
-
-        // write logic
-        JavaSource logicSource = changeToJavaLogic(source, interfaceModel);
-        javaWriter.write(logicSource);
+        interfaceModel.changePackage(packageRule);
 
         // write dto
         List<String> dtoClassNames = interfaceModel.computeMethodUsingClasses();
         for (String dtoClassName : dtoClassNames) {
             String dtoSourceFileName = PathUtil.toSourceFileName(dtoClassName, "java");
             JavaSource dtoSource = javaReader.read(dtoSourceFileName);
-            javaWriter.write(dtoSource);
+
+            dtoSource.changePackage(packageRule);
+            javaWriterForInterface.write(dtoSource);
         }
+
+        // write interface
+        interfaceModel.changeMethodUsingClassPackageName(packageRule);
+        javaWriterForInterface.write(new JavaSource(interfaceModel));
+
+        // write logic
+        JavaSource logicSource = changeToJavaLogic(source, interfaceModel);
+        javaWriterForLogic.write(logicSource);
     }
 
     private JavaSource changeToJavaLogic(JavaSource source, JavaModel interfaceModel) {
         //
-        String packageName = source.getPackageName();
-        String newPackageName = PathUtil.changePackage(packageName, 0, new String[]{"logic"});
-        source.setPackageName(newPackageName);
-        String name = source.getName();
-        String newName = PathUtil.changeName(name, "Service", "Logic");
-        source.setName(newName);
+        // change name
+        source.changeName("Service", "Logic");
+
+        // change package
+        source.changePackage(packageRule);
+
+        // set implements
         source.setImplementedType(interfaceModel.getName(), interfaceModel.getPackageName());
+
+        // change imports
+        source.changeImports(packageRule);
+
         return source;
     }
 
@@ -67,11 +80,7 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
         JavaModel javaModel = source.toModel();
         javaModel.setInterface(true);
 
-        String packageName = javaModel.getPackageName();
-        String newPackageName = PathUtil.changePackage(packageName, 0, new String[]{"spec"});
-        javaModel.getClassType().setPackageName(newPackageName);
-
-        System.out.println(JsonUtil.toJson(javaModel));
         return javaModel;
     }
+
 }
