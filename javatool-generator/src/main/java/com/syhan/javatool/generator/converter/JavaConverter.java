@@ -35,7 +35,8 @@ public class JavaConverter extends ProjectItemConverter {
         String physicalSourceFilePath = sourceConfiguration.makePhysicalJavaSourceFilePath(sourceFilePath);
 
         JavaSource source = readSource(physicalSourceFilePath);
-        source.setPackageName(adjustPackage(source.getPackageName()));
+        source.changePackage(packageRule);
+        source.changeImports(packageRule);
 
         String targetSourceFileName = PathUtil.toSourceFileName(source.getClassName(), "java");
         String physicalTargetFilePath = targetConfiguration.makePhysicalJavaSourceFilePath(targetSourceFileName);

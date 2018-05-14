@@ -72,7 +72,7 @@ public class ClassType {
 
     public void changePackage(PackageRule packageRule) {
         //
-        if (primitive) {
+        if (primitive || packageName == null) {
             return;
         }
         this.packageName = packageRule.changePackage(packageName, name);
