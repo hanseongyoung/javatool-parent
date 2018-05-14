@@ -51,11 +51,7 @@ public class JavaInterfaceAbstracter {
                 .collect(Collectors.toList());
 
         for (String dtoClassName : dtoClassNames) {
-            String dtoSourceFileName = PathUtil.toSourceFileName(dtoClassName, "java");
-            JavaSource dtoSource = javaReader.read(dtoSourceFileName);
-
-            dtoSource.changePackage(packageRule);
-            javaWriterForInterface.write(dtoSource);
+            copyDto(dtoClassName);
         }
 
         // write interface
@@ -65,6 +61,19 @@ public class JavaInterfaceAbstracter {
         // write logic
         JavaSource logicSource = changeToJavaLogic(source, interfaceModel);
         javaWriterForLogic.write(logicSource);
+    }
+
+    private void copyDto(String dtoClassName) {
+        try {
+            String dtoSourceFileName = PathUtil.toSourceFileName(dtoClassName, "java");
+            JavaSource dtoSource = javaReader.read(dtoSourceFileName);
+
+            dtoSource.changePackage(packageRule);
+            javaWriterForInterface.write(dtoSource);
+        } catch (IOException e) {
+            // TODO : using Logger
+            System.err.println("Can't copy dto --> "+dtoClassName + ", " + e.getMessage());
+        }
     }
 
     private JavaSource changeToJavaLogic(JavaSource source, JavaModel interfaceModel) {
