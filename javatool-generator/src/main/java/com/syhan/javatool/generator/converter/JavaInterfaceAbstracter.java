@@ -24,17 +24,17 @@ public class JavaInterfaceAbstracter {
     private JavaWriter javaWriterForLogic;
 
     private PackageRule packageRule;
-    private String sourceBasePackage;
+    private JavaAbstractParam javaAbstractParam;
 
     public JavaInterfaceAbstracter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetInterfaceConfiguration,
                                    ProjectConfiguration targetLogicConfiguration, PackageRule packageRule,
-                                   String sourceBasePackage) {
+                                   JavaAbstractParam javaAbstractParam) {
         //
         this.javaReader = new JavaReader(sourceConfiguration);
         this.javaWriterForInterface = new JavaWriter(targetInterfaceConfiguration);
         this.javaWriterForLogic = new JavaWriter(targetLogicConfiguration);
         this.packageRule = packageRule;
-        this.sourceBasePackage = sourceBasePackage;
+        this.javaAbstractParam = javaAbstractParam;
     }
 
     public void convert(String sourceFileName) throws IOException {
@@ -47,7 +47,7 @@ public class JavaInterfaceAbstracter {
         // write dto
         List<String> dtoClassNames = interfaceModel.computeMethodUsingClasses()
                 .stream()
-                .filter(s -> s.startsWith(sourceBasePackage))
+                .filter(s -> s.startsWith(javaAbstractParam.getSourceBasePackage()))
                 .collect(Collectors.toList());
 
         for (String dtoClassName : dtoClassNames) {
@@ -79,7 +79,7 @@ public class JavaInterfaceAbstracter {
     private JavaSource changeToJavaLogic(JavaSource source, JavaModel interfaceModel) {
         //
         // change name
-        source.changeName("Service", "Logic");
+        source.changeName(javaAbstractParam.getImplNameFrom(), javaAbstractParam.getImplNameTo());
 
         // change package
         source.changePackage(packageRule);

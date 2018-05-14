@@ -1,5 +1,6 @@
 package com.syhan.javatool.project.complex;
 
+import com.syhan.javatool.generator.converter.JavaAbstractParam;
 import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.test.BaseFileTest;
 import org.junit.Test;
@@ -28,6 +29,8 @@ public class ComplexProjectConverterTest extends BaseFileTest {
         parameter.setSourceProjectHomePath(SOURCE_PROJECT_HOME);
         parameter.setTargetWorkspace(super.testDirName);
 
+        JavaAbstractParam javaAbstractParam = new JavaAbstractParam("amis3", "Service", "Logic");
+
         PackageRule javaAbstractPackageRule = PackageRule.newInstance()
                 .add(0, "amis3"     , "kr.amc.amis")
                 .add(2, "oo"        , "order")
@@ -45,7 +48,7 @@ public class ComplexProjectConverterTest extends BaseFileTest {
                 .add(1, "vo"        , 4)
                 .add(4, "vo"        , "entity");
 
-        ComplexProjectConverter converter = new ComplexProjectConverter(parameter, javaAbstractPackageRule, javaConvertPackageRule);
+        ComplexProjectConverter converter = new ComplexProjectConverter(parameter, javaAbstractParam, javaAbstractPackageRule, javaConvertPackageRule);
         converter.convert();
     }
 }

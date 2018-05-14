@@ -1,5 +1,6 @@
 package com.syhan.javatool.generator;
 
+import com.syhan.javatool.generator.converter.JavaAbstractParam;
 import com.syhan.javatool.generator.converter.JavaInterfaceAbstracter;
 import com.syhan.javatool.share.args.OptionParser;
 import com.syhan.javatool.share.config.ConfigurationType;
@@ -13,8 +14,10 @@ public class JavaInterfaceAbstracting {
         //
         ProjectConfiguration sourceConfiguration = new ProjectConfiguration(ConfigurationType.Source, sourceProjectHome);
         ProjectConfiguration targetConfiguration = new ProjectConfiguration(ConfigurationType.Target, targetProjectHome);
+        JavaAbstractParam javaAbstractParam = new JavaAbstractParam(sourceBasePackage, "Service", "Logic");
 
-        JavaInterfaceAbstracter abstracter = new JavaInterfaceAbstracter(sourceConfiguration, targetConfiguration, targetConfiguration, null, sourceBasePackage);
+        JavaInterfaceAbstracter abstracter = new JavaInterfaceAbstracter(sourceConfiguration, targetConfiguration, targetConfiguration,
+                null, javaAbstractParam);
         abstracter.convert(sourceFileName);
     }
 

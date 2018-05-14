@@ -13,12 +13,14 @@ public class ComplexProjectConverter {
     //
     // 소스 프로젝트 홈, 소스 패키지, 프로젝트 명칭 1/2레벨, 대상 폴더
     private ConvertParameter param;
+    private JavaAbstractParam javaAbstractParam;
     private PackageRule javaAbstractPackageRule;
     private PackageRule javaConvertPackageRule;
 
-    public ComplexProjectConverter(ConvertParameter convertParameter, PackageRule javaAbstractPackageRule, PackageRule javaConvertPackageRule) {
+    public ComplexProjectConverter(ConvertParameter convertParameter, JavaAbstractParam javaAbstractParam, PackageRule javaAbstractPackageRule, PackageRule javaConvertPackageRule) {
         //
         this.param = convertParameter;
+        this.javaAbstractParam = javaAbstractParam;
         this.javaAbstractPackageRule = javaAbstractPackageRule;
         this.javaConvertPackageRule = javaConvertPackageRule;
     }
@@ -48,7 +50,7 @@ public class ComplexProjectConverter {
         ProjectConfiguration serviceConfig = model.findBySuffix(PROJECT_SUFFIX_SERVICE).configuration(ConfigurationType.Target);
 
         JavaInterfaceAbstracter abstracter = new JavaInterfaceAbstracter(sourceConfig, stubConfig, skeletonConfig,
-                javaAbstractPackageRule, param.getSourceBasePackage());
+                javaAbstractPackageRule, javaAbstractParam);
         JavaConverter javaConverter = new JavaConverter(sourceConfig, serviceConfig, javaConvertPackageRule);
 
         PackageConverter packageConverter = new PackageConverter(new ProjectItemConverter(sourceConfig, ProjectItemType.Java) {
