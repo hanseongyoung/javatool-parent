@@ -5,7 +5,7 @@ public class ConvertParameter {
     // 소스 프로젝트 홈, 소스 패키지, 프로젝트 명칭 1/2레벨, 대상 폴더
     private String sourceProjectHomePath;
     private String sourcePackage;       // com.foo.bar
-    private String sourceBasePackage;   // com
+    private String sourceDtoPackage;
     private String newProjectName0;
     private String newProjectName1;
     private String newProjectName2;
@@ -28,6 +28,22 @@ public class ConvertParameter {
         this.sourcePackage = sourcePackage;
     }
 
+    public String getSourceDtoPackage() {
+        return sourceDtoPackage;
+    }
+
+    public void setSourceDtoPackage(String sourceDtoPackage) {
+        this.sourceDtoPackage = sourceDtoPackage;
+    }
+
+    public String getNewProjectName0() {
+        return newProjectName0;
+    }
+
+    public void setNewProjectName0(String newProjectName0) {
+        this.newProjectName0 = newProjectName0;
+    }
+
     public String getNewProjectName1() {
         return newProjectName1;
     }
@@ -44,22 +60,6 @@ public class ConvertParameter {
         this.newProjectName2 = newProjectName2;
     }
 
-    public String getTargetWorkspace() {
-        return targetWorkspace;
-    }
-
-    public void setTargetWorkspace(String targetWorkspace) {
-        this.targetWorkspace = targetWorkspace;
-    }
-
-    public String getNewProjectName0() {
-        return newProjectName0;
-    }
-
-    public void setNewProjectName0(String newProjectName0) {
-        this.newProjectName0 = newProjectName0;
-    }
-
     public String getNewBasePackage() {
         return newBasePackage;
     }
@@ -68,11 +68,11 @@ public class ConvertParameter {
         this.newBasePackage = newBasePackage;
     }
 
-    public String getSourceBasePackage() {
-        return sourceBasePackage;
+    public String getTargetWorkspace() {
+        return targetWorkspace;
     }
 
-    public void setSourceBasePackage(String sourceBasePackage) {
-        this.sourceBasePackage = sourceBasePackage;
+    public void setTargetWorkspace(String targetWorkspace) {
+        this.targetWorkspace = targetWorkspace;
     }
 }

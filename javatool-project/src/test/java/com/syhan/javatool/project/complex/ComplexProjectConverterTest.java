@@ -25,11 +25,14 @@ public class ComplexProjectConverterTest extends BaseFileTest {
         parameter.setNewProjectName2("order");
         parameter.setNewBasePackage("kr.amc.amis");
         parameter.setSourcePackage("amis3.mc.oo");
-        parameter.setSourceBasePackage("amis3");
+        parameter.setSourceDtoPackage("amis3.vo.mc.oo");
         parameter.setSourceProjectHomePath(SOURCE_PROJECT_HOME);
         parameter.setTargetWorkspace(super.testDirName);
 
-        JavaAbstractParam javaAbstractParam = new JavaAbstractParam("amis3", "Service", "Logic");
+        JavaAbstractParam javaAbstractParam = new JavaAbstractParam();
+        javaAbstractParam.setSourceDtoPackage("amis3.vo.mc.oo");
+        javaAbstractParam.setImplNameFrom("Service");
+        javaAbstractParam.setImplNameTo("Logic");
 
         PackageRule javaAbstractPackageRule = PackageRule.newInstance()
                 .add(0, "amis3"     , "kr.amc.amis")

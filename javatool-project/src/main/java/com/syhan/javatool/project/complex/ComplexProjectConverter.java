@@ -30,6 +30,7 @@ public class ComplexProjectConverter {
         // 2. 2레벨 프로젝트 구조를 만든다.(2레벨 parent, stub, skeleton, service, share)
         // 3. extService 존재하는 경우 인터페이스 분리하여 stup, skeleton 나누어 담는다.
         //    - interface -> stub:spec
+        //    - vo, to -> stup:spec.sdo (단 sourcePackage 범위를 벗어나는 경우 이동하지 않는다.)
         //    - logic class -> skeleton:logic
         // 4. 패키지 내의 내용물을 이동한다.
         //    - controller -> rest
@@ -52,8 +53,10 @@ public class ComplexProjectConverter {
         JavaInterfaceAbstracter abstracter = new JavaInterfaceAbstracter(sourceConfig, stubConfig, skeletonConfig,
                 javaAbstractPackageRule, javaAbstractParam);
         JavaConverter javaConverter = new JavaConverter(sourceConfig, serviceConfig, javaConvertPackageRule);
+        DtoManagingJavaConverter dtoConverter = new DtoManagingJavaConverter(javaConverter);
 
-        PackageConverter packageConverter = new PackageConverter(new ProjectItemConverter(sourceConfig, ProjectItemType.Java) {
+        // convert sourcePackage
+        new PackageConverter(new ProjectItemConverter(sourceConfig, ProjectItemType.Java) {
             @Override
             public void convert(String sourceFileName) throws IOException {
                 //
@@ -63,9 +66,16 @@ public class ComplexProjectConverter {
 
                 System.err.println("Couldn't convert --> " + sourceFileName);
             }
-        });
+        }).convert(param.getSourcePackage());
 
-        packageConverter.convert(param.getSourcePackage());
+        // convert sourceDtoPackage
+        new PackageConverter(new ProjectItemConverter(sourceConfig, ProjectItemType.Java) {
+            @Override
+            public void convert(String sourceFileName) throws IOException {
+                //
+                dtoConverter.convert(sourceFileName);
+            }
+        }).convert(param.getSourceDtoPackage());
     }
 
     private boolean convertExtService(String sourceFileName, JavaInterfaceAbstracter abstracter) throws IOException {

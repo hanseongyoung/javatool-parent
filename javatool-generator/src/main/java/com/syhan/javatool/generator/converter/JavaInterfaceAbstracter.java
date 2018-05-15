@@ -26,6 +26,8 @@ public class JavaInterfaceAbstracter {
     private PackageRule packageRule;
     private JavaAbstractParam javaAbstractParam;
 
+    private DtoManagingJavaConverter dtoConverter;
+
     public JavaInterfaceAbstracter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetInterfaceConfiguration,
                                    ProjectConfiguration targetLogicConfiguration, PackageRule packageRule,
                                    JavaAbstractParam javaAbstractParam) {
@@ -35,6 +37,7 @@ public class JavaInterfaceAbstracter {
         this.javaWriterForLogic = new JavaWriter(targetLogicConfiguration);
         this.packageRule = packageRule;
         this.javaAbstractParam = javaAbstractParam;
+        this.dtoConverter = new DtoManagingJavaConverter(new JavaConverter(sourceConfiguration, targetInterfaceConfiguration, packageRule));
     }
 
     public void convert(String sourceFileName) throws IOException {
@@ -47,11 +50,12 @@ public class JavaInterfaceAbstracter {
         // write dto
         List<String> dtoClassNames = interfaceModel.computeMethodUsingClasses()
                 .stream()
-                .filter(s -> s.startsWith(javaAbstractParam.getSourceBasePackage()))
+                .filter(s -> s.startsWith(javaAbstractParam.getSourceDtoPackage()))
                 .collect(Collectors.toList());
 
         for (String dtoClassName : dtoClassNames) {
-            copyDto(dtoClassName);
+            String dtoSourceFileName = PathUtil.toSourceFileName(dtoClassName, "java");
+            dtoConverter.convert(dtoSourceFileName);
         }
 
         // write interface
@@ -61,19 +65,6 @@ public class JavaInterfaceAbstracter {
         // write logic
         JavaSource logicSource = changeToJavaLogic(source, interfaceModel);
         javaWriterForLogic.write(logicSource);
-    }
-
-    private void copyDto(String dtoClassName) {
-        try {
-            String dtoSourceFileName = PathUtil.toSourceFileName(dtoClassName, "java");
-            JavaSource dtoSource = javaReader.read(dtoSourceFileName);
-
-            dtoSource.changePackage(packageRule);
-            javaWriterForInterface.write(dtoSource);
-        } catch (IOException e) {
-            // TODO : using Logger
-            System.err.println("Can't copy dto --> "+dtoClassName + ", " + e.getMessage());
-        }
     }
 
     private JavaSource changeToJavaLogic(JavaSource source, JavaModel interfaceModel) {

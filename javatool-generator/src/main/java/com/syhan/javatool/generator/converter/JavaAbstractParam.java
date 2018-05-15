@@ -2,23 +2,16 @@ package com.syhan.javatool.generator.converter;
 
 public class JavaAbstractParam {
     //
-    private String sourceBasePackage;
+    private String sourceDtoPackage;
     private String implNameFrom;
     private String implNameTo;
 
-    public JavaAbstractParam(String sourceBasePackage, String implNameFrom, String implNameTo) {
-        //
-        this.sourceBasePackage = sourceBasePackage;
-        this.implNameFrom = implNameFrom;
-        this.implNameTo = implNameTo;
+    public String getSourceDtoPackage() {
+        return sourceDtoPackage;
     }
 
-    public String getSourceBasePackage() {
-        return sourceBasePackage;
-    }
-
-    public void setSourceBasePackage(String sourceBasePackage) {
-        this.sourceBasePackage = sourceBasePackage;
+    public void setSourceDtoPackage(String sourceDtoPackage) {
+        this.sourceDtoPackage = sourceDtoPackage;
     }
 
     public String getImplNameFrom() {
