@@ -135,14 +135,10 @@ public class JavaSource {
             return;
         }
 
-        for (ImportDeclaration importD : compilationUnit.getImports()) {
-            String newName = packageRule.changePackage(importD.getNameAsString());
-            importD.setName(newName);
+        for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
+            String newName = packageRule.changePackage(importDeclaration.getNameAsString());
+            importDeclaration.setName(newName);
         }
-    }
-
-    public CompilationUnit getCompilationUnit() {
-        return compilationUnit;
     }
 
     public void write(String physicalTargetFilePath) throws IOException {

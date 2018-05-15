@@ -1,11 +1,34 @@
 package com.syhan.javatool.share.util;
 
+import com.syhan.javatool.share.data.Pair;
 import com.syhan.javatool.share.rule.PackageRule;
+import com.syhan.javatool.share.util.file.PathUtil;
 import com.syhan.javatool.share.util.json.JsonUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class PackageRuleTest {
+    //
+
+    @Test
+    public void testAddPrefixAndPostfix() {
+        //
+        // mc.oo.od.Sample -> kr.amc.amis.mc.order.od.store.mapper.Sample
+
+        String namespace = "mc.oo.od.Sample";
+        Pair<String, String> pair = PathUtil.devideClassName(namespace);
+        System.out.println(JsonUtil.toJson(pair));
+
+        String packageName = pair.x;
+        String name = pair.y;
+        PackageRule namespaceRule = PackageRule.newInstance()
+                .setPrefix("kr.amc.amis")
+                .add(1, "oo", "order")
+                .setPostfix("store.mapper");
+
+        String newPackageName = namespaceRule.changePackage(packageName, name);
+        Assert.assertEquals("kr.amc.amis.mc.order.od.store.mapper.Sample", newPackageName + "." + name);
+    }
 
     @Test
     public void testSkipRule() {

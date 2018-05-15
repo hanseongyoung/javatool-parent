@@ -6,6 +6,11 @@ public class ConvertParameter {
     private String sourceProjectHomePath;
     private String sourcePackage;       // com.foo.bar
     private String sourceDtoPackage;
+
+    private String sourceSqlMapProjectHomePath;
+    private String sourceSqlMapResourceFolder;  // sqlmap/query
+    private String sourceSqlMapPackage;         // mc.oo
+
     private String newProjectName0;
     private String newProjectName1;
     private String newProjectName2;
@@ -34,6 +39,30 @@ public class ConvertParameter {
 
     public void setSourceDtoPackage(String sourceDtoPackage) {
         this.sourceDtoPackage = sourceDtoPackage;
+    }
+
+    public String getSourceSqlMapProjectHomePath() {
+        return sourceSqlMapProjectHomePath;
+    }
+
+    public void setSourceSqlMapProjectHomePath(String sourceSqlMapProjectHomePath) {
+        this.sourceSqlMapProjectHomePath = sourceSqlMapProjectHomePath;
+    }
+
+    public String getSourceSqlMapResourceFolder() {
+        return sourceSqlMapResourceFolder;
+    }
+
+    public void setSourceSqlMapResourceFolder(String sourceSqlMapResourceFolder) {
+        this.sourceSqlMapResourceFolder = sourceSqlMapResourceFolder;
+    }
+
+    public String getSourceSqlMapPackage() {
+        return sourceSqlMapPackage;
+    }
+
+    public void setSourceSqlMapPackage(String sourceSqlMapPackage) {
+        this.sourceSqlMapPackage = sourceSqlMapPackage;
     }
 
     public String getNewProjectName0() {

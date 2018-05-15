@@ -9,39 +9,65 @@ import com.syhan.javatool.generator.reader.XmlReader;
 import com.syhan.javatool.generator.source.JavaSource;
 import com.syhan.javatool.generator.source.XmlSource;
 import com.syhan.javatool.generator.writer.JavaWriter;
+import com.syhan.javatool.generator.writer.XmlWriter;
 import com.syhan.javatool.share.config.ProjectConfiguration;
+import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.util.file.PathUtil;
 import com.syhan.javatool.share.util.string.StringUtil;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class MyBatisMapperCreator extends ProjectItemConverter {
     //
     private XmlReader xmlReader;
-    private JavaReader javaReader;
+    private XmlWriter xmlWriter;
+    private JavaReader daoReader;
     private JavaWriter javaWriter;
 
-    public MyBatisMapperCreator(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetConfiguration) {
+    private PackageRule namespaceRule;
+    private PackageRule javaSourceRule;
+
+    public MyBatisMapperCreator(ProjectConfiguration sourceConfiguration, ProjectConfiguration daoSourceConfiguration,
+                                ProjectConfiguration targetConfiguration) {
+        //
+        this(sourceConfiguration, daoSourceConfiguration, targetConfiguration, null, null);
+    }
+
+    public MyBatisMapperCreator(ProjectConfiguration sourceConfiguration, ProjectConfiguration daoSourceConfiguration,
+                                ProjectConfiguration targetConfiguration, PackageRule namespaceRule, PackageRule javaSourceRule) {
         //
         super(sourceConfiguration, targetConfiguration, ProjectItemType.MyBatisMapper);
         this.xmlReader = new XmlReader(sourceConfiguration);
-        this.javaReader = new JavaReader(sourceConfiguration);
+        this.daoReader = new JavaReader(daoSourceConfiguration);
         this.javaWriter = new JavaWriter(targetConfiguration);
+        this.namespaceRule = namespaceRule;
+        this.javaSourceRule = javaSourceRule;
+
+        // If source and target is different xml would copied.
+        if (!sourceConfiguration.getProjectHomePath().equals(targetConfiguration.getProjectHomePath())) {
+            this.xmlWriter = new XmlWriter(targetConfiguration);
+        }
     }
 
     @Override
     public void convert(String sourceFilePath) throws IOException {
         //
+        // SqlMap xml read
         XmlSource xmlSource = xmlReader.read(sourceFilePath);
-        JavaModel daoModel = findDaoModel(sourceFilePath);
+        SqlMapSource sqlMapSource = new SqlMapSource(xmlSource);
 
-        JavaSource javaSource = computeMapperInterfaceSource(xmlSource, daoModel);
+        if (xmlWriter != null) {
+            sqlMapSource.changeNamespace(namespaceRule);
+            sqlMapSource.changeInOutType(javaSourceRule);
+            xmlWriter.write(sqlMapSource.getXmlSource());
+        }
+
+        JavaModel daoModel = findDaoModel(sqlMapSource.getSourceFilePath());
+        JavaSource javaSource = computeMapperInterfaceSource(sqlMapSource, daoModel);
+        javaSource.changePackage(javaSourceRule);
+        javaSource.changeImports(javaSourceRule);
         javaWriter.write(javaSource);
     }
 
@@ -51,14 +77,14 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
 
         // find com/foo/bar/SampleDao.java
         String daoFilePath1 = toDaoFilePath(xmlSourceFilePath, 0);
-        if (javaReader.exists(daoFilePath1)) {
-            return javaReader.read(daoFilePath1).toModel();
+        if (daoReader.exists(daoFilePath1)) {
+            return daoReader.read(daoFilePath1).toModel();
         }
 
         // find com/foo/SampleDao.java
         String daoFilePath2 = toDaoFilePath(xmlSourceFilePath, 1);
-        if (javaReader.exists(daoFilePath2)) {
-            return javaReader.read(daoFilePath2).toModel();
+        if (daoReader.exists(daoFilePath2)) {
+            return daoReader.read(daoFilePath2).toModel();
         }
 
         return null;
@@ -70,22 +96,22 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
         return PathUtil.changePath(xmlSourceFilePath, skipFolderCount, null, "Dao", "java");
     }
 
-    private JavaSource computeMapperInterfaceSource(XmlSource xmlSource, JavaModel daoModel) {
+    private JavaSource computeMapperInterfaceSource(SqlMapSource sqlMapSource, JavaModel daoModel) {
         //
         // XmlSource -> JavaModel
-        JavaModel myBatisMapperJavaModel = createMyBatisMapperJavaModel(xmlSource, daoModel);
+        JavaModel myBatisMapperJavaModel = createMyBatisMapperJavaModel(sqlMapSource, daoModel);
 
         // JavaModel -> JavaSource
         return new JavaSource(myBatisMapperJavaModel);
     }
 
-    private JavaModel createMyBatisMapperJavaModel(XmlSource xmlSource, JavaModel daoModel) {
+    private JavaModel createMyBatisMapperJavaModel(SqlMapSource sqlMapSource, JavaModel daoModel) {
         //
-        String mapperClassName = findMapperNamespace(xmlSource);
+        String mapperClassName = sqlMapSource.getNamespace();
 
         JavaModel javaModel = new JavaModel(mapperClassName, true);
         javaModel.setAnnotation(new AnnotationType("org.apache.ibatis.annotations.Mapper"));
-        List<Element> sqlElements = findSqlElements(xmlSource);
+        List<Element> sqlElements = sqlMapSource.findSqlElements();
         for (Element element : sqlElements) {
             String tagName = element.getTagName();
             String methodName = element.getAttribute("id");
@@ -129,38 +155,4 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
         return null;
     }
 
-    private List<Element> findSqlElements(XmlSource xmlSource) {
-        Document document = xmlSource.getDocument();
-        Element mapper = document.getDocumentElement();
-        String[] sqlTagNames = {"select", "insert", "update", "delete"};
-
-        List<Element> elements = new ArrayList<>();
-        for(String sqlTagName : sqlTagNames) {
-            List<Element> sqlElements = findSqlElementsByTagName(mapper, sqlTagName);
-            elements.addAll(sqlElements);
-        }
-        return elements;
-    }
-
-    private List<Element> findSqlElementsByTagName(Element mapperElement, String sqlTagName) {
-        //
-        NodeList nodeList = mapperElement.getElementsByTagName(sqlTagName);
-
-        List<Element> sqlElements = new ArrayList<>();
-        for (int i = 0; i < nodeList.getLength(); i++) {
-            Node node = nodeList.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                Element element = (Element) node;
-                sqlElements.add(element);
-            }
-        }
-        return sqlElements;
-    }
-
-    private String findMapperNamespace(XmlSource xmlSource) {
-        //
-        Document document = xmlSource.getDocument();
-        Element mapper = document.getDocumentElement();
-        return mapper.getAttribute("namespace");
-    }
 }

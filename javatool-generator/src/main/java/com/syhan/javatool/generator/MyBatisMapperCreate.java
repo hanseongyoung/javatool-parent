@@ -14,7 +14,8 @@ public class MyBatisMapperCreate {
         ProjectConfiguration sourceConfiguration = new ProjectConfiguration(ConfigurationType.Source, projectHome);
         ProjectConfiguration targetConfiguration = new ProjectConfiguration(ConfigurationType.Target, projectHome);
 
-        MyBatisMapperCreator myBatisMapperCreator = new MyBatisMapperCreator(sourceConfiguration, targetConfiguration);
+        MyBatisMapperCreator myBatisMapperCreator = new MyBatisMapperCreator(sourceConfiguration, sourceConfiguration,
+                targetConfiguration);
         myBatisMapperCreator.convert(sourceFile);
     }
 

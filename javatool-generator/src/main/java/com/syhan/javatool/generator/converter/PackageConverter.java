@@ -1,6 +1,7 @@
 package com.syhan.javatool.generator.converter;
 
 import com.syhan.javatool.share.config.ProjectSources;
+import com.syhan.javatool.share.config.SourceFolders;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,8 +43,9 @@ public class PackageConverter {
     private Consumer<Path> pathConsumer() {
         return path -> {
             try {
+                SourceFolders sourceFolders = converter.sourceConfiguration.getSourceFolders();
                 String physicalPathName = path.toString();
-                String sourceFile = ProjectSources.extractSourceFilePath(physicalPathName);
+                String sourceFile = ProjectSources.extractSourceFilePath(physicalPathName, sourceFolders);
 
                 converter.convert(sourceFile);
             } catch (IOException e) {

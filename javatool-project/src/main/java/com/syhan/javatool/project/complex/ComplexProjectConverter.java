@@ -5,9 +5,12 @@ import com.syhan.javatool.project.creator.NestedProjectCreator;
 import com.syhan.javatool.project.model.ProjectModel;
 import com.syhan.javatool.share.config.ConfigurationType;
 import com.syhan.javatool.share.config.ProjectConfiguration;
+import com.syhan.javatool.share.config.SourceFolders;
 import com.syhan.javatool.share.rule.PackageRule;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.regex.Matcher;
 
 public class ComplexProjectConverter {
     //
@@ -16,13 +19,17 @@ public class ComplexProjectConverter {
     private JavaAbstractParam javaAbstractParam;
     private PackageRule javaAbstractPackageRule;
     private PackageRule javaConvertPackageRule;
+    private PackageRule sqlMapNamespaceRule;
 
-    public ComplexProjectConverter(ConvertParameter convertParameter, JavaAbstractParam javaAbstractParam, PackageRule javaAbstractPackageRule, PackageRule javaConvertPackageRule) {
+    public ComplexProjectConverter(ConvertParameter convertParameter, JavaAbstractParam javaAbstractParam,
+                                   PackageRule javaAbstractPackageRule, PackageRule javaConvertPackageRule,
+                                   PackageRule sqlMapNamespaceRule) {
         //
         this.param = convertParameter;
         this.javaAbstractParam = javaAbstractParam;
         this.javaAbstractPackageRule = javaAbstractPackageRule;
         this.javaConvertPackageRule = javaConvertPackageRule;
+        this.sqlMapNamespaceRule = sqlMapNamespaceRule;
     }
 
     public void convert() throws IOException {
@@ -41,6 +48,28 @@ public class ComplexProjectConverter {
         ProjectModel model = createProjectModel();
         createProject(model);
         moveJavaSource(model);
+        moveSqlMap(model);
+    }
+
+    private void moveSqlMap(ProjectModel model) throws IOException {
+        //
+        String srcMainResources = param.getSourceSqlMapResourceFolder().replaceAll("/", Matcher.quoteReplacement(File.separator));
+        SourceFolders sourceFolders = SourceFolders.newSourceFolders(null, srcMainResources);
+
+        ProjectConfiguration sqlMapSourceConfig = new ProjectConfiguration(ConfigurationType.Source, param.getSourceSqlMapProjectHomePath(), sourceFolders);
+        ProjectConfiguration serviceConfig = model.findBySuffix(PROJECT_SUFFIX_SERVICE).configuration(ConfigurationType.Target);
+
+        MyBatisMapperCreator mapperCreator = new MyBatisMapperCreator(sqlMapSourceConfig, serviceConfig, serviceConfig,
+                sqlMapNamespaceRule, javaConvertPackageRule);
+
+        // convert sqlMap
+        new PackageConverter(new ProjectItemConverter(sqlMapSourceConfig, ProjectItemType.MyBatisMapper) {
+            @Override
+            public void convert(String sourceFileName) throws IOException {
+                System.out.println("sourcFile:"+sourceFileName);
+                mapperCreator.convert(sourceFileName);
+            }
+        }).convert(param.getSourceSqlMapPackage());
     }
 
     private void moveJavaSource(ProjectModel model) throws IOException {

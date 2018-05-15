@@ -14,7 +14,8 @@ public class PackageMyBatisMapperCreate {
         ProjectConfiguration sourceConfiguration = new ProjectConfiguration(ConfigurationType.Source, SOURCE_PROJECT_PATH);
         ProjectConfiguration targetConfiguration = new ProjectConfiguration(ConfigurationType.Target, SOURCE_PROJECT_PATH);
 
-        MyBatisMapperCreator myBatisMapperCreator = new MyBatisMapperCreator(sourceConfiguration, targetConfiguration);
+        MyBatisMapperCreator myBatisMapperCreator = new MyBatisMapperCreator(sourceConfiguration, sourceConfiguration,
+                targetConfiguration);
         PackageConverter packageConverter = new PackageConverter(myBatisMapperCreator);
         packageConverter.convert("foo.bar");
     }

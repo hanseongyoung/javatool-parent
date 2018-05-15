@@ -1,6 +1,7 @@
 package com.syhan.javatool.generator.source;
 
 import com.syhan.javatool.share.util.xml.DomUtil;
+import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -19,13 +20,14 @@ public class XmlSource {
     private String sourceFilePath;
     private boolean resourceFile;
 
-    public XmlSource(String physicalSourceFile) throws ParserConfigurationException, IOException, SAXException {
+    public XmlSource(String physicalSourceFile, String sourceFilePath) throws ParserConfigurationException, IOException, SAXException {
         //
         File file = new File(physicalSourceFile);
         DocumentBuilder builder = DomUtil.newBuilder();
         this.document = builder.parse(file);
         this.document.getDocumentElement().normalize();
         this.resourceFile = true;
+        this.sourceFilePath = sourceFilePath;
     }
 
     public XmlSource(Document document, String sourceFilePath) {
@@ -49,8 +51,9 @@ public class XmlSource {
 
     public void write(String physicalTargetFilePath) throws TransformerException {
         //
-        Transformer transformer = DomUtil.newTransformer();
+        createParentDirectory(physicalTargetFilePath);
 
+        Transformer transformer = DomUtil.newTransformer();
         DOMSource source = new DOMSource(this.document);
         // File write
         StreamResult result = new StreamResult(new File(physicalTargetFilePath));
@@ -62,8 +65,22 @@ public class XmlSource {
         //transformer.transform(source, consoleResult);
     }
 
+    private void createParentDirectory(String physicalTargetFilePath) {
+        //
+        try {
+            FileUtils.forceMkdirParent(new File(physicalTargetFilePath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public String getSourceFilePath() {
         //
         return sourceFilePath;
+    }
+
+    public void setSourceFilePath(String sourceFilePath) {
+        //
+        this.sourceFilePath = sourceFilePath;
     }
 }

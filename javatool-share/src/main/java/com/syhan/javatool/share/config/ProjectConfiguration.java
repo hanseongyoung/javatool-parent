@@ -8,6 +8,7 @@ public class ProjectConfiguration {
 
     private final ConfigurationType type;
     private final String projectHomePath;
+    private final SourceFolders sourceFolders;
 
     private final String physicalJavaPath;
     private final String physicalResourcesPath;
@@ -32,12 +33,18 @@ public class ProjectConfiguration {
 
     public ProjectConfiguration(ConfigurationType type, String projectHomePath) {
         //
+        this(type, projectHomePath, ProjectSources.SOURCE_FOLDERS);
+    }
+
+    public ProjectConfiguration(ConfigurationType type, String projectHomePath, SourceFolders sourceFolders) {
+        //
         this.type = type;
         this.projectHomePath = projectHomePath;
-        this.physicalJavaPath = projectHomePath + PATH_DELIM + ProjectSources.SRC_MAIN_JAVA;
-        this.physicalResourcesPath = projectHomePath + PATH_DELIM + ProjectSources.SRC_MAIN_RESOURCES;
-        this.physicalTestPath = projectHomePath + PATH_DELIM + ProjectSources.SRC_TEST_JAVA;
-        this.physicalTestResourcesPath = projectHomePath + PATH_DELIM + ProjectSources.SRC_TEST_RESOURCES;
+        this.sourceFolders = sourceFolders;
+        this.physicalJavaPath = projectHomePath + PATH_DELIM + sourceFolders.SRC_MAIN_JAVA;
+        this.physicalResourcesPath = projectHomePath + PATH_DELIM + sourceFolders.SRC_MAIN_RESOURCES;
+        this.physicalTestPath = projectHomePath + PATH_DELIM + sourceFolders.SRC_TEST_JAVA;
+        this.physicalTestResourcesPath = projectHomePath + PATH_DELIM + sourceFolders.SRC_TEST_RESOURCES;
     }
 
     // com/foo/bar/SampleService.java -> C://Users/user/Documents/.../src/main/java/com/foo/bar/SampleService.java
@@ -80,5 +87,9 @@ public class ProjectConfiguration {
 
     public String getPhysicalTestResourcesPath() {
         return physicalTestResourcesPath;
+    }
+
+    public SourceFolders getSourceFolders() {
+        return sourceFolders;
     }
 }

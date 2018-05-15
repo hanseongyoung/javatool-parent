@@ -3,6 +3,7 @@ package com.syhan.javatool.analyzer.analyzer;
 import com.syhan.javatool.analyzer.store.JavaDependencyStore;
 import com.syhan.javatool.share.config.ProjectConfiguration;
 import com.syhan.javatool.share.config.ProjectSources;
+import com.syhan.javatool.share.config.SourceFolders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,8 +43,9 @@ public class PackageAnalyzer implements Analyzer {
     private Consumer<Path> javaAnalyze() {
         return path -> {
             try {
+                SourceFolders sourceFolders = configuration.getSourceFolders();
                 String physicalPathName = path.toString();
-                String sourceFile = ProjectSources.extractSourceFilePath(physicalPathName);
+                String sourceFile = ProjectSources.extractSourceFilePath(physicalPathName, sourceFolders);
 
                 new JavaAnalyzer(configuration, store).analyze(sourceFile);
             } catch (IOException e) {

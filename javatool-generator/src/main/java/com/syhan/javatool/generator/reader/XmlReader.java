@@ -21,7 +21,7 @@ public class XmlReader implements Reader<XmlSource> {
         //
         String physicalSourceFilePath = configuration.makePhysicalResourceFilePath(sourceFilePath);
         try {
-            return new XmlSource(physicalSourceFilePath);
+            return new XmlSource(physicalSourceFilePath, sourceFilePath);
         } catch (ParserConfigurationException e) {
             throw new RuntimeException(e);
         } catch (SAXException e) {

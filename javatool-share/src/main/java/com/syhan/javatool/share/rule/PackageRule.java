@@ -19,6 +19,8 @@ import java.util.List;
 //  - 4, vo         -> skip 1, ext.spec.sdo
 public class PackageRule {
     //
+    private String prefix;
+    private String postfix;
     private List<Statement> statements;
     private List<ClassNameStatement> classNameStatements;
 
@@ -85,20 +87,45 @@ public class PackageRule {
         return set(fromIndex, fromPackage, toPackage, 0);
     }
 
-    public String changePackage(String packageName, String className) {
+    public PackageRule setPrefix(String prefix) {
         //
-        String changed = changePackage(packageName);
+        this.prefix = prefix;
+        return this;
+    }
+
+    public PackageRule setPostfix(String postfix) {
+        //
+        this.postfix = postfix;
+        return this;
+    }
+
+    public String changePackage(String packageName, String classShortName) {
+        //
+        String changed = changePackageWithRule(packageName);
 
         for (ClassNameStatement statement : classNameStatements) {
-            if (className.endsWith(statement.fromClassNamePostFix)) {
+            if (classShortName.endsWith(statement.fromClassNamePostFix)) {
                 return changed + "." + statement.additionalPackage;
             }
         }
 
-        return changed;
+        return processPrefixPostfix(changed);
     }
 
     public String changePackage(String packageName) {
+        //
+        String changed = changePackageWithRule(packageName);
+        return processPrefixPostfix(changed);
+    }
+
+    private String processPrefixPostfix(String packageName) {
+        //
+        return (prefix != null ? prefix + "." : "")
+                + packageName
+                + (postfix != null ? "." + postfix : "");
+    }
+
+    private String changePackageWithRule(String packageName) {
         //
         String[] packageFrags = packageName.split("\\.");
         int length = packageFrags.length;

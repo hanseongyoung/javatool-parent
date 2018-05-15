@@ -1,10 +1,30 @@
 package com.syhan.javatool.share.util.file;
 
 import com.syhan.javatool.share.config.ProjectSources;
+import com.syhan.javatool.share.data.Pair;
 import com.syhan.javatool.share.util.string.StringUtil;
 
 public abstract class PathUtil {
     //
+    // mc.oo.od.Sample -> mc.oo.od, Sample
+    public static Pair<String, String> devideClassName(String className) {
+        //
+        String[] packageFrags = className.split("\\.");
+        int length = packageFrags.length;
+
+        StringBuffer sb = new StringBuffer();
+
+        for (int i = 0; i < length - 1; i++) {
+            sb.append(packageFrags[i]);
+            if (i < length - 2) {
+                sb.append(".");
+            }
+        }
+
+        return new Pair<>(sb.toString(), packageFrags[length - 1]);
+    }
+
+
     // com.foo.bar.SampleDto -> com/foo/bar/SampleDto.java
     public static String toSourceFileName(String className, String extension) {
         //
@@ -12,7 +32,6 @@ public abstract class PathUtil {
         int length = packageFrags.length;
 
         StringBuffer sb = new StringBuffer();
-
 
         for (int i = 0; i < length; i++) {
             sb.append(packageFrags[i]);

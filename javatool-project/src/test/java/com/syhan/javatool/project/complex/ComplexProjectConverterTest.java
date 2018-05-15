@@ -8,6 +8,7 @@ import org.junit.Test;
 public class ComplexProjectConverterTest extends BaseFileTest {
     //
     private static final String SOURCE_PROJECT_HOME = "../source-project2";
+    private static final String RESOURCE_PROJECT_HOME = "../resource-project2";
 
     // change package rule
     // amis3.mc.oo.od.controller -> kr.amc.amis.mc.order.od.rest
@@ -24,9 +25,15 @@ public class ComplexProjectConverterTest extends BaseFileTest {
         parameter.setNewProjectName1("mediclinic");
         parameter.setNewProjectName2("order");
         parameter.setNewBasePackage("kr.amc.amis");
+
         parameter.setSourcePackage("amis3.mc.oo");
         parameter.setSourceDtoPackage("amis3.vo.mc.oo");
         parameter.setSourceProjectHomePath(SOURCE_PROJECT_HOME);
+
+        parameter.setSourceSqlMapProjectHomePath(RESOURCE_PROJECT_HOME);
+        parameter.setSourceSqlMapResourceFolder("sqlmap/query");
+        parameter.setSourceSqlMapPackage("mc.oo");
+
         parameter.setTargetWorkspace(super.testDirName);
 
         JavaAbstractParam javaAbstractParam = new JavaAbstractParam();
@@ -51,7 +58,13 @@ public class ComplexProjectConverterTest extends BaseFileTest {
                 .add(1, "vo"        , 4)
                 .add(4, "vo"        , "entity");
 
-        ComplexProjectConverter converter = new ComplexProjectConverter(parameter, javaAbstractParam, javaAbstractPackageRule, javaConvertPackageRule);
+        PackageRule namespaceRule = PackageRule.newInstance()
+                .setPrefix("kr.amc.amis")
+                .add(1, "oo", "order")
+                .setPostfix("store.mapper");
+
+        ComplexProjectConverter converter = new ComplexProjectConverter(parameter, javaAbstractParam,
+                javaAbstractPackageRule, javaConvertPackageRule, namespaceRule);
         converter.convert();
     }
 }
