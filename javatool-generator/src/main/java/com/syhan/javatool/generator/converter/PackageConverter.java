@@ -42,15 +42,18 @@ public class PackageConverter {
 
     private Consumer<Path> pathConsumer() {
         return path -> {
+            String sourceFile = null;
             try {
                 SourceFolders sourceFolders = converter.sourceConfiguration.getSourceFolders();
                 String physicalPathName = path.toString();
-                String sourceFile = ProjectSources.extractSourceFilePath(physicalPathName, sourceFolders);
+                sourceFile = ProjectSources.extractSourceFilePath(physicalPathName, sourceFolders);
 
+                System.out.println("sourcFile:" + sourceFile);
                 converter.convert(sourceFile);
-            } catch (IOException e) {
+
+            } catch (Exception e) {
                 // TODO : 파일 로깅 처리하고 계속 진행함.
-                e.printStackTrace();
+                System.err.println("Couldn't convert --> " + sourceFile + ", " + e.getMessage());
             }
         };
     }

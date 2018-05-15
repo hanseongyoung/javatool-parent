@@ -66,7 +66,6 @@ public class ComplexProjectConverter {
         new PackageConverter(new ProjectItemConverter(sqlMapSourceConfig, ProjectItemType.MyBatisMapper) {
             @Override
             public void convert(String sourceFileName) throws IOException {
-                System.out.println("sourcFile:"+sourceFileName);
                 mapperCreator.convert(sourceFileName);
             }
         }).convert(param.getSourceSqlMapPackage());
@@ -89,7 +88,6 @@ public class ComplexProjectConverter {
             @Override
             public void convert(String sourceFileName) throws IOException {
                 //
-                System.out.println("sourcFile:"+sourceFileName);
                 if (convertExtService(sourceFileName, abstracter)) return;
                 if (convertJava(sourceFileName, javaConverter)) return;
 
