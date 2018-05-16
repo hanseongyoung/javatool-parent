@@ -5,6 +5,7 @@ import com.syhan.javatool.generator.converter.JavaConverter;
 import com.syhan.javatool.share.args.OptionParser;
 import com.syhan.javatool.share.config.ConfigurationType;
 import com.syhan.javatool.share.config.ProjectConfiguration;
+import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 
 import java.io.IOException;
@@ -25,12 +26,13 @@ public class JavaConvert {
 
         // java file convert
         // FIXME : remove hardcode
+        NameRule nameRule = NameRule.newInstance();
         PackageRule packageRule = PackageRule.newInstance()
                 .add(0, "com", "kr.co")
                 .add(2, "bar", "b")
                 .add(3, "controller", "rest")
                 .add(3, "service", "logic");
-        Converter converter = new JavaConverter(sourceConfiguration, targetConfiguration, packageRule);
+        Converter converter = new JavaConverter(sourceConfiguration, targetConfiguration, nameRule, packageRule);
         converter.convert(sourceFileName);
     }
 

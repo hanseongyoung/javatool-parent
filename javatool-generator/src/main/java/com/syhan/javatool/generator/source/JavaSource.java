@@ -10,8 +10,8 @@ import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.syhan.javatool.generator.ast.AstMapper;
 import com.syhan.javatool.generator.model.JavaModel;
+import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
-import com.syhan.javatool.share.util.file.PathUtil;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -110,10 +110,13 @@ public class JavaSource {
         compilationUnit.addImport(packageName + "." + name);
     }
 
-    public void changeName(String skipPostFix, String addPostFix) {
+    public void changeName(NameRule nameRule) {
         //
+        if (nameRule == null) {
+            return;
+        }
         String name = getName();
-        String newName = PathUtil.changeName(name, skipPostFix, addPostFix);
+        String newName = nameRule.changeName(name);
         setName(newName);
     }
 
@@ -129,15 +132,21 @@ public class JavaSource {
         setPackageName(newPackageName);
     }
 
-    public void changeImports(PackageRule packageRule) {
+    public void changeImports(NameRule nameRule, PackageRule packageRule) {
         //
-        if (packageRule == null) {
+        if (nameRule == null && packageRule == null) {
             return;
         }
 
         for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
-            String newName = packageRule.changePackage(importDeclaration.getNameAsString());
-            importDeclaration.setName(newName);
+            String importName = importDeclaration.getNameAsString();
+            if (nameRule != null) {
+                importName = nameRule.changeName(importName);
+            }
+            if (packageRule != null) {
+                importName = packageRule.changePackage(importName);
+            }
+            importDeclaration.setName(importName);
         }
     }
 

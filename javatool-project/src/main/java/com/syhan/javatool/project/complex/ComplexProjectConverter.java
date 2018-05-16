@@ -6,6 +6,7 @@ import com.syhan.javatool.project.model.ProjectModel;
 import com.syhan.javatool.share.config.ConfigurationType;
 import com.syhan.javatool.share.config.ProjectConfiguration;
 import com.syhan.javatool.share.config.SourceFolders;
+import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 
 import java.io.File;
@@ -17,16 +18,19 @@ public class ComplexProjectConverter {
     // 소스 프로젝트 홈, 소스 패키지, 프로젝트 명칭 1/2레벨, 대상 폴더
     private ConvertParameter param;
     private JavaAbstractParam javaAbstractParam;
+    private NameRule javaConvertNameRule;
     private PackageRule javaAbstractPackageRule;
     private PackageRule javaConvertPackageRule;
     private PackageRule sqlMapNamespaceRule;
 
     public ComplexProjectConverter(ConvertParameter convertParameter, JavaAbstractParam javaAbstractParam,
+                                   NameRule javaConvertNameRule,
                                    PackageRule javaAbstractPackageRule, PackageRule javaConvertPackageRule,
                                    PackageRule sqlMapNamespaceRule) {
         //
         this.param = convertParameter;
         this.javaAbstractParam = javaAbstractParam;
+        this.javaConvertNameRule = javaConvertNameRule;
         this.javaAbstractPackageRule = javaAbstractPackageRule;
         this.javaConvertPackageRule = javaConvertPackageRule;
         this.sqlMapNamespaceRule = sqlMapNamespaceRule;
@@ -60,7 +64,7 @@ public class ComplexProjectConverter {
         ProjectConfiguration serviceConfig = model.findBySuffix(PROJECT_SUFFIX_SERVICE).configuration(ConfigurationType.Target);
 
         MyBatisMapperCreator mapperCreator = new MyBatisMapperCreator(sqlMapSourceConfig, serviceConfig, serviceConfig,
-                sqlMapNamespaceRule, javaConvertPackageRule);
+                javaConvertNameRule, sqlMapNamespaceRule, javaConvertPackageRule);
 
         // convert sqlMap
         new PackageConverter(new ProjectItemConverter(sqlMapSourceConfig, ProjectItemType.MyBatisMapper) {
@@ -79,8 +83,8 @@ public class ComplexProjectConverter {
         ProjectConfiguration serviceConfig = model.findBySuffix(PROJECT_SUFFIX_SERVICE).configuration(ConfigurationType.Target);
 
         JavaInterfaceAbstracter abstracter = new JavaInterfaceAbstracter(sourceConfig, stubConfig, skeletonConfig,
-                javaAbstractPackageRule, javaAbstractParam);
-        JavaConverter javaConverter = new JavaConverter(sourceConfig, serviceConfig, javaConvertPackageRule);
+                javaConvertNameRule, javaAbstractPackageRule, javaAbstractParam);
+        JavaConverter javaConverter = new JavaConverter(sourceConfig, serviceConfig, javaConvertNameRule, javaConvertPackageRule);
         DtoManagingJavaConverter dtoConverter = new DtoManagingJavaConverter(javaConverter);
 
         // convert sourcePackage

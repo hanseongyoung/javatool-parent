@@ -1,6 +1,7 @@
 package com.syhan.javatool.project.complex;
 
 import com.syhan.javatool.generator.converter.JavaAbstractParam;
+import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.test.BaseFileTest;
 import org.junit.Test;
@@ -17,6 +18,10 @@ public class ComplexProjectConverterTest extends BaseFileTest {
     //  - 0, amis3      -> kr.amc.amis
     //  - 2, oo         -> order
     //  - 4, controller -> rest
+
+    // change name rule
+    // amis3.vo.sp.ss.ge.SsgedwkmoVO -> kr.amc.amis.sp.speciments.ge.entity.SsgedwkmoDTO
+    //   - postfix:VO   -> postfix:DTO
     @Test
     public void testConvert() throws Exception {
         //
@@ -38,8 +43,6 @@ public class ComplexProjectConverterTest extends BaseFileTest {
 
         JavaAbstractParam javaAbstractParam = new JavaAbstractParam();
         javaAbstractParam.setSourceDtoPackage("amis3.vo.mc.oo");
-        javaAbstractParam.setImplNameFrom("Service");
-        javaAbstractParam.setImplNameTo("Logic");
 
         PackageRule javaAbstractPackageRule = PackageRule.newInstance()
                 .add(0, "amis3"     , "kr.amc.amis")
@@ -58,13 +61,17 @@ public class ComplexProjectConverterTest extends BaseFileTest {
                 .add(1, "vo"        , 4)
                 .add(4, "vo"        , "entity");
 
+        NameRule javaConvertNameRule = NameRule.newInstance()
+                .add("Service", "Logic")
+                .add("VO", "DTO");
+
         PackageRule namespaceRule = PackageRule.newInstance()
                 .setPrefix("kr.amc.amis")
                 .add(1, "oo", "order")
                 .setPostfix("store.mapper");
 
         ComplexProjectConverter converter = new ComplexProjectConverter(parameter, javaAbstractParam,
-                javaAbstractPackageRule, javaConvertPackageRule, namespaceRule);
+                javaConvertNameRule, javaAbstractPackageRule, javaConvertPackageRule, namespaceRule);
         converter.convert();
     }
 }

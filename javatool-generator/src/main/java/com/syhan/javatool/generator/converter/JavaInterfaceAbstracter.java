@@ -5,6 +5,7 @@ import com.syhan.javatool.generator.reader.JavaReader;
 import com.syhan.javatool.generator.source.JavaSource;
 import com.syhan.javatool.generator.writer.JavaWriter;
 import com.syhan.javatool.share.config.ProjectConfiguration;
+import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.util.file.PathUtil;
 
@@ -23,21 +24,24 @@ public class JavaInterfaceAbstracter {
     private JavaWriter javaWriterForInterface;
     private JavaWriter javaWriterForLogic;
 
+    private NameRule nameRule;
     private PackageRule packageRule;
     private JavaAbstractParam javaAbstractParam;
 
     private DtoManagingJavaConverter dtoConverter;
 
     public JavaInterfaceAbstracter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetInterfaceConfiguration,
-                                   ProjectConfiguration targetLogicConfiguration, PackageRule packageRule,
+                                   ProjectConfiguration targetLogicConfiguration, NameRule nameRule, PackageRule packageRule,
                                    JavaAbstractParam javaAbstractParam) {
         //
         this.javaReader = new JavaReader(sourceConfiguration);
         this.javaWriterForInterface = new JavaWriter(targetInterfaceConfiguration);
         this.javaWriterForLogic = new JavaWriter(targetLogicConfiguration);
+
+        this.nameRule = nameRule;
         this.packageRule = packageRule;
         this.javaAbstractParam = javaAbstractParam;
-        this.dtoConverter = new DtoManagingJavaConverter(new JavaConverter(sourceConfiguration, targetInterfaceConfiguration, packageRule));
+        this.dtoConverter = new DtoManagingJavaConverter(new JavaConverter(sourceConfiguration, targetInterfaceConfiguration, nameRule, packageRule));
     }
 
     public void convert(String sourceFileName) throws IOException {
@@ -70,7 +74,7 @@ public class JavaInterfaceAbstracter {
     private JavaSource changeToJavaLogic(JavaSource source, JavaModel interfaceModel) {
         //
         // change name
-        source.changeName(javaAbstractParam.getImplNameFrom(), javaAbstractParam.getImplNameTo());
+        source.changeName(nameRule);
 
         // change package
         source.changePackage(packageRule);
@@ -79,7 +83,7 @@ public class JavaInterfaceAbstracter {
         source.setImplementedType(interfaceModel.getName(), interfaceModel.getPackageName());
 
         // change imports
-        source.changeImports(packageRule);
+        source.changeImports(nameRule, packageRule);
 
         return source;
     }

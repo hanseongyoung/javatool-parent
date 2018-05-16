@@ -5,6 +5,7 @@ import com.syhan.javatool.generator.converter.JavaInterfaceAbstracter;
 import com.syhan.javatool.share.args.OptionParser;
 import com.syhan.javatool.share.config.ConfigurationType;
 import com.syhan.javatool.share.config.ProjectConfiguration;
+import com.syhan.javatool.share.rule.NameRule;
 
 import java.io.IOException;
 
@@ -16,11 +17,12 @@ public class JavaInterfaceAbstracting {
         ProjectConfiguration targetConfiguration = new ProjectConfiguration(ConfigurationType.Target, targetProjectHome);
         JavaAbstractParam javaAbstractParam = new JavaAbstractParam();
         javaAbstractParam.setSourceDtoPackage(sourceDtoPackage);
-        javaAbstractParam.setImplNameFrom("Service");
-        javaAbstractParam.setImplNameTo("Logic");
+
+        NameRule nameRule = NameRule.newInstance()
+                .add("Service", "Logic");
 
         JavaInterfaceAbstracter abstracter = new JavaInterfaceAbstracter(sourceConfiguration, targetConfiguration, targetConfiguration,
-                null, javaAbstractParam);
+                nameRule, null, javaAbstractParam);
         abstracter.convert(sourceFileName);
     }
 

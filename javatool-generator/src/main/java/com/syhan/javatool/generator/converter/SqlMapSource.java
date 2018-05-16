@@ -2,6 +2,7 @@ package com.syhan.javatool.generator.converter;
 
 import com.syhan.javatool.generator.source.XmlSource;
 import com.syhan.javatool.share.data.Pair;
+import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.util.file.PathUtil;
 import org.w3c.dom.Document;
@@ -45,9 +46,9 @@ public class SqlMapSource {
         setNamespace(newPackageName + "." + name);
     }
 
-    public void changeInOutType(PackageRule javaSourceRule) {
+    public void changeInOutType(NameRule javaNameRule, PackageRule javaPackageRule) {
         //
-        if (javaSourceRule == null) {
+        if (javaNameRule == null && javaPackageRule == null) {
             return;
         }
 
@@ -55,16 +56,32 @@ public class SqlMapSource {
         for (Element element : sqlElements) {
             String parameterClassName = element.getAttribute("parameterType");
             if (parameterClassName != null) {
-                String changedParam = javaSourceRule.changePackage(parameterClassName);
+                String changedParam = changeTypeName(parameterClassName, javaNameRule, javaPackageRule);
                 element.setAttribute("parameterType", changedParam);
             }
 
             String returnClassName = element.getAttribute("resultType");
             if (returnClassName != null) {
-                String changedReturn = javaSourceRule.changePackage(returnClassName);
+                String changedReturn = changeTypeName(returnClassName, javaNameRule, javaPackageRule);
                 element.setAttribute("resultType", changedReturn);
             }
         }
+    }
+
+    private String changeTypeName(String typeName, NameRule nameRule, PackageRule packageRule) {
+        //
+        if (typeName == null) {
+            return null;
+        }
+
+        String newTypeName = typeName;
+        if (nameRule != null) {
+            newTypeName = nameRule.changeName(newTypeName);
+        }
+        if (packageRule != null) {
+            newTypeName = packageRule.changePackage(newTypeName);
+        }
+        return newTypeName;
     }
 
     public String getNamespace() {
