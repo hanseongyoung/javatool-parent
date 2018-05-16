@@ -8,6 +8,7 @@ import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 public class JavaConverter extends ProjectItemConverter {
     //
@@ -15,6 +16,8 @@ public class JavaConverter extends ProjectItemConverter {
     private JavaWriter javaWriter;
     private NameRule nameRule;
     private PackageRule packageRule;
+
+    private Consumer<JavaSource> customCodeHandler;
 
     public JavaConverter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetConfiguration) {
         //
@@ -31,6 +34,12 @@ public class JavaConverter extends ProjectItemConverter {
         this.javaWriter = new JavaWriter(targetConfiguration);
     }
 
+    public JavaConverter customCodeHandle(Consumer<JavaSource> customCodeHandler) {
+        //
+        this.customCodeHandler = customCodeHandler;
+        return this;
+    }
+
     @Override
     public void convert(String sourceFilePath) throws IOException {
         // sourceFile : com/foo/bar/SampleService.java
@@ -39,7 +48,13 @@ public class JavaConverter extends ProjectItemConverter {
         source.changePackage(packageRule);
         source.changeName(nameRule);
         source.changeImports(nameRule, packageRule);
+        source.changeMethodUsingClassName(nameRule);
+
+        if (customCodeHandler != null) {
+            customCodeHandler.accept(source);
+        }
 
         javaWriter.write(source);
     }
+
 }

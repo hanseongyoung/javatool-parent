@@ -1,5 +1,6 @@
 package com.syhan.javatool.generator.model;
 
+import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 
 public class ClassType {
@@ -72,10 +73,23 @@ public class ClassType {
 
     public void changePackage(PackageRule packageRule) {
         //
+        if (packageRule == null) {
+            return;
+        }
+
         if (primitive || packageName == null) {
             return;
         }
         this.packageName = packageRule.changePackage(packageName, name);
+    }
+
+    public void changeName(NameRule nameRule) {
+        //
+        if (nameRule == null) {
+            return;
+        }
+
+        this.name = nameRule.changeName(name);
     }
 
     public String getClassName() {

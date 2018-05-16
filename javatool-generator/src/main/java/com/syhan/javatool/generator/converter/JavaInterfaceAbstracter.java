@@ -49,7 +49,6 @@ public class JavaInterfaceAbstracter {
         JavaSource source = javaReader.read(sourceFileName);
 
         JavaModel interfaceModel = createJavaInterfaceModel(source);
-        interfaceModel.changePackage(packageRule);
 
         // write dto
         List<String> dtoClassNames = interfaceModel.computeMethodUsingClasses()
@@ -63,7 +62,8 @@ public class JavaInterfaceAbstracter {
         }
 
         // write interface
-        interfaceModel.changeMethodUsingClassPackageName(packageRule);
+        interfaceModel.changePackage(packageRule);
+        interfaceModel.changeMethodUsingClassPackageName(nameRule, packageRule);
         javaWriterForInterface.write(new JavaSource(interfaceModel));
 
         // write logic
@@ -84,6 +84,9 @@ public class JavaInterfaceAbstracter {
 
         // change imports
         source.changeImports(nameRule, packageRule);
+
+        // change method using types name(return, parameter type)
+        source.changeMethodUsingClassName(nameRule);
 
         return source;
     }

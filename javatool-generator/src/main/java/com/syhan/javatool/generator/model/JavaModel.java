@@ -1,5 +1,6 @@
 package com.syhan.javatool.generator.model;
 
+import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 
 import java.util.ArrayList;
@@ -36,9 +37,9 @@ public class JavaModel {
         classType.changePackage(packageRule);
     }
 
-    public void changeMethodUsingClassPackageName(PackageRule packageRule) {
+    public void changeMethodUsingClassPackageName(NameRule nameRule, PackageRule packageRule) {
         //
-        if (packageRule == null) {
+        if (packageRule == null && nameRule == null) {
             return;
         }
 
@@ -46,9 +47,11 @@ public class JavaModel {
             ClassType returnType = methodModel.getReturnType();
             if (returnType != null) {
                 returnType.changePackage(packageRule);
+                returnType.changeName(nameRule);
             }
             for (ClassType parameterType : methodModel.getParameterTypes()) {
                 parameterType.changePackage(packageRule);
+                parameterType.changeName(nameRule);
             }
         }
     }

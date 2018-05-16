@@ -63,7 +63,9 @@ public class ComplexProjectConverterTest extends BaseFileTest {
 
         NameRule javaConvertNameRule = NameRule.newInstance()
                 .add("Service", "Logic")
-                .add("VO", "DTO");
+                .add("VO", "DTO")
+                .add("TO", "SSS")
+                .addExceptionPattern("springframework");
 
         PackageRule namespaceRule = PackageRule.newInstance()
                 .setPrefix("kr.amc.amis")

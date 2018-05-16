@@ -9,6 +9,7 @@ import java.util.List;
 public class NameRule {
     //
     private List<PostfixStatement> postfixStatements;
+    private List<String> exceptionPatterns;
 
     public static NameRule newInstance() {
         //
@@ -18,6 +19,7 @@ public class NameRule {
     private NameRule() {
         //
         this.postfixStatements = new ArrayList<>();
+        this.exceptionPatterns = new ArrayList<>();
     }
 
     public NameRule add(String fromPostfix, String toPostfix) {
@@ -28,8 +30,17 @@ public class NameRule {
         return this;
     }
 
+    public NameRule addExceptionPattern(String exceptionPattern) {
+        //
+        this.exceptionPatterns.add(exceptionPattern);
+        return this;
+    }
+
     public String changeName(String name) {
         //
+        if (isExceptionPattern(name)) {
+            return name;
+        }
         for (PostfixStatement statement : postfixStatements) {
             if (name.endsWith(statement.fromPostfix)) {
                 int nameLength = name.length();
@@ -38,6 +49,16 @@ public class NameRule {
             }
         }
         return name;
+    }
+
+    private boolean isExceptionPattern(String name) {
+        //
+        for (String exceptionPattern : exceptionPatterns) {
+            if (name.contains(exceptionPattern)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean exist(String fromPostfix) {

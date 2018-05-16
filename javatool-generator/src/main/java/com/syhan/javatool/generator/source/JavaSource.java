@@ -5,9 +5,10 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 import com.syhan.javatool.generator.ast.AstMapper;
 import com.syhan.javatool.generator.model.JavaModel;
 import com.syhan.javatool.share.rule.NameRule;
@@ -18,6 +19,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 
 public class JavaSource {
@@ -110,6 +113,74 @@ public class JavaSource {
         compilationUnit.addImport(packageName + "." + name);
     }
 
+    public void setExtendedType(String name, String packageName) {
+        //
+        ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
+        NodeList<ClassOrInterfaceType> nodeList = new NodeList<>();
+        nodeList.add(JavaParser.parseClassOrInterfaceType(name));
+
+        classType.setExtendedTypes(nodeList);
+
+        compilationUnit.addImport(packageName + "." + name);
+    }
+
+    public void addAnnotation(String annotation, String packageName) {
+        //
+        ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
+        classType.addMarkerAnnotation(annotation);
+
+        compilationUnit.addImport(packageName + "." + annotation);
+    }
+
+    public void removeGetterAndSetter() {
+        //
+        ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
+        for (FieldDeclaration fieldDeclaration : classType.getFields()) {
+            VariableDeclarator variableDeclarator = fieldDeclaration.getVariable(0);
+            String varName = variableDeclarator.getNameAsString();
+            MethodDeclaration getter = findGetter(varName);
+            if (getter != null) {
+                getter.remove();
+            }
+            MethodDeclaration setter = findSetter(varName);
+            if (setter != null) {
+                setter.remove();
+            }
+        }
+    }
+
+    public void removeMethod(String methodName) {
+        //
+        MethodDeclaration method = findMethod(methodName);
+        if (method != null) {
+            method.remove();
+        }
+    }
+
+    private MethodDeclaration findGetter(String varName) {
+        //
+        String getterName = "get" + Character.toUpperCase(varName.charAt(0)) + varName.substring(1);
+        return findMethod(getterName);
+    }
+
+    private MethodDeclaration findSetter(String varName) {
+        //
+        String getterName = "set" + Character.toUpperCase(varName.charAt(0)) + varName.substring(1);
+        return findMethod(getterName);
+    }
+
+    private MethodDeclaration findMethod(String methodName) {
+        //
+        List<MethodDeclaration> methodDeclarations = compilationUnit.getType(0).getMethods();
+
+        for (MethodDeclaration methodDeclaration : methodDeclarations) {
+            if (methodDeclaration.getNameAsString().equals(methodName)) {
+                return methodDeclaration;
+            }
+        }
+        return null;
+    }
+
     public void changeName(NameRule nameRule) {
         //
         if (nameRule == null) {
@@ -147,6 +218,52 @@ public class JavaSource {
                 importName = packageRule.changePackage(importName);
             }
             importDeclaration.setName(importName);
+        }
+    }
+
+    public void changeMethodUsingClassName(NameRule nameRule) {
+        //
+        if (nameRule == null) {
+            return;
+        }
+
+        List<MethodDeclaration> methodDeclarations = compilationUnit.getType(0).getMethods();
+
+        for (MethodDeclaration methodDeclaration : methodDeclarations) {
+            Type returnType = methodDeclaration.getType();
+            changeTypeName(returnType, nameRule);
+
+            for (Parameter parameter : methodDeclaration.getParameters()) {
+                Type parameterType = parameter.getType();
+                changeTypeName(parameterType, nameRule);
+            }
+        }
+    }
+
+    private void changeTypeName(Type type, NameRule nameRule) {
+        //
+        if (nameRule == null) {
+            return;
+        }
+        if (type.isClassOrInterfaceType()) {
+            ClassOrInterfaceType classOrInterfaceType = ((ClassOrInterfaceType) type);
+            String name = classOrInterfaceType.getNameAsString();
+            name = nameRule.changeName(name);
+            classOrInterfaceType.setName(name);
+        }
+
+        // type arguments
+        if (!type.isPrimitiveType() && !type.isVoidType()) {
+            Optional<NodeList<Type>> typeArguments = ((ClassOrInterfaceType) type).getTypeArguments();
+            if (typeArguments.isPresent()) {
+                Type typeArgsType = typeArguments.get().get(0);
+                if (typeArgsType.isClassOrInterfaceType()) {
+                    String typeArgumentName = typeArgsType.asString();
+                    typeArgumentName = nameRule.changeName(typeArgumentName);
+                    ClassOrInterfaceType classOrInterfaceType = ((ClassOrInterfaceType) typeArgsType);
+                    classOrInterfaceType.setName(typeArgumentName);
+                }
+            }
         }
     }
 
