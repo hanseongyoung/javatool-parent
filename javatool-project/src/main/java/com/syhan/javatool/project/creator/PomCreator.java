@@ -2,6 +2,7 @@ package com.syhan.javatool.project.creator;
 
 import com.syhan.javatool.generator.source.XmlSource;
 import com.syhan.javatool.generator.writer.XmlWriter;
+import com.syhan.javatool.project.model.Dependency;
 import com.syhan.javatool.project.model.ProjectModel;
 import com.syhan.javatool.share.config.ProjectConfiguration;
 import com.syhan.javatool.share.util.xml.DomUtil;
@@ -65,6 +66,7 @@ public class PomCreator {
             project.appendChild(parent);
         }
 
+        // project information elements
         project.appendChild(DomUtil.createTextElement(document, "artifactId", model.getName()));
 
         if (model.getPackaging() != null) {
@@ -76,9 +78,34 @@ public class PomCreator {
             project.appendChild(DomUtil.createTextElement(document, "version", model.getVersion()));
         }
 
+        // properties element
+        if (model.isRoot()) {
+            Element properties = createPropertiesElement(document);
+            project.appendChild(properties);
+        }
+
+        // modules element
         if (model.hasChildren()) {
             Element modules = createModulesElement(document, model.getChildren());
             project.appendChild(modules);
+        }
+
+        // dependencies element
+        if (model.hasDependencies()) {
+            Element dependencies = createDependenciesElement(document, model.getDependencies());
+            project.appendChild(dependencies);
+        }
+
+        // dependencyManagement element
+        if (model.isRoot()) {
+            Element dependencyManagement = createDependencyManagement(document);
+            project.appendChild(dependencyManagement);
+        }
+
+        // build element
+        if (model.isRoot()) {
+            Element build = createBuildElement(document);
+            project.appendChild(build);
         }
 
         return project;
@@ -95,6 +122,15 @@ public class PomCreator {
         return parent;
     }
 
+    private Element createPropertiesElement(Document document) {
+        //
+        Element properties = document.createElement("properties");
+        properties.appendChild(DomUtil.createTextElement(document, "spring.boot.version", "2.0.0.RELEASE"));
+        properties.appendChild(DomUtil.createTextElement(document, "spring.cloud.version", "Finchley.M7"));
+        properties.appendChild(DomUtil.createTextElement(document, "spring.cloud.stream.version", "Elmhurst.R3"));
+        return properties;
+    }
+
     private Element createModulesElement(Document document, List<ProjectModel> models) {
         //
         Element modules = document.createElement("modules");
@@ -102,5 +138,69 @@ public class PomCreator {
             modules.appendChild(DomUtil.createTextElement(document, "module", model.getName()));
         }
         return modules;
+    }
+
+    private Element createDependenciesElement(Document document, List<Dependency> dependencyModelList) {
+        //
+        Element dependencies = document.createElement("dependencies");
+        for (Dependency dependency : dependencyModelList) {
+            dependencies.appendChild(createDependencyElement(document, dependency));
+        }
+        return dependencies;
+    }
+
+    private Element createDependencyElement(Document document, Dependency dependencyModel) {
+        //
+        Element dependency = document.createElement("dependency");
+        dependency.appendChild(DomUtil.createTextElement(document, "groupId", dependencyModel.getGroupId()));
+        dependency.appendChild(DomUtil.createTextElement(document, "artifactId", dependencyModel.getName()));
+        if (dependencyModel.getVersion() != null)
+            dependency.appendChild(DomUtil.createTextElement(document, "version", dependencyModel.getVersion()));
+        if (dependencyModel.getType() != null)
+            dependency.appendChild(DomUtil.createTextElement(document, "type", dependencyModel.getType()));
+        if (dependencyModel.getScope() != null)
+            dependency.appendChild(DomUtil.createTextElement(document, "scope", dependencyModel.getScope()));
+
+        return dependency;
+    }
+
+    private Element createDependencyManagement(Document document) {
+        //
+        Element dependencyManagement = document.createElement("dependencyManagement");
+
+        Element dependencies = document.createElement("dependencies");
+        dependencies.appendChild(createDependencyElement(document,
+                new Dependency("org.springframework.boot", "spring-boot-dependencies",
+                        "${spring.boot.version}", "pom", "import")));
+        dependencies.appendChild(createDependencyElement(document,
+                new Dependency("org.springframework.cloud", "spring-cloud-dependencies",
+                        "${spring.cloud.version}", "pom", "import")));
+        dependencies.appendChild(createDependencyElement(document,
+                new Dependency("org.springframework.cloud", "spring-cloud-stream-dependencies",
+                        "${spring.cloud.stream.version}", "pom", "import")));
+        dependencyManagement.appendChild(dependencies);
+
+        return dependencyManagement;
+    }
+
+    private Element createBuildElement(Document document) {
+        //
+        Element build = document.createElement("build");
+
+        Element plugins = document.createElement("plugins");
+        build.appendChild(plugins);
+
+        Element plugin = document.createElement("plugin");
+        plugin.appendChild(DomUtil.createTextElement(document, "artifactId", "maven-compiler-plugin"));
+        plugin.appendChild(DomUtil.createTextElement(document, "version", "3.1"));
+        Element configuration = document.createElement("configuration");
+        configuration.appendChild(DomUtil.createTextElement(document, "source", "1.8"));
+        configuration.appendChild(DomUtil.createTextElement(document, "target", "1.8"));
+        configuration.appendChild(DomUtil.createTextElement(document, "encoding", "UTF-8"));
+        plugin.appendChild(configuration);
+
+        plugins.appendChild(plugin);
+
+        return build;
     }
 }

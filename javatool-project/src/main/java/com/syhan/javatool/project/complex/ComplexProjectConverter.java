@@ -143,8 +143,12 @@ public class ComplexProjectConverter {
         String nameLevel1 = param.getNewProjectName0() + "-" + param.getNewProjectName1();
         String groupId = param.getNewBasePackage();
         String version = "0.0.1-SNAPSHOT";
-        ProjectModel projectModelLevel1 = new ProjectModel(nameLevel1, groupId, version, "pom");
-        projectModelLevel1.setWorkspacePath(param.getTargetWorkspace());
+        ProjectModel projectModelLevel1 = new ProjectModel(nameLevel1, groupId, version, "pom")
+                .setWorkspacePath(param.getTargetWorkspace())
+                .addDependency("junit", "junit")
+                .addDependency("org.slf4j", "slf4j-api")
+                .addDependency("kr.amc.amil", "amil-amcdatafilter", "1.0-SNAPSHOT")
+                .addDependency("kr.amc.amil", "amil-resource", "1.0-SNAPSHOT");
 
         // level2 parent
         String nameLevel2 = param.getNewProjectName1() + "-" + param.getNewProjectName2();
@@ -152,23 +156,33 @@ public class ComplexProjectConverter {
         projectModelLevel1.add(projectModelLevel2);
 
         // level2
-        ProjectModel bootModel = new ProjectModel(nameLevel2 + PROJECT_SUFFIX_BOOT, groupId, version);
+        ProjectModel shareModel = new ProjectModel(nameLevel2 + PROJECT_SUFFIX_SHARE, groupId, version);
+        projectModelLevel2.add(shareModel);
+
+        ProjectModel stubModel = new ProjectModel(nameLevel2 + PROJECT_SUFFIX_STUB, groupId, version)
+                .addDependency(shareModel)
+                .addDependency("org.springframework.cloud", "spring-cloud-starter-openfeign");
+        projectModelLevel2.add(stubModel);
+
+        ProjectModel serviceModel = new ProjectModel(nameLevel2 + PROJECT_SUFFIX_SERVICE, groupId, version)
+                .addDependency(shareModel)
+                .addDependency("org.mybatis.spring.boot", "mybatis-spring-boot-starter", "1.3.1");
+        projectModelLevel2.add(serviceModel);
+
+        ProjectModel skeletonModel = new ProjectModel(nameLevel2 + PROJECT_SUFFIX_SKELETON, groupId, version)
+                .addDependency(stubModel)
+                .addDependency(serviceModel);
+        projectModelLevel2.add(skeletonModel);
+
+        ProjectModel bootModel = new ProjectModel(nameLevel2 + PROJECT_SUFFIX_BOOT, groupId, version)
+                .addDependency(skeletonModel)
+                .addDependency("org.springframework.boot", "spring-boot-starter-web")
+                .addDependency("com.oracle", "ojdbc7", "12.1.0.2")
+                .addDependency("org.bgee.log4jdbc-log4j2", "log4jdbc-log4j2-jdbc4.1", "1.16");
         projectModelLevel2.add(bootModel);
 
         ProjectModel warModel = new ProjectModel(nameLevel2 + PROJECT_SUFFIX_WAR, groupId, version);
         projectModelLevel2.add(warModel);
-
-        ProjectModel stubModel = new ProjectModel(nameLevel2 + PROJECT_SUFFIX_STUB, groupId, version);
-        projectModelLevel2.add(stubModel);
-
-        ProjectModel skeletonModel = new ProjectModel(nameLevel2 + PROJECT_SUFFIX_SKELETON, groupId, version);
-        projectModelLevel2.add(skeletonModel);
-
-        ProjectModel serviceModel = new ProjectModel(nameLevel2 + PROJECT_SUFFIX_SERVICE, groupId, version);
-        projectModelLevel2.add(serviceModel);
-
-        ProjectModel shareModel = new ProjectModel(nameLevel2 + PROJECT_SUFFIX_SHARE, groupId, version);
-        projectModelLevel2.add(shareModel);
 
         return projectModelLevel1;
     }

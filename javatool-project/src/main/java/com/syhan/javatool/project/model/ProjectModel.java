@@ -16,6 +16,7 @@ public class ProjectModel {
 
     private ProjectModel parent;
     private List<ProjectModel> children;
+    private List<Dependency> dependencies;
 
     private String workspacePath;
 
@@ -31,6 +32,7 @@ public class ProjectModel {
         this.version = version;
         this.packaging = packaging;
         this.children = new ArrayList<>();
+        this.dependencies = new ArrayList<>();
     }
 
     public ProjectConfiguration configuration(ConfigurationType configurationType) {
@@ -64,18 +66,53 @@ public class ProjectModel {
         return (parent != null);
     }
 
-    public void add(ProjectModel child) {
+    public boolean isRoot() {
+        //
+        return (parent == null);
+    }
+
+    public ProjectModel add(ProjectModel child) {
         //
         child.setParent(this);
         if (this.workspacePath != null) {
             child.workspacePath = this.workspacePath + File.separator + this.name;
         }
         this.children.add(child);
+        return this;
     }
 
     public boolean hasChildren() {
         //
         return children != null && children.size() > 0;
+    }
+
+    public ProjectModel addDependency(Dependency dependency) {
+        //
+        this.dependencies.add(dependency);
+        return this;
+    }
+
+    public ProjectModel addDependency(ProjectModel dependencyProject) {
+        //
+        this.dependencies.add(new Dependency(dependencyProject.groupId, dependencyProject.name, "${project.version}"));
+        return this;
+    }
+
+    public ProjectModel addDependency(String groupId, String name) {
+        //
+        this.dependencies.add(new Dependency(groupId, name));
+        return this;
+    }
+
+    public ProjectModel addDependency(String groupId, String name, String version) {
+        //
+        this.dependencies.add(new Dependency(groupId, name, version));
+        return this;
+    }
+
+    public boolean hasDependencies() {
+        //
+        return dependencies != null && dependencies.size() > 0;
     }
 
     public List<ProjectModel> getChildren() {
@@ -126,7 +163,12 @@ public class ProjectModel {
         return workspacePath;
     }
 
-    public void setWorkspacePath(String workspacePath) {
+    public ProjectModel setWorkspacePath(String workspacePath) {
         this.workspacePath = workspacePath;
+        return this;
+    }
+
+    public List<Dependency> getDependencies() {
+        return dependencies;
     }
 }
