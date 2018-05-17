@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class PackageConverter {
@@ -27,7 +26,7 @@ public class PackageConverter {
         try (Stream<Path> paths = Files.walk(Paths.get(physicalSourcePath))) {
             paths
                     .filter(p -> p.toString().endsWith("." + converter.getItemExtension()))
-                    .forEach(pathConsumer());
+                    .forEach(this::process);
         }
     }
 
@@ -40,23 +39,22 @@ public class PackageConverter {
         }
     }
 
-    private Consumer<Path> pathConsumer() {
-        return path -> {
-            String sourceFile = null;
-            try {
-                SourceFolders sourceFolders = converter.sourceConfiguration.getSourceFolders();
-                String physicalPathName = path.toString();
-                sourceFile = ProjectSources.extractSourceFilePath(physicalPathName, sourceFolders);
+    private void process(Path path) {
+        //
+        String sourceFile = null;
+        try {
+            SourceFolders sourceFolders = converter.sourceConfiguration.getSourceFolders();
+            String physicalPathName = path.toString();
+            sourceFile = ProjectSources.extractSourceFilePath(physicalPathName, sourceFolders);
 
-                System.out.println("sourc file : " + sourceFile);
-                converter.convert(sourceFile);
+            System.out.println("source file : " + sourceFile);
+            converter.convert(sourceFile);
 
-            } catch (Exception e) {
-                // TODO : 파일 로깅 처리하고 계속 진행함.
-                System.err.println("Couldn't convert --> " + sourceFile + ", " + e.getMessage());
-                e.printStackTrace();
-            }
-        };
+        } catch (Exception e) {
+            // TODO : 파일 로깅 처리하고 계속 진행함.
+            System.err.println("Couldn't convert --> " + sourceFile + ", " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private String convertPackageNameToPath(String packageName) {

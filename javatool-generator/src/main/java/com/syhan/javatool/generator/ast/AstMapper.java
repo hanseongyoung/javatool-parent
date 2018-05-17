@@ -20,6 +20,7 @@ import com.syhan.javatool.generator.model.MethodModel;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public abstract class AstMapper {
     //
@@ -31,7 +32,8 @@ public abstract class AstMapper {
         String packageName = compilationUnit.getPackageDeclaration()
                 .map(PackageDeclaration::getName)
                 .map(Name::asString)
-                .get();
+                .orElseThrow(IllegalArgumentException::new);
+
         boolean isInterface = classType.isInterface();
 
         JavaModel javaModel = new JavaModel(name, packageName, isInterface);
@@ -126,8 +128,11 @@ public abstract class AstMapper {
         ClassType classType = ClassType.newClassType(returnTypeFullName);
 
         // if return type has Generic type (List<SampleDTO>)
+        ifPresentTypeArgument(type, fullNameProvider, typeArgument -> classType.setTypeArgument(typeArgument));
+        /* old code
         ClassType typeArgument = toTypeArgumentIfPresent(type, fullNameProvider);
         classType.setTypeArgument(typeArgument);
+        */
 
         return classType;
     }
@@ -167,6 +172,7 @@ public abstract class AstMapper {
         return returnType;
     }
 
+    // before
     private static ClassType toTypeArgumentIfPresent(Type type, FullNameProvider fullNameProvider) {
         //
         if (type.isPrimitiveType()) {
@@ -180,6 +186,40 @@ public abstract class AstMapper {
         String returnTypeArgumentName = returnTypeArguments.get().get(0).asString();
         String returnTypeArgumentFullName = fullNameProvider.findFullName(returnTypeArgumentName);
         return ClassType.newClassType(returnTypeArgumentFullName);
+    }
+
+    // using map
+    private static ClassType toTypeArgument(Type type, FullNameProvider fullNameProvider) {
+        //
+        if (!type.isClassOrInterfaceType()) {
+            return null;
+        }
+
+        Optional<NodeList<Type>> returnTypeArguments = ((ClassOrInterfaceType) type).getTypeArguments();
+
+        ClassType classType = returnTypeArguments
+                .map(nodeList -> {
+                    String returnTypeArgumentName = nodeList.get(0).asString();
+                    String returnTypeArgumentFullName = fullNameProvider.findFullName(returnTypeArgumentName);
+                    return ClassType.newClassType(returnTypeArgumentFullName);
+                })
+                .orElse(null);
+        return classType;
+    }
+
+    // after
+    private static void ifPresentTypeArgument(Type type, FullNameProvider fullNameProvider, Consumer<ClassType> classTypeConsumer) {
+        //
+        if (!type.isClassOrInterfaceType()) {
+            return;
+        }
+
+        Optional<NodeList<Type>> returnTypeArguments = ((ClassOrInterfaceType)type).getTypeArguments();
+        returnTypeArguments.ifPresent(nodeList -> {
+            String returnTypeArgumentName = nodeList.get(0).asString();
+            String returnTypeArgumentFullName = fullNameProvider.findFullName(returnTypeArgumentName);
+            classTypeConsumer.accept(ClassType.newClassType(returnTypeArgumentFullName));
+        });
     }
 
     public interface FullNameProvider {

@@ -252,18 +252,22 @@ public class JavaSource {
             classOrInterfaceType.setName(name);
         }
 
-        // type arguments
-        if (!type.isPrimitiveType() && !type.isVoidType()) {
+        // change type arguments name
+        if (type.isClassOrInterfaceType()) {
             Optional<NodeList<Type>> typeArguments = ((ClassOrInterfaceType) type).getTypeArguments();
-            if (typeArguments.isPresent()) {
-                Type typeArgsType = typeArguments.get().get(0);
-                if (typeArgsType.isClassOrInterfaceType()) {
-                    String typeArgumentName = typeArgsType.asString();
-                    typeArgumentName = nameRule.changeName(typeArgumentName);
-                    ClassOrInterfaceType classOrInterfaceType = ((ClassOrInterfaceType) typeArgsType);
-                    classOrInterfaceType.setName(typeArgumentName);
-                }
-            }
+            typeArguments.ifPresent(types -> changeTypeArgumentsName(types, nameRule));
+        }
+    }
+
+    private void changeTypeArgumentsName(NodeList<Type> types, NameRule nameRule) {
+        //
+        Type typeArgsType = types.get(0);
+        if (typeArgsType.isClassOrInterfaceType()) {
+            String typeArgumentName = typeArgsType.asString();
+            typeArgumentName = nameRule.changeName(typeArgumentName);
+            ClassOrInterfaceType classOrInterfaceType = ((ClassOrInterfaceType) typeArgsType);
+            System.out.println("change type arguments name -> " + typeArgumentName);
+            classOrInterfaceType.setName(typeArgumentName);
         }
     }
 
