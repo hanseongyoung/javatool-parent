@@ -32,7 +32,7 @@ public class JavaInterfaceAbstracter {
 
     public JavaInterfaceAbstracter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetInterfaceConfiguration,
                                    ProjectConfiguration targetLogicConfiguration, NameRule nameRule, PackageRule packageRule,
-                                   JavaAbstractParam javaAbstractParam) {
+                                   JavaAbstractParam javaAbstractParam, List<String> removeImports) {
         //
         this.javaReader = new JavaReader(sourceConfiguration);
         this.javaWriterForInterface = new JavaWriter(targetInterfaceConfiguration);
@@ -41,7 +41,7 @@ public class JavaInterfaceAbstracter {
         this.nameRule = nameRule;
         this.packageRule = packageRule;
         this.javaAbstractParam = javaAbstractParam;
-        this.dtoConverter = new DtoManagingJavaConverter(new JavaConverter(sourceConfiguration, targetInterfaceConfiguration, nameRule, packageRule));
+        this.dtoConverter = new DtoManagingJavaConverter(new JavaConverter(sourceConfiguration, targetInterfaceConfiguration, nameRule, packageRule, removeImports));
     }
 
     public void convert(String sourceFileName) throws IOException {

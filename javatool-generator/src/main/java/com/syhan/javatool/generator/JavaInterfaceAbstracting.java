@@ -22,7 +22,7 @@ public class JavaInterfaceAbstracting {
                 .add("Service", "Logic");
 
         JavaInterfaceAbstracter abstracter = new JavaInterfaceAbstracter(sourceConfiguration, targetConfiguration, targetConfiguration,
-                nameRule, null, javaAbstractParam);
+                nameRule, null, javaAbstractParam, null);
         abstracter.convert(sourceFileName);
     }
 

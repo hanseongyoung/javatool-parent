@@ -6,6 +6,9 @@ import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.test.BaseFileTest;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ComplexProjectConverterTest extends BaseFileTest {
     //
     private static final String SOURCE_PROJECT_HOME = "../source-project2";
@@ -72,8 +75,11 @@ public class ComplexProjectConverterTest extends BaseFileTest {
                 .add(1, "oo", "order")
                 .setPostfix("store.mapper");
 
+        List<String> removeImports = new ArrayList<>();
+        removeImports.add("com.foo.bar.DefaultVO");
+
         ComplexProjectConverter converter = new ComplexProjectConverter(parameter, javaAbstractParam,
-                javaConvertNameRule, javaAbstractPackageRule, javaConvertPackageRule, namespaceRule);
+                javaConvertNameRule, javaAbstractPackageRule, javaConvertPackageRule, namespaceRule, removeImports);
         converter.convert();
     }
 }

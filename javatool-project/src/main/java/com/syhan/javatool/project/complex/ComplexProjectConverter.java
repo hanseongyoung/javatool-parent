@@ -11,6 +11,7 @@ import com.syhan.javatool.share.rule.PackageRule;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.regex.Matcher;
 
 public class ComplexProjectConverter {
@@ -22,11 +23,12 @@ public class ComplexProjectConverter {
     private PackageRule javaAbstractPackageRule;
     private PackageRule javaConvertPackageRule;
     private PackageRule sqlMapNamespaceRule;
+    private List<String> removeImports;
 
     public ComplexProjectConverter(ConvertParameter convertParameter, JavaAbstractParam javaAbstractParam,
                                    NameRule javaConvertNameRule,
                                    PackageRule javaAbstractPackageRule, PackageRule javaConvertPackageRule,
-                                   PackageRule sqlMapNamespaceRule) {
+                                   PackageRule sqlMapNamespaceRule, List<String> removeImports) {
         //
         this.param = convertParameter;
         this.javaAbstractParam = javaAbstractParam;
@@ -34,6 +36,7 @@ public class ComplexProjectConverter {
         this.javaAbstractPackageRule = javaAbstractPackageRule;
         this.javaConvertPackageRule = javaConvertPackageRule;
         this.sqlMapNamespaceRule = sqlMapNamespaceRule;
+        this.removeImports = removeImports;
     }
 
     public void convert() throws IOException {
@@ -83,8 +86,8 @@ public class ComplexProjectConverter {
         ProjectConfiguration serviceConfig = model.findBySuffix(PROJECT_SUFFIX_SERVICE).configuration(ConfigurationType.Target);
 
         JavaInterfaceAbstracter abstracter = new JavaInterfaceAbstracter(sourceConfig, stubConfig, skeletonConfig,
-                javaConvertNameRule, javaAbstractPackageRule, javaAbstractParam);
-        JavaConverter javaConverter = new JavaConverter(sourceConfig, serviceConfig, javaConvertNameRule, javaConvertPackageRule);
+                javaConvertNameRule, javaAbstractPackageRule, javaAbstractParam, removeImports);
+        JavaConverter javaConverter = new JavaConverter(sourceConfig, serviceConfig, javaConvertNameRule, javaConvertPackageRule, removeImports);
         DtoManagingJavaConverter dtoConverter = new DtoManagingJavaConverter(javaConverter);
 
         // convert sourcePackage

@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -201,6 +202,25 @@ public class JavaSource {
         String name = getName();
         String newPackageName = packageRule.changePackage(packageName, name);
         setPackageName(newPackageName);
+    }
+
+    public void removeImports(List<String> removeImports) {
+        //
+        if (removeImports == null || removeImports.size() <= 0) {
+            return;
+        }
+
+        List<ImportDeclaration> removeList = new ArrayList<>();
+        for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
+            String importName = importDeclaration.getNameAsString();
+            if (removeImports.contains(importName)) {
+                removeList.add(importDeclaration);
+            }
+        }
+
+        for (ImportDeclaration toRemove : removeList) {
+            compilationUnit.getImports().remove(toRemove);
+        }
     }
 
     public void changeImports(NameRule nameRule, PackageRule packageRule) {
