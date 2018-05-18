@@ -1,10 +1,7 @@
 package com.syhan.javatool.generator.ast;
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.NodeList;
-import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
@@ -83,11 +80,13 @@ public abstract class AstMapper {
     public static MethodModel toMethodModel(MethodDeclaration method, FullNameProvider fullNameProvider) {
         //
         String name = method.getNameAsString();
+        AccessSpecifier access = Modifier.getAccessSpecifier(method.getModifiers());
         Type methodType = method.getType();
 
         ClassType returnType = toClassType(methodType, fullNameProvider);
 
         MethodModel methodModel = new MethodModel(name, returnType);
+        methodModel.setAccess(access.asString());
         for(Parameter parameter : method.getParameters()) {
             ClassType parameterType = toClassType(parameter.getType(), fullNameProvider);
             methodModel.addParameterType(parameterType);

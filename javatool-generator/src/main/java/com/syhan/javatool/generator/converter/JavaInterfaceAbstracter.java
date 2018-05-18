@@ -1,6 +1,7 @@
 package com.syhan.javatool.generator.converter;
 
 import com.syhan.javatool.generator.model.JavaModel;
+import com.syhan.javatool.generator.model.MethodModel;
 import com.syhan.javatool.generator.reader.JavaReader;
 import com.syhan.javatool.generator.source.JavaSource;
 import com.syhan.javatool.generator.writer.JavaWriter;
@@ -95,6 +96,12 @@ public class JavaInterfaceAbstracter {
         //
         JavaModel javaModel = source.toModel();
         javaModel.setInterface(true);
+
+        // remove not 'public' access method
+        List<MethodModel> onlyPublic = javaModel.getMethods().stream()
+                .filter(methodModel -> methodModel.isPublic())
+                .collect(Collectors.toList());
+        javaModel.setMethods(onlyPublic);
 
         return javaModel;
     }

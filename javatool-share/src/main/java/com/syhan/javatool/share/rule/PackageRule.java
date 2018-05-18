@@ -294,6 +294,7 @@ public class PackageRule {
         }
     }
 
+    @SuppressWarnings("unused")
     private static class Statement {
         //
         int fromIndex;

@@ -6,6 +6,7 @@ import java.util.List;
 public class MethodModel {
     //
     private String name;
+    private String access;
     private ClassType returnType;
     private List<ClassType> parameterTypes;
 
@@ -31,6 +32,11 @@ public class MethodModel {
         return returnType.isPrimitive();
     }
 
+    public boolean isPublic() {
+        //
+        return "public".equals(access);
+    }
+
     public String getName() {
         return name;
     }
@@ -53,5 +59,13 @@ public class MethodModel {
 
     public void setParameterTypes(List<ClassType> parameterTypes) {
         this.parameterTypes = parameterTypes;
+    }
+
+    public String getAccess() {
+        return access;
+    }
+
+    public void setAccess(String access) {
+        this.access = access;
     }
 }
