@@ -23,6 +23,8 @@ public class PackageRule {
     private String postfix;
     private List<Statement> statements;
     private List<ClassNameStatement> classNameStatements;
+    private List<String> removeImports;
+    private List<ChangeImport> changeImports;
 
     public static PackageRule newInstance() {
         //
@@ -33,6 +35,8 @@ public class PackageRule {
         //
         this.statements = new ArrayList<>();
         this.classNameStatements = new ArrayList<>();
+        this.removeImports = new ArrayList<>();
+        this.changeImports = new ArrayList<>();
     }
 
     public PackageRule add(String fromClassNamePostFix, String additionalPackage) {
@@ -97,6 +101,43 @@ public class PackageRule {
         //
         this.postfix = postfix;
         return this;
+    }
+
+    public PackageRule addRemoveImport(String importName) {
+        //
+        this.removeImports.add(importName);
+        return this;
+    }
+
+    public PackageRule addChangeImport(String beforeName, String afterName) {
+        //
+        this.changeImports.add(new ChangeImport(beforeName, afterName));
+        return this;
+    }
+
+    public boolean hasRemoveImports() {
+        //
+        return this.removeImports != null && !this.removeImports.isEmpty();
+    }
+
+    public boolean hasChangeImports() {
+        //
+        return this.changeImports != null && !this.changeImports.isEmpty();
+    }
+
+    public boolean containsRemoveImport(String importName) {
+        //
+        return this.removeImports.contains(importName);
+    }
+
+    public String findWholeChangeImportName(String beforeImportName) {
+        //
+        for (ChangeImport changeImport : changeImports) {
+            if (changeImport.before.equals(beforeImportName)) {
+                return changeImport.after;
+            }
+        }
+        return null;
     }
 
     public String changePackage(String packageName, String classShortName) {
@@ -289,6 +330,17 @@ public class PackageRule {
             this.fromIndex = fromIndex;
             this.fromPackage = fromPackage;
             this.toIndex = toIndex;
+        }
+    }
+
+    private class ChangeImport {
+        //
+        String before;
+        String after;
+
+        public ChangeImport(String before, String after) {
+            this.before = before;
+            this.after = after;
         }
     }
 }

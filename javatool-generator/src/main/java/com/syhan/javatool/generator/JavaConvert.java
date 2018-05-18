@@ -32,7 +32,7 @@ public class JavaConvert {
                 .add(2, "bar", "b")
                 .add(3, "controller", "rest")
                 .add(3, "service", "logic");
-        Converter converter = new JavaConverter(sourceConfiguration, targetConfiguration, nameRule, packageRule, null);
+        Converter converter = new JavaConverter(sourceConfiguration, targetConfiguration, nameRule, packageRule);
         converter.convert(sourceFileName);
     }
 

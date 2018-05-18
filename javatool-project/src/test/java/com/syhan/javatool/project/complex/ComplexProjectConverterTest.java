@@ -6,9 +6,6 @@ import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.test.BaseFileTest;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ComplexProjectConverterTest extends BaseFileTest {
     //
     private static final String SOURCE_PROJECT_HOME = "../source-project2";
@@ -53,7 +50,8 @@ public class ComplexProjectConverterTest extends BaseFileTest {
                 .add(1, "vo"        , 4)
                 .add(4, "vo"        , "ext.spec.sdo", 1)
                 .add("Service", "ext.spec")
-                .add("Logic", "ext.logic");
+                .add("Logic", "ext.logic")
+                .addRemoveImport("com.foo.bar.DefaultVO");
 
         PackageRule javaConvertPackageRule = PackageRule.newInstance()
                 .add(0, "amis3"     , "kr.amc.amis")
@@ -62,7 +60,9 @@ public class ComplexProjectConverterTest extends BaseFileTest {
                 .add(4, "dao"       , "store")
                 .add(4, "service"   , "logic")
                 .add(1, "vo"        , 4)
-                .add(4, "vo"        , "entity");
+                .add(4, "vo"        , "entity")
+                .addChangeImport("amis3.fw.core.util.DateUtil", "kr.amc.amil.util.date.DateUtil")
+                .addRemoveImport("com.foo.bar.DefaultVO");
 
         NameRule javaConvertNameRule = NameRule.newInstance()
                 .add("Service", "Logic")
@@ -75,11 +75,8 @@ public class ComplexProjectConverterTest extends BaseFileTest {
                 .add(1, "oo", "order")
                 .setPostfix("store.mapper");
 
-        List<String> removeImports = new ArrayList<>();
-        removeImports.add("com.foo.bar.DefaultVO");
-
         ComplexProjectConverter converter = new ComplexProjectConverter(parameter, javaAbstractParam,
-                javaConvertNameRule, javaAbstractPackageRule, javaConvertPackageRule, namespaceRule, removeImports);
+                javaConvertNameRule, javaAbstractPackageRule, javaConvertPackageRule, namespaceRule);
         converter.convert();
     }
 }

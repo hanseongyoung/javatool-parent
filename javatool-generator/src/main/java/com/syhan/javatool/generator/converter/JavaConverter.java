@@ -8,7 +8,6 @@ import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class JavaConverter extends ProjectItemConverter {
@@ -17,24 +16,22 @@ public class JavaConverter extends ProjectItemConverter {
     private JavaWriter javaWriter;
     private NameRule nameRule;
     private PackageRule packageRule;
-    private List<String> removeImports;
 
     private Consumer<JavaSource> customCodeHandler;
 
     public JavaConverter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetConfiguration) {
         //
-        this(sourceConfiguration, targetConfiguration, null, null, null);
+        this(sourceConfiguration, targetConfiguration, null, null);
     }
 
     public JavaConverter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetConfiguration,
-                         NameRule nameRule, PackageRule packageRule, List<String> removeImports) {
+                         NameRule nameRule, PackageRule packageRule) {
         //
         super(sourceConfiguration, targetConfiguration, ProjectItemType.Java);
         this.nameRule = nameRule;
         this.packageRule = packageRule;
         this.javaReader = new JavaReader(sourceConfiguration);
         this.javaWriter = new JavaWriter(targetConfiguration);
-        this.removeImports = removeImports;
     }
 
     public JavaConverter customCodeHandle(Consumer<JavaSource> customCodeHandler) {
@@ -50,7 +47,7 @@ public class JavaConverter extends ProjectItemConverter {
 
         source.changePackage(packageRule);
         source.changeName(nameRule);
-        source.removeImports(removeImports);
+        source.removeImports(packageRule);
         source.changeImports(nameRule, packageRule);
         source.changeMethodUsingClassName(nameRule);
 

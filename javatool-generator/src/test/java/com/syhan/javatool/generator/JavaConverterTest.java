@@ -22,7 +22,7 @@ public class JavaConverterTest extends BaseFileTest {
         PackageRule packageRule = PackageRule.newInstance()
                 .add(0, "com", "kr");
 
-        JavaConverter javaConverter = new JavaConverter(sourceConfig, targetConfig, null, packageRule, null);
+        JavaConverter javaConverter = new JavaConverter(sourceConfig, targetConfig, null, packageRule);
         javaConverter.convert(SOURCE_FILE_NAME);
     }
 }

@@ -1,10 +1,7 @@
 package com.syhan.javatool.generator.source;
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
-import com.github.javaparser.ast.NodeList;
-import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -19,10 +16,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 public class JavaSource {
     //
@@ -90,6 +87,10 @@ public class JavaSource {
         //
         ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
         classType.setName(name);
+
+        for (ConstructorDeclaration constructor : classType.getConstructors()) {
+            constructor.setName(name);
+        }
     }
 
     public String getPackageName() {
@@ -204,19 +205,30 @@ public class JavaSource {
         setPackageName(newPackageName);
     }
 
-    public void removeImports(List<String> removeImports) {
+    public void removeNoArgsConstructor() {
         //
-        if (removeImports == null || removeImports.size() <= 0) {
+        ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
+        classType.getDefaultConstructor().ifPresent(Node::remove);
+    }
+
+    public void removeImports(PackageRule packageRule) {
+        //
+        if (!packageRule.hasRemoveImports()) {
             return;
         }
 
+        List<ImportDeclaration> removeList = compilationUnit.getImports().stream()
+                .filter(importDeclaration -> packageRule.containsRemoveImport(importDeclaration.getNameAsString()))
+                .collect(Collectors.toList());
+
+        /* check legacy code
         List<ImportDeclaration> removeList = new ArrayList<>();
         for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
             String importName = importDeclaration.getNameAsString();
             if (removeImports.contains(importName)) {
                 removeList.add(importDeclaration);
             }
-        }
+        } */
 
         for (ImportDeclaration toRemove : removeList) {
             compilationUnit.getImports().remove(toRemove);
@@ -231,14 +243,34 @@ public class JavaSource {
 
         for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
             String importName = importDeclaration.getNameAsString();
-            if (nameRule != null) {
-                importName = nameRule.changeName(importName);
+
+            String wholeChangeImportName = findWholeChangeImportName(importName, packageRule);
+            if (wholeChangeImportName != null) {
+                importDeclaration.setName(wholeChangeImportName);
+            } else {
+                importDeclaration.setName(changeImportName(importName, nameRule, packageRule));
             }
-            if (packageRule != null) {
-                importName = packageRule.changePackage(importName);
-            }
-            importDeclaration.setName(importName);
         }
+    }
+
+    private String changeImportName(String importName, NameRule nameRule, PackageRule packageRule) {
+        //
+        String newImportName = importName;
+        if (nameRule != null) {
+            newImportName = nameRule.changeName(newImportName);
+        }
+        if (packageRule != null) {
+            newImportName = packageRule.changePackage(newImportName);
+        }
+        return newImportName;
+    }
+
+    private String findWholeChangeImportName(String importName, PackageRule packageRule) {
+        //
+        if (packageRule == null) {
+            return null;
+        }
+        return packageRule.findWholeChangeImportName(importName);
     }
 
     public void changeMethodUsingClassName(NameRule nameRule) {

@@ -50,5 +50,9 @@ public class DtoManagingJavaConverter {
         // remove getter / setter / toString
         javaSource.removeGetterAndSetter();
         javaSource.removeMethod("toString");
+
+        // remove default constructor
+        javaSource.removeNoArgsConstructor();
+
     }
 }
