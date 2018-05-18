@@ -80,14 +80,14 @@ public class JavaInterfaceAbstracter {
         // change package
         source.changePackage(packageRule);
 
-        // set implements
-        source.setImplementedType(interfaceModel.getName(), interfaceModel.getPackageName());
-
         // change imports
         source.changeImports(nameRule, packageRule);
 
         // change method using types name(return, parameter type)
         source.changeMethodUsingClassName(nameRule);
+
+        // set implements
+        source.setImplementedType(interfaceModel.getName(), interfaceModel.getPackageName());
 
         return source;
     }

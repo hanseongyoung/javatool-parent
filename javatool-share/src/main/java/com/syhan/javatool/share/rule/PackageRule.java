@@ -283,7 +283,7 @@ public class PackageRule {
         return null;
     }
 
-    private static class ClassNameStatement {
+    private class ClassNameStatement {
         //
         String fromClassNamePostFix;
         String additionalPackage;
@@ -295,7 +295,7 @@ public class PackageRule {
     }
 
     @SuppressWarnings("unused")
-    private static class Statement {
+    private class Statement {
         //
         int fromIndex;
         String fromPackage;
@@ -334,7 +334,7 @@ public class PackageRule {
         }
     }
 
-    private class ChangeImport {
+    public static class ChangeImport {
         //
         String before;
         String after;

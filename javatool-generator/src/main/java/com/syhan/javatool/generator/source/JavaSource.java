@@ -21,6 +21,8 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
+import static com.syhan.javatool.share.rule.ChangeHistoryManager.CHANGE_HISTORY;
+
 public class JavaSource {
     //
     private CompilationUnit compilationUnit;
@@ -266,7 +268,14 @@ public class JavaSource {
     }
 
     private String findWholeChangeImportName(String importName, PackageRule packageRule) {
-        //
+        // find from history
+        String changeImportNameFromHistory = CHANGE_HISTORY.findChangeClassName(importName);
+        if (changeImportNameFromHistory != null) {
+            //System.out.println("find history --> " + changeImportNameFromHistory);
+            return changeImportNameFromHistory;
+        }
+
+        // find from packageRule
         if (packageRule == null) {
             return null;
         }

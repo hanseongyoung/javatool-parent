@@ -24,6 +24,26 @@ public abstract class PathUtil {
         return new Pair<>(sb.toString(), packageFrags[length - 1]);
     }
 
+    // com/foo/bar/SampleDto.java -> com.foo.bar.SampleDto
+    public static String toClassName(String sourceFilePath) {
+        //
+        String[] paths = sourceFilePath.split(ProjectSources.PATH_DELIM.equals("\\") ? "\\\\" : ProjectSources.PATH_DELIM); // for Windows
+        int length = paths.length;
+        String fileName = paths[length - 1];
+        int dotIndex = fileName.indexOf(".");
+        String name = fileName.substring(0, dotIndex);
+        String originExtension = fileName.substring(dotIndex + 1);
+
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < length - 1; i++) {
+            sb.append(paths[i]);
+            sb.append(".");
+        }
+        sb.append(name);
+
+        return sb.toString();
+    }
+
 
     // com.foo.bar.SampleDto -> com/foo/bar/SampleDto.java
     public static String toSourceFileName(String className, String extension) {

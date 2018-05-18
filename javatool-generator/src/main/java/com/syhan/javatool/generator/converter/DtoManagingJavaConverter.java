@@ -3,13 +3,11 @@ package com.syhan.javatool.generator.converter;
 import com.syhan.javatool.generator.source.JavaSource;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+
+import static com.syhan.javatool.share.rule.ChangeHistoryManager.CHANGE_HISTORY;
 
 public class DtoManagingJavaConverter {
     //
-    private static Map<String, String> DTO_HISTORY = new HashMap<>();
-
     private JavaConverter javaConverter;
 
     public DtoManagingJavaConverter(JavaConverter javaConverter) {
@@ -19,7 +17,7 @@ public class DtoManagingJavaConverter {
 
     public void convert(String dtoSourceFileName) {
         //
-        if (DTO_HISTORY.containsKey(dtoSourceFileName)) {
+        if (CHANGE_HISTORY.containsKeyBySourceFileName(dtoSourceFileName)) {
             System.err.println("Already dto converted --> " + dtoSourceFileName);
             return;
         }
@@ -28,8 +26,9 @@ public class DtoManagingJavaConverter {
             //System.out.println("Convert dto --> " + dtoSourceFileName);
             javaConverter
                     .customCodeHandle(this::makeDtoCustomCode)
+                    .changeInfoHandle(changeImport -> CHANGE_HISTORY.put(changeImport))
                     .convert(dtoSourceFileName);
-            DTO_HISTORY.put(dtoSourceFileName, dtoSourceFileName);
+
         } catch (IOException e) {
             // TODO : using Logger
             System.err.println("Can't convert dto --> " + dtoSourceFileName + ", " + e.getMessage());

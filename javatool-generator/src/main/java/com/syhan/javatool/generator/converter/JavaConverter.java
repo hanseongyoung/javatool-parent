@@ -18,6 +18,7 @@ public class JavaConverter extends ProjectItemConverter {
     private PackageRule packageRule;
 
     private Consumer<JavaSource> customCodeHandler;
+    private Consumer<PackageRule.ChangeImport> changeInfoHandler;
 
     public JavaConverter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetConfiguration) {
         //
@@ -40,10 +41,16 @@ public class JavaConverter extends ProjectItemConverter {
         return this;
     }
 
+    public JavaConverter changeInfoHandle(Consumer<PackageRule.ChangeImport> changeInfoHandler) {
+        this.changeInfoHandler = changeInfoHandler;
+        return this;
+    }
+
     @Override
     public void convert(String sourceFilePath) throws IOException {
         // sourceFile : com/foo/bar/SampleService.java
         JavaSource source = javaReader.read(sourceFilePath);
+        String beforeClassName = source.getClassName();
 
         source.changePackage(packageRule);
         source.changeName(nameRule);
@@ -51,8 +58,14 @@ public class JavaConverter extends ProjectItemConverter {
         source.changeImports(nameRule, packageRule);
         source.changeMethodUsingClassName(nameRule);
 
+        String afterClassName = source.getClassName();
+
         if (customCodeHandler != null) {
             customCodeHandler.accept(source);
+        }
+        if (changeInfoHandler != null) {
+            PackageRule.ChangeImport changeImport = new PackageRule.ChangeImport(beforeClassName, afterClassName);
+            changeInfoHandler.accept(changeImport);
         }
 
         javaWriter.write(source);

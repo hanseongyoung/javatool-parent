@@ -60,6 +60,11 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
     @Override
     public void convert(String sourceFilePath) throws IOException {
         //
+        if (sourceFilePath.endsWith(".out.xml")) {
+            System.err.println("Skip convert '.out.xml' --> " + sourceFilePath);
+            return;
+        }
+
         // SqlMap xml read
         XmlSource xmlSource = xmlReader.read(sourceFilePath);
         SqlMapSource sqlMapSource = new SqlMapSource(xmlSource);

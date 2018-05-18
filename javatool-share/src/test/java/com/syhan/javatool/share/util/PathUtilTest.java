@@ -42,4 +42,15 @@ public class PathUtilTest {
         System.out.println(result);
         Assert.assertEquals(after, result);
     }
+
+    @Test
+    public void testToClassName() {
+        // com/foo/bar/SampleDto.java -> com.foo.bar.SampleDto
+        String before = "com/foo/bar/SampleDto.java".replaceAll("/", Matcher.quoteReplacement(File.separator));
+        String after = "com.foo.bar.SampleDto";
+
+        String result = PathUtil.toClassName(before);
+        System.out.println(result);
+        Assert.assertEquals(after, result);
+    }
 }
