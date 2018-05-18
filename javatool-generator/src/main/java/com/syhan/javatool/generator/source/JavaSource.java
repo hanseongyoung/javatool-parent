@@ -318,7 +318,6 @@ public class JavaSource {
             String typeArgumentName = typeArgsType.asString();
             typeArgumentName = nameRule.changeName(typeArgumentName);
             ClassOrInterfaceType classOrInterfaceType = ((ClassOrInterfaceType) typeArgsType);
-            System.out.println("change type arguments name -> " + typeArgumentName);
             classOrInterfaceType.setName(typeArgumentName);
         }
     }

@@ -77,10 +77,13 @@ public class ClassType {
             return;
         }
 
-        if (primitive || packageName == null) {
-            return;
+        if (!primitive && packageName != null) {
+            this.packageName = packageRule.changePackage(packageName, name);
         }
-        this.packageName = packageRule.changePackage(packageName, name);
+
+        if (this.typeArgument != null) {
+            this.typeArgument.changePackage(packageRule);
+        }
     }
 
     public void changeName(NameRule nameRule) {
@@ -90,6 +93,10 @@ public class ClassType {
         }
 
         this.name = nameRule.changeName(name);
+
+        if (this.typeArgument != null) {
+            this.typeArgument.changeName(nameRule);
+        }
     }
 
     public String getClassName() {
