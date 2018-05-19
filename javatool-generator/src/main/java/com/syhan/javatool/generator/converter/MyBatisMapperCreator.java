@@ -77,7 +77,7 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
 
         JavaModel daoModel = findDaoModel(sqlMapSource.getSourceFilePath());
         JavaSource javaSource = computeMapperInterfaceSource(sqlMapSource, daoModel);
-        javaSource.changePackage(javaPackageRule);
+        javaSource.changePackageAndName(javaNameRule, javaPackageRule);
         javaSource.changeImports(javaNameRule, javaPackageRule);
         javaWriter.write(javaSource);
     }

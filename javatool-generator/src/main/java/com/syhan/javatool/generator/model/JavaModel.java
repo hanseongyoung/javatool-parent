@@ -45,13 +45,16 @@ public class JavaModel {
 
         for (MethodModel methodModel : methods) {
             ClassType returnType = methodModel.getReturnType();
-            if (returnType != null) {
+            if (returnType != null
+                    && !returnType.changeWholePackageAndName(packageRule)) {
                 returnType.changePackage(packageRule);
                 returnType.changeName(nameRule);
             }
             for (ClassType parameterType : methodModel.getParameterTypes()) {
-                parameterType.changePackage(packageRule);
-                parameterType.changeName(nameRule);
+                if (!parameterType.changeWholePackageAndName(packageRule)) {
+                    parameterType.changeName(nameRule);
+                    parameterType.changePackage(packageRule);
+                }
             }
         }
     }

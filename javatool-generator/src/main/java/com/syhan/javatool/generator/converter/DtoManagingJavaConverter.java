@@ -1,34 +1,38 @@
 package com.syhan.javatool.generator.converter;
 
 import com.syhan.javatool.generator.source.JavaSource;
+import com.syhan.javatool.share.rule.PackageRule;
+import com.syhan.javatool.share.util.file.PathUtil;
 
 import java.io.IOException;
 
-import static com.syhan.javatool.share.rule.ChangeHistoryManager.CHANGE_HISTORY;
+//import static com.syhan.javatool.share.rule.ChangeHistoryManager.CHANGE_HISTORY;
 
 public class DtoManagingJavaConverter {
     //
-    private JavaConverter javaConverter;
+    private PackageRule packageRule;
+    private JavaConverter serviceJavaConverter;
+    private JavaConverter stubJavaConverter;
 
-    public DtoManagingJavaConverter(JavaConverter javaConverter) {
-        //
-        this.javaConverter = javaConverter;
+    public DtoManagingJavaConverter(PackageRule packageRule, JavaConverter serviceJavaConverter, JavaConverter stubJavaConverter) {
+        this.packageRule = packageRule;
+        this.serviceJavaConverter = serviceJavaConverter;
+        this.stubJavaConverter = stubJavaConverter;
     }
 
     public void convert(String dtoSourceFileName) {
         //
-        if (CHANGE_HISTORY.containsKeyBySourceFileName(dtoSourceFileName)) {
-            System.err.println("Already dto converted --> " + dtoSourceFileName);
-            return;
-        }
-
         try {
-            //System.out.println("Convert dto --> " + dtoSourceFileName);
-            javaConverter
-                    .customCodeHandle(this::makeDtoCustomCode)
-                    .changeInfoHandle(changeImport -> CHANGE_HISTORY.put(changeImport))
-                    .convert(dtoSourceFileName);
-
+            String dtoClassName = PathUtil.toClassName(dtoSourceFileName);
+            if (packageRule.containsChangeImport(dtoClassName)) {
+                stubJavaConverter
+                        .customCodeHandle(this::makeDtoCustomCode)
+                        .convert(dtoSourceFileName);
+            } else {
+                serviceJavaConverter
+                        .customCodeHandle(this::makeDtoCustomCode)
+                        .convert(dtoSourceFileName);
+            }
         } catch (IOException e) {
             // TODO : using Logger
             System.err.println("Can't convert dto --> " + dtoSourceFileName + ", " + e.getMessage());

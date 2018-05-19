@@ -8,7 +8,6 @@ import com.syhan.javatool.generator.writer.JavaWriter;
 import com.syhan.javatool.share.config.ProjectConfiguration;
 import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
-import com.syhan.javatool.share.util.file.PathUtil;
 
 import java.io.IOException;
 import java.util.List;
@@ -29,8 +28,6 @@ public class JavaInterfaceAbstracter {
     private PackageRule packageRule;
     private JavaAbstractParam javaAbstractParam;
 
-    private DtoManagingJavaConverter dtoConverter;
-
     public JavaInterfaceAbstracter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetInterfaceConfiguration,
                                    ProjectConfiguration targetLogicConfiguration, NameRule nameRule, PackageRule packageRule,
                                    JavaAbstractParam javaAbstractParam) {
@@ -42,7 +39,23 @@ public class JavaInterfaceAbstracter {
         this.nameRule = nameRule;
         this.packageRule = packageRule;
         this.javaAbstractParam = javaAbstractParam;
-        this.dtoConverter = new DtoManagingJavaConverter(new JavaConverter(sourceConfiguration, targetInterfaceConfiguration, nameRule, packageRule));
+    }
+
+    public List<PackageRule.ChangeImport> findUsingDtoChangeInfo(String sourceFileName, PackageRule packageRuleForCheckStubDto) throws IOException {
+        //
+        JavaSource source = javaReader.read(sourceFileName);
+        JavaModel interfaceModel = createJavaInterfaceModel(source);
+        List<PackageRule.ChangeImport> stubDtoInfo = interfaceModel.computeMethodUsingClasses()
+                .stream()
+                .filter(dtoClassName -> dtoClassName.startsWith(javaAbstractParam.getSourceDtoPackage()))
+                .map(dtoClassName -> {
+                    String newName = packageRuleForCheckStubDto.changePackage(dtoClassName);
+                    newName = nameRule.changeName(newName);
+                    System.out.println(dtoClassName + " --> " + newName);
+                    return new PackageRule.ChangeImport(dtoClassName, newName);
+                })
+                .collect(Collectors.toList());
+        return stubDtoInfo;
     }
 
     public void convert(String sourceFileName) throws IOException {
@@ -52,15 +65,15 @@ public class JavaInterfaceAbstracter {
         JavaModel interfaceModel = createJavaInterfaceModel(source);
 
         // write dto
-        List<String> dtoClassNames = interfaceModel.computeMethodUsingClasses()
-                .stream()
-                .filter(s -> s.startsWith(javaAbstractParam.getSourceDtoPackage()))
-                .collect(Collectors.toList());
-
-        for (String dtoClassName : dtoClassNames) {
-            String dtoSourceFileName = PathUtil.toSourceFileName(dtoClassName, "java");
-            dtoConverter.convert(dtoSourceFileName);
-        }
+//        List<String> dtoClassNames = interfaceModel.computeMethodUsingClasses()
+//                .stream()
+//                .filter(s -> s.startsWith(javaAbstractParam.getSourceDtoPackage()))
+//                .collect(Collectors.toList());
+//
+//        for (String dtoClassName : dtoClassNames) {
+//            String dtoSourceFileName = PathUtil.toSourceFileName(dtoClassName, "java");
+//            dtoConverter.convert(dtoSourceFileName);
+//        }
 
         // write interface
         interfaceModel.changePackage(packageRule);
@@ -74,11 +87,8 @@ public class JavaInterfaceAbstracter {
 
     private JavaSource changeToJavaLogic(JavaSource source, JavaModel interfaceModel) {
         //
-        // change name
-        source.changeName(nameRule);
-
-        // change package
-        source.changePackage(packageRule);
+        // change package and name
+        source.changePackageAndName(nameRule, packageRule);
 
         // change imports
         source.changeImports(nameRule, packageRule);
@@ -105,5 +115,4 @@ public class JavaInterfaceAbstracter {
 
         return javaModel;
     }
-
 }

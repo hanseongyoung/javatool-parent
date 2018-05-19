@@ -31,12 +31,36 @@ public class PackageRule {
         return new PackageRule();
     }
 
+    public static PackageRule copyOf(PackageRule other) {
+        //
+        return new PackageRule(other);
+    }
+
     private PackageRule() {
         //
         this.statements = new ArrayList<>();
         this.classNameStatements = new ArrayList<>();
         this.removeImports = new ArrayList<>();
         this.changeImports = new ArrayList<>();
+    }
+
+    private PackageRule(PackageRule other) {
+        //
+        this();
+        this.prefix = other.prefix;
+        this.postfix = other.postfix;
+        for (Statement statement : other.statements) {
+            this.statements.add(new Statement(statement));
+        }
+        for (ClassNameStatement statement : classNameStatements) {
+            this.classNameStatements.add(new ClassNameStatement(statement));
+        }
+        for (String removeImport : removeImports) {
+            this.removeImports.add(removeImport);
+        }
+        for (ChangeImport changeImport : changeImports) {
+            this.changeImports.add(new ChangeImport(changeImport));
+        }
     }
 
     public PackageRule add(String fromClassNamePostFix, String additionalPackage) {
@@ -115,6 +139,16 @@ public class PackageRule {
         return this;
     }
 
+    public PackageRule putChangeImport(ChangeImport changeImport) {
+        //
+        ChangeImport exist = findChangeImport(changeImport.before);
+        if (exist != null) {
+            this.changeImports.remove(exist);
+        }
+        this.changeImports.add(changeImport);
+        return this;
+    }
+
     public boolean hasRemoveImports() {
         //
         return this.removeImports != null && !this.removeImports.isEmpty();
@@ -128,6 +162,16 @@ public class PackageRule {
     public boolean containsRemoveImport(String importName) {
         //
         return this.removeImports.contains(importName);
+    }
+
+    private ChangeImport findChangeImport(String beforeName) {
+        //
+        for (ChangeImport changeImport : changeImports) {
+            if (changeImport.before.equals(beforeName)) {
+                return changeImport;
+            }
+        }
+        return null;
     }
 
     public String findWholeChangeImportName(String beforeImportName) {
@@ -283,6 +327,16 @@ public class PackageRule {
         return null;
     }
 
+    public boolean containsChangeImport(String beforeName) {
+        //
+        for (ChangeImport changeImport : changeImports) {
+            if (changeImport.before.equals(beforeName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private class ClassNameStatement {
         //
         String fromClassNamePostFix;
@@ -291,6 +345,11 @@ public class PackageRule {
         public ClassNameStatement(String fromClassNamePostFix, String additionalPackage) {
             this.fromClassNamePostFix = fromClassNamePostFix;
             this.additionalPackage = additionalPackage;
+        }
+
+        public ClassNameStatement(ClassNameStatement other) {
+            this.fromClassNamePostFix = other.fromClassNamePostFix;
+            this.additionalPackage = other.additionalPackage;
         }
     }
 
@@ -332,6 +391,15 @@ public class PackageRule {
             this.fromPackage = fromPackage;
             this.toIndex = toIndex;
         }
+
+        public Statement(Statement other) {
+            //
+            this.fromIndex = other.fromIndex;
+            this.fromPackage = other.fromPackage;
+            this.toPackage = other.toPackage;
+            this.toIndex = other.toIndex;
+            this.skipSize = other.skipSize;
+        }
     }
 
     public static class ChangeImport {
@@ -342,6 +410,11 @@ public class PackageRule {
         public ChangeImport(String before, String after) {
             this.before = before;
             this.after = after;
+        }
+
+        public ChangeImport(ChangeImport other) {
+            this.before = other.before;
+            this.after = other.after;
         }
     }
 }

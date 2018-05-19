@@ -8,8 +8,10 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.syhan.javatool.generator.ast.AstMapper;
 import com.syhan.javatool.generator.model.JavaModel;
+import com.syhan.javatool.share.data.Pair;
 import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
+import com.syhan.javatool.share.util.file.PathUtil;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -20,8 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
-
-import static com.syhan.javatool.share.rule.ChangeHistoryManager.CHANGE_HISTORY;
 
 public class JavaSource {
     //
@@ -185,7 +185,21 @@ public class JavaSource {
         return null;
     }
 
-    public void changeName(NameRule nameRule) {
+    public void changePackageAndName(NameRule nameRule, PackageRule packageRule) {
+        //
+        String thisClassName = getClassName();
+        String changedClassName = packageRule.findWholeChangeImportName(thisClassName);
+        if (changedClassName != null) {
+            Pair<String, String> packageAndName = PathUtil.devideClassName(changedClassName);
+            setPackageName(packageAndName.x);
+            setName(packageAndName.y);
+        } else {
+            changePackage(packageRule);
+            changeName(nameRule);
+        }
+    }
+
+    private void changeName(NameRule nameRule) {
         //
         if (nameRule == null) {
             return;
@@ -195,7 +209,7 @@ public class JavaSource {
         setName(newName);
     }
 
-    public void changePackage(PackageRule packageRule) {
+    private void changePackage(PackageRule packageRule) {
         //
         if (packageRule == null) {
             return;
@@ -246,7 +260,7 @@ public class JavaSource {
         for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
             String importName = importDeclaration.getNameAsString();
 
-            String wholeChangeImportName = findWholeChangeImportName(importName, packageRule);
+            String wholeChangeImportName = packageRule.findWholeChangeImportName(importName);
             if (wholeChangeImportName != null) {
                 importDeclaration.setName(wholeChangeImportName);
             } else {
@@ -267,20 +281,20 @@ public class JavaSource {
         return newImportName;
     }
 
-    private String findWholeChangeImportName(String importName, PackageRule packageRule) {
-        // find from history
-        String changeImportNameFromHistory = CHANGE_HISTORY.findChangeClassName(importName);
-        if (changeImportNameFromHistory != null) {
-            //System.out.println("find history --> " + changeImportNameFromHistory);
-            return changeImportNameFromHistory;
-        }
-
-        // find from packageRule
-        if (packageRule == null) {
-            return null;
-        }
-        return packageRule.findWholeChangeImportName(importName);
-    }
+//    private String findWholeChangeImportName(String importName, PackageRule packageRule) {
+//        // find from history
+//        String changeImportNameFromHistory = CHANGE_HISTORY.findChangeClassName(importName);
+//        if (changeImportNameFromHistory != null) {
+//            //System.out.println("find history --> " + changeImportNameFromHistory);
+//            return changeImportNameFromHistory;
+//        }
+//
+//        // find from packageRule
+//        if (packageRule == null) {
+//            return null;
+//        }
+//        return packageRule.findWholeChangeImportName(importName);
+//    }
 
     public void changeMethodUsingClassName(NameRule nameRule) {
         //

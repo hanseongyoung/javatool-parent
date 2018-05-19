@@ -11,6 +11,7 @@ import com.syhan.javatool.share.rule.PackageRule;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.regex.Matcher;
 
 public class ComplexProjectConverter {
@@ -19,20 +20,21 @@ public class ComplexProjectConverter {
     private ConvertParameter param;
     private JavaAbstractParam javaAbstractParam;
     private NameRule javaConvertNameRule;
-    private PackageRule javaAbstractPackageRule;
+    //private PackageRule javaAbstractPackageRule;
     private PackageRule javaConvertPackageRule;
+    private PackageRule packageRuleForCheckStubDto;
     private PackageRule sqlMapNamespaceRule;
 
     public ComplexProjectConverter(ConvertParameter convertParameter, JavaAbstractParam javaAbstractParam,
                                    NameRule javaConvertNameRule,
-                                   PackageRule javaAbstractPackageRule, PackageRule javaConvertPackageRule,
+                                   PackageRule javaConvertPackageRule, PackageRule packageRuleForCheckStubDto,
                                    PackageRule sqlMapNamespaceRule) {
         //
         this.param = convertParameter;
         this.javaAbstractParam = javaAbstractParam;
         this.javaConvertNameRule = javaConvertNameRule;
-        this.javaAbstractPackageRule = javaAbstractPackageRule;
         this.javaConvertPackageRule = javaConvertPackageRule;
+        this.packageRuleForCheckStubDto = packageRuleForCheckStubDto;
         this.sqlMapNamespaceRule = sqlMapNamespaceRule;
     }
 
@@ -55,6 +57,50 @@ public class ComplexProjectConverter {
         moveSqlMap(model);
     }
 
+    private void moveJavaSource(ProjectModel model) throws IOException {
+        //
+        ProjectConfiguration sourceConfig = new ProjectConfiguration(ConfigurationType.Source, param.getSourceProjectHomePath());
+        ProjectConfiguration stubConfig = model.findBySuffix(PROJECT_SUFFIX_STUB).configuration(ConfigurationType.Target);
+        ProjectConfiguration skeletonConfig = model.findBySuffix(PROJECT_SUFFIX_SKELETON).configuration(ConfigurationType.Target);
+        ProjectConfiguration serviceConfig = model.findBySuffix(PROJECT_SUFFIX_SERVICE).configuration(ConfigurationType.Target);
+
+        JavaInterfaceAbstracter abstracter = new JavaInterfaceAbstracter(sourceConfig, stubConfig, skeletonConfig,
+                javaConvertNameRule, javaConvertPackageRule, javaAbstractParam);
+        JavaConverter serviceJavaConverter = new JavaConverter(sourceConfig, serviceConfig, javaConvertNameRule, javaConvertPackageRule);
+        JavaConverter stubJavaConverter = new JavaConverter(sourceConfig, stubConfig, javaConvertNameRule, javaConvertPackageRule);
+        DtoManagingJavaConverter dtoConverter = new DtoManagingJavaConverter(javaConvertPackageRule, serviceJavaConverter, stubJavaConverter);
+
+        // update packageRule for stub dto
+        new PackageConverter(new ProjectItemConverter(sourceConfig, ProjectItemType.Java) {
+            @Override
+            public void convert(String sourceFileName) throws IOException {
+                //
+                updatePackageRuleUsingExtService(sourceFileName, abstracter);
+            }
+        }).convert(param.getSourcePackage());
+
+        // convert sourcePackage
+        new PackageConverter(new ProjectItemConverter(sourceConfig, ProjectItemType.Java) {
+            @Override
+            public void convert(String sourceFileName) throws IOException {
+                //
+                if (convertExtService(sourceFileName, abstracter)) return;
+                if (convertJava(sourceFileName, serviceJavaConverter)) return;
+
+                System.err.println("Couldn't convert --> " + sourceFileName);
+            }
+        }).convert(param.getSourcePackage());
+
+        // convert sourceDtoPackage
+        new PackageConverter(new ProjectItemConverter(sourceConfig, ProjectItemType.Java) {
+            @Override
+            public void convert(String sourceFileName) throws IOException {
+                //
+                dtoConverter.convert(sourceFileName);
+            }
+        }).convert(param.getSourceDtoPackage());
+    }
+
     private void moveSqlMap(ProjectModel model) throws IOException {
         //
         String srcMainResources = param.getSourceSqlMapResourceFolder().replaceAll("/", Matcher.quoteReplacement(File.separator));
@@ -75,38 +121,16 @@ public class ComplexProjectConverter {
         }).convert(param.getSourceSqlMapPackage());
     }
 
-    private void moveJavaSource(ProjectModel model) throws IOException {
+
+    private void updatePackageRuleUsingExtService(String sourceFileName, JavaInterfaceAbstracter abstracter) throws IOException {
         //
-        ProjectConfiguration sourceConfig = new ProjectConfiguration(ConfigurationType.Source, param.getSourceProjectHomePath());
-        ProjectConfiguration stubConfig = model.findBySuffix(PROJECT_SUFFIX_STUB).configuration(ConfigurationType.Target);
-        ProjectConfiguration skeletonConfig = model.findBySuffix(PROJECT_SUFFIX_SKELETON).configuration(ConfigurationType.Target);
-        ProjectConfiguration serviceConfig = model.findBySuffix(PROJECT_SUFFIX_SERVICE).configuration(ConfigurationType.Target);
-
-        JavaInterfaceAbstracter abstracter = new JavaInterfaceAbstracter(sourceConfig, stubConfig, skeletonConfig,
-                javaConvertNameRule, javaAbstractPackageRule, javaAbstractParam);
-        JavaConverter javaConverter = new JavaConverter(sourceConfig, serviceConfig, javaConvertNameRule, javaConvertPackageRule);
-        DtoManagingJavaConverter dtoConverter = new DtoManagingJavaConverter(javaConverter);
-
-        // convert sourcePackage
-        new PackageConverter(new ProjectItemConverter(sourceConfig, ProjectItemType.Java) {
-            @Override
-            public void convert(String sourceFileName) throws IOException {
-                //
-                if (convertExtService(sourceFileName, abstracter)) return;
-                if (convertJava(sourceFileName, javaConverter)) return;
-
-                System.err.println("Couldn't convert --> " + sourceFileName);
-            }
-        }).convert(param.getSourcePackage());
-
-        // convert sourceDtoPackage
-        new PackageConverter(new ProjectItemConverter(sourceConfig, ProjectItemType.Java) {
-            @Override
-            public void convert(String sourceFileName) throws IOException {
-                //
-                dtoConverter.convert(sourceFileName);
-            }
-        }).convert(param.getSourceDtoPackage());
+        if (!sourceFileName.endsWith("ExtService.java")) {
+            return;
+        }
+        List<PackageRule.ChangeImport> stubStubDto = abstracter.findUsingDtoChangeInfo(sourceFileName, packageRuleForCheckStubDto);
+        for (PackageRule.ChangeImport changeImport : stubStubDto) {
+            javaConvertPackageRule.putChangeImport(changeImport);
+        }
     }
 
     private boolean convertExtService(String sourceFileName, JavaInterfaceAbstracter abstracter) throws IOException {

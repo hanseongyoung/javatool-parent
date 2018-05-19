@@ -1,7 +1,9 @@
 package com.syhan.javatool.generator.model;
 
+import com.syhan.javatool.share.data.Pair;
 import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
+import com.syhan.javatool.share.util.file.PathUtil;
 
 public class ClassType {
     //
@@ -69,6 +71,19 @@ public class ClassType {
         //
         this.name = name;
         this.packageName = packageName;
+    }
+
+    public boolean changeWholePackageAndName(PackageRule packageRule) {
+        //
+        String changedClassName = packageRule.findWholeChangeImportName(getClassName());
+        if (changedClassName == null) {
+            return false;
+        }
+
+        Pair<String, String> packageNameAndName = PathUtil.devideClassName(changedClassName);
+        setPackageName(packageNameAndName.x);
+        setName(packageNameAndName.y);
+        return true;
     }
 
     public void changePackage(PackageRule packageRule) {

@@ -74,6 +74,11 @@ public class SqlMapSource {
             return null;
         }
 
+        String changedTypeName = packageRule.findWholeChangeImportName(typeName);
+        if (changedTypeName != null) {
+            return changedTypeName;
+        }
+
         String newTypeName = typeName;
         if (nameRule != null) {
             newTypeName = nameRule.changeName(newTypeName);

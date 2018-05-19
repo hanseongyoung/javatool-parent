@@ -52,8 +52,7 @@ public class JavaConverter extends ProjectItemConverter {
         JavaSource source = javaReader.read(sourceFilePath);
         String beforeClassName = source.getClassName();
 
-        source.changePackage(packageRule);
-        source.changeName(nameRule);
+        source.changePackageAndName(nameRule, packageRule);
         source.removeImports(packageRule);
         source.changeImports(nameRule, packageRule);
         source.changeMethodUsingClassName(nameRule);

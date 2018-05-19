@@ -44,14 +44,14 @@ public class ComplexProjectConverterTest extends BaseFileTest {
         JavaAbstractParam javaAbstractParam = new JavaAbstractParam();
         javaAbstractParam.setSourceDtoPackage("amis3.vo.mc.oo");
 
-        PackageRule javaAbstractPackageRule = PackageRule.newInstance()
-                .add(0, "amis3"     , "kr.amc.amis")
-                .add(2, "oo"        , "order")
-                .add(1, "vo"        , 4)
-                .add(4, "vo"        , "ext.spec.sdo", 1)
-                .add("Service", "ext.spec")
-                .add("Logic", "ext.logic")
-                .addRemoveImport("com.foo.bar.DefaultVO");
+//        PackageRule javaAbstractPackageRule = PackageRule.newInstance()
+//                .add(0, "amis3"     , "kr.amc.amis")
+//                .add(2, "oo"        , "order")
+//                .add(1, "vo"        , 4)
+//                .add(4, "vo"        , "ext.spec.sdo", 1)
+//                .add("Service", "ext.spec")
+//                .add("Logic", "ext.logic")
+//                .addRemoveImport("com.foo.bar.DefaultVO");
 
         PackageRule javaConvertPackageRule = PackageRule.newInstance()
                 .add(0, "amis3"     , "kr.amc.amis")
@@ -61,8 +61,13 @@ public class ComplexProjectConverterTest extends BaseFileTest {
                 .add(4, "service"   , "logic")
                 .add(1, "vo"        , 4)
                 .add(4, "vo"        , "entity")
+                .add("Service", "ext.spec")
+                .add("Logic", "ext.logic")
                 .addChangeImport("amis3.fw.core.util.DateUtil", "kr.amc.amil.util.date.DateUtil")
                 .addRemoveImport("com.foo.bar.DefaultVO");
+
+        PackageRule packageRuleForCheckStubDto = PackageRule.copyOf(javaConvertPackageRule)
+                .set(4, "vo"        , "ext.spec.sdo", 1);
 
         NameRule javaConvertNameRule = NameRule.newInstance()
                 .add("Service", "Logic")
@@ -76,7 +81,7 @@ public class ComplexProjectConverterTest extends BaseFileTest {
                 .setPostfix("store.mapper");
 
         ComplexProjectConverter converter = new ComplexProjectConverter(parameter, javaAbstractParam,
-                javaConvertNameRule, javaAbstractPackageRule, javaConvertPackageRule, namespaceRule);
+                javaConvertNameRule, javaConvertPackageRule, packageRuleForCheckStubDto, namespaceRule);
         converter.convert();
     }
 }
