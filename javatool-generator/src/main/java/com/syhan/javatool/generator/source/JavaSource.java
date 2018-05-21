@@ -194,8 +194,9 @@ public class JavaSource {
             setPackageName(packageAndName.x);
             setName(packageAndName.y);
         } else {
-            changePackage(packageRule);
+            // ! order sensitive. change name first!
             changeName(nameRule);
+            changePackage(packageRule);
         }
     }
 
