@@ -163,9 +163,15 @@ public class JavaModel {
             ClassType returnType = methodModel.getReturnType();
             if (returnType != null && !returnType.isPrimitive()) {
                 classNames.add(returnType.getClassName());
+                if (returnType.hasTypeArgument()) {
+                    classNames.add(returnType.getTypeArgument().getClassName());
+                }
             }
             for (ClassType parameterType : methodModel.getParameterTypes()) {
                 classNames.add(parameterType.getClassName());
+                if (parameterType.hasTypeArgument()) {
+                    classNames.add(parameterType.getTypeArgument().getClassName());
+                }
             }
         }
         return classNames;
