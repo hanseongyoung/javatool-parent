@@ -20,7 +20,6 @@ public class ComplexProjectConverter {
     private ConvertParameter param;
     private JavaAbstractParam javaAbstractParam;
     private NameRule javaConvertNameRule;
-    //private PackageRule javaAbstractPackageRule;
     private PackageRule javaConvertPackageRule;
     private PackageRule packageRuleForCheckStubDto;
     private PackageRule sqlMapNamespaceRule;

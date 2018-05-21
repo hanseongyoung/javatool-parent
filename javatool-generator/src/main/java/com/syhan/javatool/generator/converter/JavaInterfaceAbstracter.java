@@ -64,17 +64,6 @@ public class JavaInterfaceAbstracter {
 
         JavaModel interfaceModel = createJavaInterfaceModel(source);
 
-        // write dto
-//        List<String> dtoClassNames = interfaceModel.computeMethodUsingClasses()
-//                .stream()
-//                .filter(s -> s.startsWith(javaAbstractParam.getSourceDtoPackage()))
-//                .collect(Collectors.toList());
-//
-//        for (String dtoClassName : dtoClassNames) {
-//            String dtoSourceFileName = PathUtil.toSourceFileName(dtoClassName, "java");
-//            dtoConverter.convert(dtoSourceFileName);
-//        }
-
         // write interface
         interfaceModel.changePackage(packageRule);
         interfaceModel.changeMethodUsingClassPackageName(nameRule, packageRule);
