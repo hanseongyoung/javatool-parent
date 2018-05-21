@@ -45,18 +45,40 @@ public class JavaModel {
 
         for (MethodModel methodModel : methods) {
             ClassType returnType = methodModel.getReturnType();
-            if (returnType != null
-                    && !returnType.changeWholePackageAndName(packageRule)) {
-                returnType.changePackage(packageRule);
-                returnType.changeName(nameRule);
-            }
+            changeClassTypeName(returnType, nameRule, packageRule);
+            changeTypeArgumentName(returnType, nameRule, packageRule);
+
             for (ClassType parameterType : methodModel.getParameterTypes()) {
-                if (!parameterType.changeWholePackageAndName(packageRule)) {
-                    parameterType.changeName(nameRule);
-                    parameterType.changePackage(packageRule);
-                }
+                changeClassTypeName(parameterType, nameRule, packageRule);
+                changeTypeArgumentName(parameterType, nameRule, packageRule);
             }
         }
+    }
+
+    private void changeTypeArgumentName(ClassType classType, NameRule nameRule, PackageRule packageRule) {
+        //
+        if (classType == null) {
+            return;
+        }
+        if (!classType.hasTypeArgument()) {
+            return;
+        }
+
+        changeClassTypeName(classType.getTypeArgument(), nameRule, packageRule);
+    }
+
+    private void changeClassTypeName(ClassType classType, NameRule nameRule, PackageRule packageRule) {
+        //
+        if (classType == null) {
+            return;
+        }
+
+        if (classType.changeWholePackageAndName(packageRule)) {
+            return;
+        }
+
+        classType.changeName(nameRule);
+        classType.changePackage(packageRule);
     }
 
     public MethodModel findMethodByName(String methodName) {
