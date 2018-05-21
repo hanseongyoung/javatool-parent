@@ -128,10 +128,6 @@ public abstract class AstMapper {
 
         // if return type has Generic type (List<SampleDTO>)
         ifPresentTypeArgument(type, fullNameProvider, typeArgument -> classType.setTypeArgument(typeArgument));
-        /* old code
-        ClassType typeArgument = toTypeArgumentIfPresent(type, fullNameProvider);
-        classType.setTypeArgument(typeArgument);
-        */
 
         return classType;
     }

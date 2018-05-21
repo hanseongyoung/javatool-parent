@@ -49,7 +49,7 @@ public class JavaSource {
         for (Object obj : compilationUnit.getImports()) {
             ImportDeclaration importDeclaration = (ImportDeclaration) obj;
             String packageName = importDeclaration.getName().asString();
-            if (packageName.endsWith(returnTypeName)) {
+            if (packageName.endsWith("." + returnTypeName)) {
                 return packageName;
             }
         }
@@ -237,15 +237,6 @@ public class JavaSource {
                 .filter(importDeclaration -> packageRule.containsRemoveImport(importDeclaration.getNameAsString()))
                 .collect(Collectors.toList());
 
-        /* check legacy code
-        List<ImportDeclaration> removeList = new ArrayList<>();
-        for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
-            String importName = importDeclaration.getNameAsString();
-            if (removeImports.contains(importName)) {
-                removeList.add(importDeclaration);
-            }
-        } */
-
         for (ImportDeclaration toRemove : removeList) {
             compilationUnit.getImports().remove(toRemove);
         }
@@ -280,21 +271,6 @@ public class JavaSource {
         }
         return newImportName;
     }
-
-//    private String findWholeChangeImportName(String importName, PackageRule packageRule) {
-//        // find from history
-//        String changeImportNameFromHistory = CHANGE_HISTORY.findChangeClassName(importName);
-//        if (changeImportNameFromHistory != null) {
-//            //System.out.println("find history --> " + changeImportNameFromHistory);
-//            return changeImportNameFromHistory;
-//        }
-//
-//        // find from packageRule
-//        if (packageRule == null) {
-//            return null;
-//        }
-//        return packageRule.findWholeChangeImportName(importName);
-//    }
 
     public void changeMethodUsingClassName(NameRule nameRule) {
         //
