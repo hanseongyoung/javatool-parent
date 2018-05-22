@@ -28,6 +28,14 @@ public class JavaModel {
         this.methods = new ArrayList<>();
     }
 
+    public void changeName(NameRule nameRule) {
+        //
+        if (nameRule == null) {
+            return;
+        }
+        classType.changeName(nameRule);
+    }
+
     public void changePackage(PackageRule packageRule) {
         //
         if (packageRule == null) {

@@ -16,10 +16,26 @@ public class NameRule {
         return new NameRule();
     }
 
+    public static NameRule copyOf(NameRule other) {
+        //
+        return new NameRule(other);
+    }
+
     private NameRule() {
         //
         this.postfixStatements = new ArrayList<>();
         this.exceptionPatterns = new ArrayList<>();
+    }
+
+    private NameRule(NameRule other) {
+        //
+        this();
+        for (PostfixStatement statement : other.postfixStatements) {
+            this.postfixStatements.add(new PostfixStatement(statement));
+        }
+        for (String exceptionPattern : other.exceptionPatterns) {
+            this.exceptionPatterns.add(exceptionPattern);
+        }
     }
 
     public NameRule add(String fromPostfix, String toPostfix) {
@@ -80,6 +96,12 @@ public class NameRule {
             //
             this.fromPostfix = fromPostfix;
             this.toPostfix = toPostfix;
+        }
+
+        public PostfixStatement(PostfixStatement other) {
+            //
+            this.fromPostfix = other.fromPostfix;
+            this.toPostfix = other.toPostfix;
         }
     }
 }

@@ -6,20 +6,22 @@ import com.syhan.javatool.share.util.file.PathUtil;
 
 import java.io.IOException;
 
-//import static com.syhan.javatool.share.rule.ChangeHistoryManager.CHANGE_HISTORY;
-
-public class DtoManagingJavaConverter {
+public class DtoManagingJavaConverter extends ProjectItemConverter {
     //
     private PackageRule packageRule;
     private JavaConverter serviceJavaConverter;
     private JavaConverter stubJavaConverter;
 
     public DtoManagingJavaConverter(PackageRule packageRule, JavaConverter serviceJavaConverter, JavaConverter stubJavaConverter) {
+        //
+        super(serviceJavaConverter.sourceConfiguration, serviceJavaConverter.projectItemType);
+
         this.packageRule = packageRule;
         this.serviceJavaConverter = serviceJavaConverter;
         this.stubJavaConverter = stubJavaConverter;
     }
 
+    @Override
     public void convert(String dtoSourceFileName) {
         //
         try {

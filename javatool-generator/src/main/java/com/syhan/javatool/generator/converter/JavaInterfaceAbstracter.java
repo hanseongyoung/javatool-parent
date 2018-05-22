@@ -18,23 +18,25 @@ import java.util.stream.Collectors;
 // [Interface]com.foo.bar.spec.SomeService
 // [Class]    com.foo.bar.logic.SomeLogic
 // [DTO]      com.foo.bar.spec.sdo.SomeDTO
-public class JavaInterfaceAbstracter {
+public class JavaInterfaceAbstracter extends ProjectItemConverter {
     //
     private JavaReader javaReader;
-    private JavaWriter javaWriterForInterface;
-    private JavaWriter javaWriterForLogic;
+    private JavaWriter javaWriterForStub;
+    private JavaWriter javaWriterForSkeleton;
 
     private NameRule nameRule;
     private PackageRule packageRule;
     private JavaAbstractParam javaAbstractParam;
 
-    public JavaInterfaceAbstracter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetInterfaceConfiguration,
-                                   ProjectConfiguration targetLogicConfiguration, NameRule nameRule, PackageRule packageRule,
+    public JavaInterfaceAbstracter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetStubConfiguration,
+                                   ProjectConfiguration targetSkeletonConfiguration, NameRule nameRule, PackageRule packageRule,
                                    JavaAbstractParam javaAbstractParam) {
         //
+        super(sourceConfiguration, ProjectItemType.Java, javaAbstractParam.getTargetFilePostfix());
+
         this.javaReader = new JavaReader(sourceConfiguration);
-        this.javaWriterForInterface = new JavaWriter(targetInterfaceConfiguration);
-        this.javaWriterForLogic = new JavaWriter(targetLogicConfiguration);
+        this.javaWriterForStub = new JavaWriter(targetStubConfiguration);
+        this.javaWriterForSkeleton = new JavaWriter(targetSkeletonConfiguration);
 
         this.nameRule = nameRule;
         this.packageRule = packageRule;
@@ -44,7 +46,7 @@ public class JavaInterfaceAbstracter {
     public List<PackageRule.ChangeImport> findUsingDtoChangeInfo(String sourceFileName, PackageRule packageRuleForCheckStubDto) throws IOException {
         //
         JavaSource source = javaReader.read(sourceFileName);
-        JavaModel interfaceModel = createJavaInterfaceModel(source);
+        JavaModel interfaceModel = changeToJavaInterfaceModel(source);
         List<PackageRule.ChangeImport> stubDtoInfo = interfaceModel.computeMethodUsingClasses()
                 .stream()
                 .filter(dtoClassName -> dtoClassName.startsWith(javaAbstractParam.getSourceDtoPackage()))
@@ -62,22 +64,25 @@ public class JavaInterfaceAbstracter {
         //
         JavaSource source = javaReader.read(sourceFileName);
 
-        JavaModel interfaceModel = createJavaInterfaceModel(source);
-
         // write interface
-        interfaceModel.changePackage(packageRule);
-        interfaceModel.changeMethodUsingClassPackageName(nameRule, packageRule);
-        javaWriterForInterface.write(new JavaSource(interfaceModel));
+        JavaModel interfaceModel = changeToJavaInterfaceModel(source);
+        javaWriterForStub.write(new JavaSource(interfaceModel));
+
+        // write adapter
+        JavaModel adapterModel = createAdapterModel(interfaceModel);
+        javaWriterForStub.write(new JavaSource(adapterModel));
 
         // write logic
         JavaSource logicSource = changeToJavaLogic(source, interfaceModel);
-        javaWriterForLogic.write(logicSource);
+        javaWriterForSkeleton.write(logicSource);
     }
 
     private JavaSource changeToJavaLogic(JavaSource source, JavaModel interfaceModel) {
         //
         // change package and name
-        source.changePackageAndName(nameRule, packageRule);
+        NameRule logicNameRule = NameRule.copyOf(nameRule)
+                .add("Service", "ServiceLogic");
+        source.changePackageAndName(logicNameRule, packageRule);
 
         // change imports
         source.changeImports(nameRule, packageRule);
@@ -91,7 +96,7 @@ public class JavaInterfaceAbstracter {
         return source;
     }
 
-    private JavaModel createJavaInterfaceModel(JavaSource source) {
+    private JavaModel changeToJavaInterfaceModel(JavaSource source) {
         //
         JavaModel javaModel = source.toModel();
         javaModel.setInterface(true);
@@ -101,6 +106,24 @@ public class JavaInterfaceAbstracter {
                 .filter(methodModel -> methodModel.isPublic())
                 .collect(Collectors.toList());
         javaModel.setMethods(onlyPublic);
+
+        javaModel.changePackage(packageRule);
+        javaModel.changeMethodUsingClassPackageName(nameRule, packageRule);
+
+        return javaModel;
+    }
+
+    private JavaModel createAdapterModel(JavaModel interfaceModel) {
+        //
+        String className = interfaceModel.getClassType().getClassName();
+        JavaModel javaModel = new JavaModel(className, true);
+
+        NameRule adapterNameRule = NameRule.copyOf(nameRule)
+                .add("Service", "Adapter");
+        javaModel.changeName(adapterNameRule);
+
+        String newPackageName = packageRule.changePackage(javaAbstractParam.getSourcePackage()) + ".ext.adapter";
+        javaModel.setPackageName(newPackageName);
 
         return javaModel;
     }

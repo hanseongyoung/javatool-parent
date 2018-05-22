@@ -42,16 +42,9 @@ public class ComplexProjectConverterTest extends BaseFileTest {
         parameter.setTargetWorkspace(super.testDirName);
 
         JavaAbstractParam javaAbstractParam = new JavaAbstractParam();
+        javaAbstractParam.setTargetFilePostfix("ExtService.java");
+        javaAbstractParam.setSourcePackage("amis3.mc.oo");
         javaAbstractParam.setSourceDtoPackage("amis3.vo.mc.oo");
-
-//        PackageRule javaAbstractPackageRule = PackageRule.newInstance()
-//                .add(0, "amis3"     , "kr.amc.amis")
-//                .add(2, "oo"        , "order")
-//                .add(1, "vo"        , 4)
-//                .add(4, "vo"        , "ext.spec.sdo", 1)
-//                .add("Service", "ext.spec")
-//                .add("Logic", "ext.logic")
-//                .addRemoveImport("com.foo.bar.DefaultVO");
 
         PackageRule javaConvertPackageRule = PackageRule.newInstance()
                 .add(0, "amis3"     , "kr.amc.amis")
@@ -70,7 +63,7 @@ public class ComplexProjectConverterTest extends BaseFileTest {
                 .set(4, "vo"        , "ext.spec.sdo", 1);
 
         NameRule javaConvertNameRule = NameRule.newInstance()
-                .add("Service", "Logic")
+                //.add("Service", "Logic")
                 .add("VO", "DTO")
                 .add("TO", "SSS")
                 .addExceptionPattern("springframework");

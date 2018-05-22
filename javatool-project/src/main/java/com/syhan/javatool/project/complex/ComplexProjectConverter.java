@@ -54,6 +54,8 @@ public class ComplexProjectConverter {
         createProject(model);
         moveJavaSource(model);
         moveSqlMap(model);
+        // McOoOdExtAdapter, McOoOdExtResource
+        // OrderProxy, OrderRemoteProxy, OrderLocalProxy
     }
 
     private void moveJavaSource(ProjectModel model) throws IOException {
@@ -63,7 +65,7 @@ public class ComplexProjectConverter {
         ProjectConfiguration skeletonConfig = model.findBySuffix(PROJECT_SUFFIX_SKELETON).configuration(ConfigurationType.Target);
         ProjectConfiguration serviceConfig = model.findBySuffix(PROJECT_SUFFIX_SERVICE).configuration(ConfigurationType.Target);
 
-        JavaInterfaceAbstracter abstracter = new JavaInterfaceAbstracter(sourceConfig, stubConfig, skeletonConfig,
+        JavaInterfaceAbstracter extServiceAbstracter = new JavaInterfaceAbstracter(sourceConfig, stubConfig, skeletonConfig,
                 javaConvertNameRule, javaConvertPackageRule, javaAbstractParam);
         JavaConverter serviceJavaConverter = new JavaConverter(sourceConfig, serviceConfig, javaConvertNameRule, javaConvertPackageRule);
         JavaConverter stubJavaConverter = new JavaConverter(sourceConfig, stubConfig, javaConvertNameRule, javaConvertPackageRule);
@@ -74,30 +76,18 @@ public class ComplexProjectConverter {
             @Override
             public void convert(String sourceFileName) throws IOException {
                 //
-                updatePackageRuleUsingExtService(sourceFileName, abstracter);
+                updatePackageRuleUsingExtService(sourceFileName, extServiceAbstracter);
             }
         }).convert(param.getSourcePackage());
 
         // convert sourcePackage
-        new PackageConverter(new ProjectItemConverter(sourceConfig, ProjectItemType.Java) {
-            @Override
-            public void convert(String sourceFileName) throws IOException {
-                //
-                if (convertExtService(sourceFileName, abstracter)) return;
-                if (convertJava(sourceFileName, serviceJavaConverter)) return;
-
-                System.err.println("Couldn't convert --> " + sourceFileName);
-            }
-        }).convert(param.getSourcePackage());
+        new MultiItemPackageConverter()
+                .add(extServiceAbstracter)
+                .add(serviceJavaConverter)
+                .convert(param.getSourcePackage());
 
         // convert sourceDtoPackage
-        new PackageConverter(new ProjectItemConverter(sourceConfig, ProjectItemType.Java) {
-            @Override
-            public void convert(String sourceFileName) throws IOException {
-                //
-                dtoConverter.convert(sourceFileName);
-            }
-        }).convert(param.getSourceDtoPackage());
+        new PackageConverter(dtoConverter).convert(param.getSourceDtoPackage());
     }
 
     private void moveSqlMap(ProjectModel model) throws IOException {
@@ -112,40 +102,19 @@ public class ComplexProjectConverter {
                 javaConvertNameRule, sqlMapNamespaceRule, javaConvertPackageRule);
 
         // convert sqlMap
-        new PackageConverter(new ProjectItemConverter(sqlMapSourceConfig, ProjectItemType.MyBatisMapper) {
-            @Override
-            public void convert(String sourceFileName) throws IOException {
-                mapperCreator.convert(sourceFileName);
-            }
-        }).convert(param.getSourceSqlMapPackage());
+        new PackageConverter(mapperCreator).convert(param.getSourceSqlMapPackage());
     }
 
 
     private void updatePackageRuleUsingExtService(String sourceFileName, JavaInterfaceAbstracter abstracter) throws IOException {
         //
-        if (!sourceFileName.endsWith("ExtService.java")) {
+        if (!sourceFileName.endsWith(javaAbstractParam.getTargetFilePostfix())) {
             return;
         }
         List<PackageRule.ChangeImport> stubStubDto = abstracter.findUsingDtoChangeInfo(sourceFileName, packageRuleForCheckStubDto);
         for (PackageRule.ChangeImport changeImport : stubStubDto) {
             javaConvertPackageRule.putChangeImport(changeImport);
         }
-    }
-
-    private boolean convertExtService(String sourceFileName, JavaInterfaceAbstracter abstracter) throws IOException {
-        //
-        if (!sourceFileName.endsWith("ExtService.java")) {
-            return false;
-        }
-
-        abstracter.convert(sourceFileName);
-        return true;
-    }
-
-    private boolean convertJava(String sourceFileName, JavaConverter javaConverter) throws IOException {
-        //
-        javaConverter.convert(sourceFileName);
-        return true;
     }
 
     private void createProject(ProjectModel model) {

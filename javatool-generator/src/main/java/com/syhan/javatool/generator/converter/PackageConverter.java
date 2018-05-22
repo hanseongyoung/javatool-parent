@@ -2,8 +2,8 @@ package com.syhan.javatool.generator.converter;
 
 import com.syhan.javatool.share.config.ProjectSources;
 import com.syhan.javatool.share.config.SourceFolders;
+import com.syhan.javatool.share.util.file.PathUtil;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,7 +20,7 @@ public class PackageConverter {
 
     public void convert(String packageName) throws IOException {
         // packageName : com.foo.bar -> path : com/foo/bar
-        String packagePath = convertPackageNameToPath(packageName);
+        String packagePath = PathUtil.toPath(packageName);
         String physicalSourcePath = getPhysicalSourcePath(packagePath);
 
         try (Stream<Path> paths = Files.walk(Paths.get(physicalSourcePath))) {
@@ -57,8 +57,4 @@ public class PackageConverter {
         }
     }
 
-    private String convertPackageNameToPath(String packageName) {
-        //
-        return packageName.replace(".", File.separator);
-    }
 }

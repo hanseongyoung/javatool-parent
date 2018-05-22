@@ -4,8 +4,16 @@ import com.syhan.javatool.share.config.ProjectSources;
 import com.syhan.javatool.share.data.Pair;
 import com.syhan.javatool.share.util.string.StringUtil;
 
+import java.io.File;
+
 public abstract class PathUtil {
     //
+    // com.foo.bar -> com/foo/bar
+    public static String toPath(String packageName) {
+        //
+        return packageName.replace(".", File.separator);
+    }
+
     // mc.oo.od.Sample -> mc.oo.od, Sample
     public static Pair<String, String> devideClassName(String className) {
         //
