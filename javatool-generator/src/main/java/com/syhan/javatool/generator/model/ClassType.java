@@ -4,6 +4,7 @@ import com.syhan.javatool.share.data.Pair;
 import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.util.file.PathUtil;
+import com.syhan.javatool.share.util.string.StringUtil;
 
 public class ClassType {
     //
@@ -34,6 +35,14 @@ public class ClassType {
     public static ClassType newPrimitiveType(String primitiveName) {
         //
         return new ClassType(primitiveName, true);
+    }
+
+    public static ClassType copyOf(ClassType other) {
+        //
+        if (other == null) {
+            return null;
+        }
+        return new ClassType(other);
     }
 
     protected ClassType(String className) {
@@ -116,20 +125,7 @@ public class ClassType {
 
     public String getRecommendedVariableName() {
         //
-        return toFirstLowerCase(name);
-    }
-
-    private String toFirstLowerCase(String str) {
-        //
-        if (str == null) return null;
-
-        if (Character.isLowerCase(str.charAt(0))) {
-            return str;
-        }
-
-        char c[] = str.toCharArray();
-        c[0] += 32;
-        return new String(c);
+        return StringUtil.getRecommendedVariableName(name);
     }
 
     public boolean hasTypeArgument() {

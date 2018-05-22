@@ -28,6 +28,17 @@ public class JavaModel {
         this.methods = new ArrayList<>();
     }
 
+    public JavaModel(JavaModel other) {
+        //
+        this.classType = ClassType.copyOf(other.classType);
+        this.annotation = AnnotationType.copyOf(other.annotation);
+        this.isInterface = other.isInterface;
+        this.methods = new ArrayList<>();
+        for (MethodModel method : other.methods) {
+            this.methods.add(new MethodModel(method));
+        }
+    }
+
     public void changeName(NameRule nameRule) {
         //
         if (nameRule == null) {

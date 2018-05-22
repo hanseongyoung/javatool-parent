@@ -1,5 +1,14 @@
 package com.syhan.javatool.generator.converter;
 
+import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.type.VoidType;
 import com.syhan.javatool.generator.model.JavaModel;
 import com.syhan.javatool.generator.model.MethodModel;
 import com.syhan.javatool.generator.reader.JavaReader;
@@ -8,6 +17,7 @@ import com.syhan.javatool.generator.writer.JavaWriter;
 import com.syhan.javatool.share.config.ProjectConfiguration;
 import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
+import com.syhan.javatool.share.util.string.StringUtil;
 
 import java.io.IOException;
 import java.util.List;
@@ -66,6 +76,8 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
 
         // write interface
         JavaModel interfaceModel = changeToJavaInterfaceModel(source);
+        interfaceModel.changePackage(packageRule);
+        interfaceModel.changeMethodUsingClassPackageName(nameRule, packageRule);
         javaWriterForStub.write(new JavaSource(interfaceModel));
 
         // write adapter
@@ -75,6 +87,10 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
         // write logic
         JavaSource logicSource = changeToJavaLogic(source, interfaceModel);
         javaWriterForSkeleton.write(logicSource);
+
+        // write resource
+        JavaSource resourceJava = createResourceJava(interfaceModel, logicSource);
+        javaWriterForSkeleton.write(resourceJava);
     }
 
     private JavaSource changeToJavaLogic(JavaSource source, JavaModel interfaceModel) {
@@ -107,8 +123,7 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
                 .collect(Collectors.toList());
         javaModel.setMethods(onlyPublic);
 
-        javaModel.changePackage(packageRule);
-        javaModel.changeMethodUsingClassPackageName(nameRule, packageRule);
+        // Do not change package or name in this method. findUsingDtoChangeInfo using it.
 
         return javaModel;
     }
@@ -126,5 +141,56 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
         javaModel.setPackageName(newPackageName);
 
         return javaModel;
+    }
+
+    private JavaSource createResourceJava(JavaModel interfaceModel, JavaSource logicSource) {
+        //
+        JavaModel javaModel = new JavaModel(interfaceModel);
+        javaModel.setInterface(false);
+
+        NameRule resourceNameRule = NameRule.copyOf(nameRule)
+                .add("Service", "Resource");
+        javaModel.changeName(resourceNameRule);
+
+        String newPackageName = packageRule.changePackage(javaAbstractParam.getSourcePackage()) + ".ext.rest";
+        javaModel.setPackageName(newPackageName);
+
+        JavaSource javaSource = new JavaSource(javaModel);
+        javaSource.addAnnotation("RestController", "org.springframework.web.bind.annotation");
+        javaSource.setImplementedType(interfaceModel.getName(), interfaceModel.getPackageName());
+
+        String logicName = logicSource.getName();
+        String logicPackage = logicSource.getPackageName();
+        String varName = StringUtil.getRecommendedVariableName(logicName);
+        javaSource.addField(logicName, logicPackage, varName,
+                "Autowired", "org.springframework.beans.factory.annotation");
+
+        // method body
+        javaSource.forEachMethod(methodDeclaration -> resourceMethodHandle(methodDeclaration, new NameExpr(varName)));
+
+        // add import
+        javaSource.addImport("RequestBody", "org.springframework.web.bind.annotation");
+        return javaSource;
+    }
+
+    private void resourceMethodHandle(MethodDeclaration methodDeclaration, Expression logicExp) {
+        //
+        methodDeclaration.addMarkerAnnotation("Override");
+        methodDeclaration.addModifier(Modifier.PUBLIC);
+
+        BlockStmt block = new BlockStmt();
+        methodDeclaration.setBody(block);
+
+        MethodCallExpr call = new MethodCallExpr(logicExp, methodDeclaration.getNameAsString());
+        for (Parameter parameter : methodDeclaration.getParameters()) {
+            parameter.addMarkerAnnotation("RequestBody");
+            call.addArgument(parameter.getNameAsExpression());
+        }
+
+        if (methodDeclaration.getType() instanceof VoidType) {
+            block.addStatement(call);
+        } else {
+            block.addStatement(new ReturnStmt(call));
+        }
     }
 }

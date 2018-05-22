@@ -4,14 +4,12 @@ import com.syhan.javatool.share.config.ProjectSources;
 import com.syhan.javatool.share.data.Pair;
 import com.syhan.javatool.share.util.string.StringUtil;
 
-import java.io.File;
-
 public abstract class PathUtil {
     //
     // com.foo.bar -> com/foo/bar
     public static String toPath(String packageName) {
         //
-        return packageName.replace(".", File.separator);
+        return packageName.replace(".", ProjectSources.PATH_DELIM);
     }
 
     // mc.oo.od.Sample -> mc.oo.od, Sample
@@ -40,7 +38,7 @@ public abstract class PathUtil {
         String fileName = paths[length - 1];
         int dotIndex = fileName.indexOf(".");
         String name = fileName.substring(0, dotIndex);
-        String originExtension = fileName.substring(dotIndex + 1);
+        //String originExtension = fileName.substring(dotIndex + 1);
 
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < length - 1; i++) {

@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -128,12 +129,29 @@ public class JavaSource {
         compilationUnit.addImport(packageName + "." + name);
     }
 
+    public void addField(String name, String packageName, String varName, String annotationName, String annotationPackageName) {
+        //
+        ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
+        FieldDeclaration field = classType.addPrivateField(name, varName);
+        compilationUnit.addImport(packageName + "." + name);
+
+        if (annotationName != null) {
+            field.addMarkerAnnotation(annotationName);
+            compilationUnit.addImport(annotationPackageName + "." + annotationName);
+        }
+    }
+
     public void addAnnotation(String annotation, String packageName) {
         //
         ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
         classType.addMarkerAnnotation(annotation);
 
         compilationUnit.addImport(packageName + "." + annotation);
+    }
+
+    public void addImport(String name, String packageName) {
+        //
+        compilationUnit.addImport(packageName + "." + name);
     }
 
     public void removeGetterAndSetter() {
@@ -150,6 +168,22 @@ public class JavaSource {
             if (setter != null) {
                 setter.remove();
             }
+        }
+    }
+
+    public void forEachMethod(Consumer<MethodDeclaration> methodConsumer) {
+        //
+        TypeDeclaration type = compilationUnit.getType(0);
+        List<MethodDeclaration> methodDeclarations = type.getMethods();
+
+        // for field, method ordering issue.
+        for(MethodDeclaration methodDeclaration : methodDeclarations) {
+            type.remove(methodDeclaration);
+        }
+
+        for (MethodDeclaration methodDeclaration : methodDeclarations) {
+            methodConsumer.accept(methodDeclaration);
+            type.addMember(methodDeclaration);
         }
     }
 
@@ -268,7 +302,8 @@ public class JavaSource {
             newImportName = nameRule.changeName(newImportName);
         }
         if (packageRule != null) {
-            newImportName = packageRule.changePackage(newImportName);
+            Pair<String, String> pair = PathUtil.devideClassName(newImportName);
+            newImportName = packageRule.changePackage(pair.x, pair.y) + "." + pair.y;
         }
         return newImportName;
     }

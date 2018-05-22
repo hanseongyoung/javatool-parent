@@ -17,6 +17,17 @@ public class MethodModel {
         this.parameterTypes = new ArrayList<>();
     }
 
+    public MethodModel(MethodModel other) {
+        //
+        this.name = other.name;
+        this.access = other.access;
+        this.returnType = ClassType.copyOf(other.returnType);
+        this.parameterTypes = new ArrayList<>();
+        for (ClassType parameterType : other.parameterTypes) {
+            this.parameterTypes.add(new ClassType(parameterType));
+        }
+    }
+
     public void addParameterType(ClassType classType) {
         //
         this.parameterTypes.add(classType);
