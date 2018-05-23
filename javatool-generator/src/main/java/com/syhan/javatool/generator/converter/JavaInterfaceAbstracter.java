@@ -3,23 +3,25 @@ package com.syhan.javatool.generator.converter;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.VoidType;
+import com.syhan.javatool.generator.model.ClassType;
 import com.syhan.javatool.generator.model.JavaModel;
 import com.syhan.javatool.generator.model.MethodModel;
 import com.syhan.javatool.generator.reader.JavaReader;
 import com.syhan.javatool.generator.source.JavaSource;
 import com.syhan.javatool.generator.writer.JavaWriter;
 import com.syhan.javatool.share.config.ProjectConfiguration;
+import com.syhan.javatool.share.data.Pair;
 import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
+import com.syhan.javatool.share.util.file.PathUtil;
 import com.syhan.javatool.share.util.string.StringUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,8 +32,18 @@ import java.util.stream.Collectors;
 // [DTO]      com.foo.bar.spec.sdo.SomeDTO
 public class JavaInterfaceAbstracter extends ProjectItemConverter {
     //
+    private static final ClassType Autowired = ClassType.newClassType("org.springframework.beans.factory.annotation.Autowired");
+    private static final ClassType FeignClient = ClassType.newClassType("org.springframework.cloud.openfeign.FeignClient");
+    private static final ClassType RestController = ClassType.newClassType("org.springframework.web.bind.annotation.RestController");
+    private static final ClassType RequestBody = ClassType.newClassType("org.springframework.web.bind.annotation.RequestBody");
+    private static final ClassType PostMapping = ClassType.newClassType("org.springframework.web.bind.annotation.PostMapping");
+    private static final ClassType Component = ClassType.newClassType("org.springframework.stereotype.Component");
+    private static final ClassType ConditionalOnProperty = ClassType.newClassType("org.springframework.boot.autoconfigure.condition.ConditionalOnProperty");
+
     private JavaReader javaReader;
+    private JavaReader javaReaderForStub;
     private JavaWriter javaWriterForStub;
+    private JavaReader javaReaderForSkeleton;
     private JavaWriter javaWriterForSkeleton;
 
     private NameRule nameRule;
@@ -45,7 +57,9 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
         super(sourceConfiguration, ProjectItemType.Java, javaAbstractParam.getTargetFilePostfix());
 
         this.javaReader = new JavaReader(sourceConfiguration);
+        this.javaReaderForStub = new JavaReader(targetStubConfiguration);
         this.javaWriterForStub = new JavaWriter(targetStubConfiguration);
+        this.javaReaderForSkeleton = new JavaReader(targetSkeletonConfiguration);
         this.javaWriterForSkeleton = new JavaWriter(targetSkeletonConfiguration);
 
         this.nameRule = nameRule;
@@ -76,13 +90,11 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
 
         // write interface
         JavaModel interfaceModel = changeToJavaInterfaceModel(source);
-        interfaceModel.changePackage(packageRule);
-        interfaceModel.changeMethodUsingClassPackageName(nameRule, packageRule);
-        javaWriterForStub.write(new JavaSource(interfaceModel));
+        javaWriterForStub.write(updateInterface(interfaceModel));
 
         // write adapter
-        JavaModel adapterModel = createAdapterModel(interfaceModel);
-        javaWriterForStub.write(new JavaSource(adapterModel));
+        JavaSource adapterSource = createAdapterSource(interfaceModel);
+        javaWriterForStub.write(adapterSource);
 
         // write logic
         JavaSource logicSource = changeToJavaLogic(source, interfaceModel);
@@ -91,6 +103,156 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
         // write resource
         JavaSource resourceJava = createResourceJava(interfaceModel, logicSource);
         javaWriterForSkeleton.write(resourceJava);
+
+        // update proxy interface
+        JavaSource proxySource = readAndUpdateProxy(interfaceModel);
+        javaWriterForStub.write(proxySource);
+
+        // update remote proxy
+        JavaSource remoteProxy = readAndUpdateRemoteProxy(interfaceModel, proxySource, adapterSource);
+        javaWriterForStub.write(remoteProxy);
+
+        // update local proxy
+        JavaSource localProxy = readAndUpdateLocalProxy(interfaceModel, proxySource, logicSource);
+        javaWriterForSkeleton.write(localProxy);
+    }
+
+    private JavaModel changeToJavaInterfaceModel(JavaSource source) {
+        //
+        JavaModel javaModel = source.toModel();
+        javaModel.setInterface(true);
+
+        // remove not 'public' access method
+        List<MethodModel> onlyPublic = javaModel.getMethods().stream()
+                .filter(MethodModel::isPublic)
+                .collect(Collectors.toList());
+        javaModel.setMethods(onlyPublic);
+
+        // Do not change package or name in this method. findUsingDtoChangeInfo using it.
+
+        return javaModel;
+    }
+
+    private JavaSource updateInterface(JavaModel interfaceModel) {
+        //
+        interfaceModel.changePackage(packageRule);
+        interfaceModel.changeMethodUsingClassPackageName(nameRule, packageRule);
+        JavaSource javaSource = new JavaSource(interfaceModel);
+
+        javaSource.forEachMethod(methodDeclaration -> interfaceMethodHandle(methodDeclaration, interfaceModel.getName()));
+
+        // add import
+        javaSource.addImport(RequestBody);
+        javaSource.addImport(PostMapping);
+
+        return javaSource;
+    }
+
+    private void interfaceMethodHandle(MethodDeclaration methodDeclaration, String interfaceName) {
+        //
+        String mappingUrl = interfaceName + "/" + methodDeclaration.getNameAsString();
+        AnnotationExpr expr = new SingleMemberAnnotationExpr(new Name(PostMapping.getName()), new StringLiteralExpr(mappingUrl));
+        methodDeclaration.addAnnotation(expr);
+
+        for (Parameter parameter : methodDeclaration.getParameters()) {
+            parameter.addMarkerAnnotation(RequestBody.getName());
+        }
+    }
+
+    private JavaSource readAndUpdateProxy(JavaModel interfaceModel) throws IOException {
+        //
+        String projectNameFirstUpper = StringUtil.toFirstUpperCase(javaAbstractParam.getNewProjectName2());
+        String proxyClassName = packageRule.changePackage(javaAbstractParam.getSourcePackage())
+                + ".ext.proxy." + projectNameFirstUpper + "Proxy";
+        String proxySourceFilePath = PathUtil.toSourceFileName(proxyClassName, "java");
+
+        JavaSource proxyJavaSource;
+        if (javaReaderForStub.exists(proxySourceFilePath)) {
+            proxyJavaSource = javaReaderForStub.read(proxySourceFilePath);
+        } else {
+            JavaModel proxyModel = new JavaModel(proxyClassName, true);
+            proxyJavaSource = new JavaSource(proxyModel);
+        }
+
+        MethodModel requireMethodModel = new MethodModel("require" + interfaceModel.getName(), interfaceModel.getClassType());
+        proxyJavaSource.addMethod(requireMethodModel);
+
+        return proxyJavaSource;
+    }
+
+    private JavaSource readAndUpdateLocalProxy(JavaModel interfaceModel, JavaSource proxySource, JavaSource logicSource) throws IOException {
+        //
+        String projectNameFirstUpper = StringUtil.toFirstUpperCase(javaAbstractParam.getNewProjectName2());
+        String localProxyClassName = packageRule.changePackage(javaAbstractParam.getSourcePackage())
+                + ".ext.logic." + projectNameFirstUpper + "LocalProxy";
+        String localProxySourceFilePath = PathUtil.toSourceFileName(localProxyClassName, "java");
+
+        JavaSource localProxySource;
+        if (javaReaderForSkeleton.exists(localProxySourceFilePath)) {
+            localProxySource = javaReaderForSkeleton.read(localProxySourceFilePath);
+        } else {
+            JavaModel localProxyModel = new JavaModel(localProxyClassName, false);
+            localProxySource = new JavaSource(localProxyModel);
+            localProxySource.setImplementedType(proxySource);
+            localProxySource.addAnnotation(Component);
+            List<Pair<String, Object>> annotationArgs = new ArrayList<>();
+            annotationArgs.add(new Pair<>("name", javaAbstractParam.getRemoteIdentifier() + ".proxy"));
+            annotationArgs.add(new Pair<>("havingValue", "local"));
+            annotationArgs.add(new Pair<>("matchIfMissing", true));
+            localProxySource.addAnnotation(ConditionalOnProperty, annotationArgs);
+        }
+
+        // add field
+        String logicVarName = StringUtil.getRecommendedVariableName(logicSource.getName());
+        localProxySource.addField(logicSource, logicVarName, Autowired);
+
+        // add method
+        MethodModel requireMethodModel = new MethodModel("require" + interfaceModel.getName(), interfaceModel.getClassType());
+        localProxySource.addMethod(requireMethodModel, methodDeclaration -> simpleReturnMethodBodyHandle(methodDeclaration, logicVarName));
+
+        return localProxySource;
+    }
+
+    private JavaSource readAndUpdateRemoteProxy(JavaModel interfaceModel, JavaSource proxySource, JavaSource adapterSource) throws IOException {
+        //
+        String projectNameFirstUpper = StringUtil.toFirstUpperCase(javaAbstractParam.getNewProjectName2());
+        String remoteProxyClassName = packageRule.changePackage(javaAbstractParam.getSourcePackage())
+                + ".ext.adapter." + projectNameFirstUpper + "RemoteProxy";
+        String remoteProxySourceFilePath = PathUtil.toSourceFileName(remoteProxyClassName, "java");
+
+        JavaSource remoteProxySource;
+        if (javaReaderForStub.exists(remoteProxySourceFilePath)) {
+            remoteProxySource = javaReaderForStub.read(remoteProxySourceFilePath);
+        } else {
+            JavaModel remoteProxyModel = new JavaModel(remoteProxyClassName, false);
+            remoteProxySource = new JavaSource(remoteProxyModel);
+            remoteProxySource.setImplementedType(proxySource);
+            remoteProxySource.addAnnotation(Component);
+            List<Pair<String, Object>> annotationArgs = new ArrayList<>();
+            annotationArgs.add(new Pair<>("name", javaAbstractParam.getRemoteIdentifier() + ".proxy"));
+            annotationArgs.add(new Pair<>("havingValue", "remote"));
+            remoteProxySource.addAnnotation(ConditionalOnProperty, annotationArgs);
+        }
+
+        // add field
+        String adapterVarName = StringUtil.getRecommendedVariableName(adapterSource.getName());
+        remoteProxySource.addField(adapterSource, adapterVarName, Autowired);
+
+        // add method
+        MethodModel requireMethodModel = new MethodModel("require" + interfaceModel.getName(), interfaceModel.getClassType());
+        remoteProxySource.addMethod(requireMethodModel, methodDeclaration -> simpleReturnMethodBodyHandle(methodDeclaration, adapterVarName));
+
+        return remoteProxySource;
+    }
+
+    private void simpleReturnMethodBodyHandle(MethodDeclaration methodDeclaration, String returnStmt) {
+        //
+        methodDeclaration.addMarkerAnnotation("Override");
+        methodDeclaration.addModifier(Modifier.PUBLIC);
+
+        BlockStmt block = new BlockStmt();
+        methodDeclaration.setBody(block);
+        block.addStatement(new ReturnStmt(returnStmt));
     }
 
     private JavaSource changeToJavaLogic(JavaSource source, JavaModel interfaceModel) {
@@ -112,23 +274,9 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
         return source;
     }
 
-    private JavaModel changeToJavaInterfaceModel(JavaSource source) {
-        //
-        JavaModel javaModel = source.toModel();
-        javaModel.setInterface(true);
 
-        // remove not 'public' access method
-        List<MethodModel> onlyPublic = javaModel.getMethods().stream()
-                .filter(methodModel -> methodModel.isPublic())
-                .collect(Collectors.toList());
-        javaModel.setMethods(onlyPublic);
 
-        // Do not change package or name in this method. findUsingDtoChangeInfo using it.
-
-        return javaModel;
-    }
-
-    private JavaModel createAdapterModel(JavaModel interfaceModel) {
+    private JavaSource createAdapterSource(JavaModel interfaceModel) {
         //
         String className = interfaceModel.getClassType().getClassName();
         JavaModel javaModel = new JavaModel(className, true);
@@ -140,7 +288,13 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
         String newPackageName = packageRule.changePackage(javaAbstractParam.getSourcePackage()) + ".ext.adapter";
         javaModel.setPackageName(newPackageName);
 
-        return javaModel;
+        JavaSource javaSource = new JavaSource(javaModel);
+        String remoteIdentifier = javaAbstractParam.getRemoteIdentifier();
+        javaSource.addAnnotation(FeignClient, remoteIdentifier);
+
+        javaSource.setExtendedType(interfaceModel.getName(), interfaceModel.getPackageName());
+
+        return javaSource;
     }
 
     private JavaSource createResourceJava(JavaModel interfaceModel, JavaSource logicSource) {
@@ -156,20 +310,18 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
         javaModel.setPackageName(newPackageName);
 
         JavaSource javaSource = new JavaSource(javaModel);
-        javaSource.addAnnotation("RestController", "org.springframework.web.bind.annotation");
+        javaSource.addAnnotation(RestController);
         javaSource.setImplementedType(interfaceModel.getName(), interfaceModel.getPackageName());
 
         String logicName = logicSource.getName();
-        String logicPackage = logicSource.getPackageName();
         String varName = StringUtil.getRecommendedVariableName(logicName);
-        javaSource.addField(logicName, logicPackage, varName,
-                "Autowired", "org.springframework.beans.factory.annotation");
+        javaSource.addField(logicSource, varName, Autowired);
 
         // method body
         javaSource.forEachMethod(methodDeclaration -> resourceMethodHandle(methodDeclaration, new NameExpr(varName)));
 
         // add import
-        javaSource.addImport("RequestBody", "org.springframework.web.bind.annotation");
+        javaSource.addImport(RequestBody);
         return javaSource;
     }
 
@@ -183,7 +335,7 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
 
         MethodCallExpr call = new MethodCallExpr(logicExp, methodDeclaration.getNameAsString());
         for (Parameter parameter : methodDeclaration.getParameters()) {
-            parameter.addMarkerAnnotation("RequestBody");
+            parameter.addMarkerAnnotation(RequestBody.getName());
             call.addArgument(parameter.getNameAsExpression());
         }
 

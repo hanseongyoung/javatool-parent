@@ -7,7 +7,7 @@ public class StringUtil extends org.apache.commons.lang3.StringUtils {
         return toFirstLowerCase(name);
     }
 
-    private static String toFirstLowerCase(String str) {
+    public static String toFirstLowerCase(String str) {
         //
         if (str == null) return null;
 
@@ -17,6 +17,19 @@ public class StringUtil extends org.apache.commons.lang3.StringUtils {
 
         char c[] = str.toCharArray();
         c[0] += 32;
+        return new String(c);
+    }
+
+    public static String toFirstUpperCase(String str) {
+        //
+        if (str == null) return null;
+
+        if (Character.isUpperCase(str.charAt(0))) {
+            return str;
+        }
+
+        char c[] = str.toCharArray();
+        c[0] -= 32;
         return new String(c);
     }
 }

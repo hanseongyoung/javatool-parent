@@ -65,7 +65,7 @@ public class MultiItemPackageConverter {
                 System.err.println("Couldn't convert --> " + sourceFileName);
             }
 
-        } catch (Exception e) {
+        } catch (Throwable e) {
             // TODO : 파일 로깅 처리하고 계속 진행함.
             System.err.println("Couldn't convert --> " + sourceFileName + ", " + e.getMessage());
             e.printStackTrace();

@@ -45,6 +45,8 @@ public class ComplexProjectConverterTest extends BaseFileTest {
         javaAbstractParam.setTargetFilePostfix("ExtService.java");
         javaAbstractParam.setSourcePackage("amis3.mc.oo");
         javaAbstractParam.setSourceDtoPackage("amis3.vo.mc.oo");
+        javaAbstractParam.setNewProjectName1("mc");
+        javaAbstractParam.setNewProjectName2("order");
 
         PackageRule javaConvertPackageRule = PackageRule.newInstance()
                 .add(0, "amis3"     , "kr.amc.amis")

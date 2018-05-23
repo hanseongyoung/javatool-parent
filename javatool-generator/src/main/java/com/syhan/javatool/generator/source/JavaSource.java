@@ -3,11 +3,13 @@ package com.syhan.javatool.generator.source;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.*;
-import com.github.javaparser.ast.expr.Name;
+import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.syhan.javatool.generator.ast.AstMapper;
+import com.syhan.javatool.generator.model.ClassType;
 import com.syhan.javatool.generator.model.JavaModel;
+import com.syhan.javatool.generator.model.MethodModel;
 import com.syhan.javatool.share.data.Pair;
 import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
@@ -43,6 +45,11 @@ public class JavaSource {
     public JavaModel toModel() {
         //
         return AstMapper.toJavaModel(compilationUnit, this::findFullName);
+    }
+
+    public ClassType toClassType() {
+        //
+        return ClassType.newClassType(getName(), getPackageName());
     }
 
     private String findFullName(String returnTypeName) {
@@ -108,6 +115,11 @@ public class JavaSource {
         packageDeclaration.setName(new Name(packageName));
     }
 
+    public void setImplementedType(JavaSource implementedType) {
+        //
+        setImplementedType(implementedType.getName(), implementedType.getPackageName());
+    }
+
     public void setImplementedType(String name, String packageName) {
         //
         ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
@@ -116,6 +128,11 @@ public class JavaSource {
         classType.setImplementedTypes(nodeList);
 
         compilationUnit.addImport(packageName + "." + name);
+    }
+
+    public void setExtendedType(JavaSource extendedType) {
+        //
+        setExtendedType(extendedType.getName(), extendedType.getPackageName());
     }
 
     public void setExtendedType(String name, String packageName) {
@@ -127,6 +144,11 @@ public class JavaSource {
         classType.setExtendedTypes(nodeList);
 
         compilationUnit.addImport(packageName + "." + name);
+    }
+
+    public void addField(JavaSource fieldType, String varName, ClassType annotation) {
+        //
+        addField(fieldType.getName(), fieldType.getPackageName(), varName, annotation.getName(), annotation.getPackageName());
     }
 
     public void addField(String name, String packageName, String varName, String annotationName, String annotationPackageName) {
@@ -141,6 +163,11 @@ public class JavaSource {
         }
     }
 
+    public void addAnnotation(ClassType classType) {
+        //
+        addAnnotation(classType.getName(), classType.getPackageName());
+    }
+
     public void addAnnotation(String annotation, String packageName) {
         //
         ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
@@ -149,9 +176,67 @@ public class JavaSource {
         compilationUnit.addImport(packageName + "." + annotation);
     }
 
+    public void addAnnotation(ClassType classType, String annotationArgs) {
+        //
+        addAnnotation(classType.getName(), classType.getPackageName(), annotationArgs);
+    }
+
+    public void addAnnotation(String annotation, String packageName, String annotationArgs) {
+        //
+        ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
+        AnnotationExpr expr = new SingleMemberAnnotationExpr(new Name(annotation), new StringLiteralExpr(annotationArgs));
+        classType.addAnnotation(expr);
+
+        compilationUnit.addImport(packageName + "." + annotation);
+    }
+
+    public void addAnnotation(ClassType annotation, List<Pair<String, Object>> annotationArgs) {
+        //
+        ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
+        NodeList<MemberValuePair> pairs = new NodeList<>();
+        for (Pair<String, Object> pair : annotationArgs) {
+            Expression expression;
+            if (pair.y instanceof String) {
+                expression = new StringLiteralExpr(pair.y.toString());
+            } else if (pair.y instanceof Boolean) {
+                expression = new BooleanLiteralExpr((Boolean) pair.y);
+            } else {
+                expression = new NameExpr(pair.y.toString());
+            }
+            pairs.add(new MemberValuePair(pair.x, expression));
+        }
+        AnnotationExpr expr = new NormalAnnotationExpr(new Name(annotation.getName()), pairs);
+        classType.addAnnotation(expr);
+
+        compilationUnit.addImport(annotation.getClassName());
+    }
+
     public void addImport(String name, String packageName) {
         //
         compilationUnit.addImport(packageName + "." + name);
+    }
+
+    public void addImport(ClassType classType) {
+        //
+        compilationUnit.addImport(classType.getClassName());
+    }
+
+    public MethodDeclaration addMethod(MethodModel methodModel) {
+        //
+        ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
+
+        MethodDeclaration methodDeclaration = AstMapper.createMethodDeclaration(methodModel);
+        classType.addMember(methodDeclaration);
+
+        addImport(methodModel.getReturnType());
+
+        return methodDeclaration;
+    }
+
+    public void addMethod(MethodModel methodModel, Consumer<MethodDeclaration> methodConsumer) {
+        //
+        MethodDeclaration methodDeclaration = addMethod(methodModel);
+        methodConsumer.accept(methodDeclaration);
     }
 
     public void removeGetterAndSetter() {
@@ -173,17 +258,17 @@ public class JavaSource {
 
     public void forEachMethod(Consumer<MethodDeclaration> methodConsumer) {
         //
-        TypeDeclaration type = compilationUnit.getType(0);
-        List<MethodDeclaration> methodDeclarations = type.getMethods();
+        ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
+        List<MethodDeclaration> methodDeclarations = classType.getMethods();
 
         // for field, method ordering issue.
         for(MethodDeclaration methodDeclaration : methodDeclarations) {
-            type.remove(methodDeclaration);
+            classType.remove(methodDeclaration);
         }
 
         for (MethodDeclaration methodDeclaration : methodDeclarations) {
             methodConsumer.accept(methodDeclaration);
-            type.addMember(methodDeclaration);
+            classType.addMember(methodDeclaration);
         }
     }
 

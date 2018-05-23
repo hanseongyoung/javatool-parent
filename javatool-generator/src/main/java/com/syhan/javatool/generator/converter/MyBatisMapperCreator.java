@@ -124,20 +124,27 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
         javaModel.setAnnotation(new AnnotationType("org.apache.ibatis.annotations.Mapper"));
         List<Element> sqlElements = sqlMapSource.findSqlElements();
         for (Element element : sqlElements) {
-            String tagName = element.getTagName();
             String methodName = element.getAttribute("id");
-            String parameterClassName = element.getAttribute("parameterType");
-            String returnClassName = element.getAttribute("resultType");
-
-            MethodModel daoMethodModel = findDaoMethodModel(daoModel, methodName);
-            MethodModel methodModel = new MethodModel(methodName, computeReturnClassType(returnClassName, tagName, daoMethodModel));
-            if (StringUtil.isNotEmpty(parameterClassName)) {
-                methodModel.addParameterType(ClassType.newClassType(parameterClassName));
+            if (StringUtil.isNotEmpty(methodName)) {
+                javaModel.addMethodModel(createMyBatisMapperMethodModel(element, daoModel));
             }
-
-            javaModel.addMethodModel(methodModel);
         }
         return javaModel;
+    }
+
+    private MethodModel createMyBatisMapperMethodModel(Element element, JavaModel daoModel) {
+        //
+        String methodName = element.getAttribute("id");
+        String tagName = element.getTagName();
+        String parameterClassName = element.getAttribute("parameterType");
+        String returnClassName = element.getAttribute("resultType");
+
+        MethodModel daoMethodModel = findDaoMethodModel(daoModel, methodName);
+        MethodModel methodModel = new MethodModel(methodName, computeReturnClassType(returnClassName, tagName, daoMethodModel));
+        if (StringUtil.isNotEmpty(parameterClassName)) {
+            methodModel.addParameterType(ClassType.newClassType(parameterClassName));
+        }
+        return methodModel;
     }
 
     private MethodModel findDaoMethodModel(JavaModel daoModel, String methodName) {
