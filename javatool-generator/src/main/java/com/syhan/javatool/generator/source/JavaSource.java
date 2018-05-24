@@ -4,6 +4,7 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.nodeTypes.NodeWithName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.syhan.javatool.generator.ast.AstMapper;
@@ -79,7 +80,10 @@ public class JavaSource {
     // com/foo/bar/SampleService.java
     public String getSourceFilePath() {
         //
-        String packageName = compilationUnit.getPackageDeclaration().get().getNameAsString();
+        //String packageName = compilationUnit.getPackageDeclaration().get().getNameAsString();
+        String packageName = compilationUnit.getPackageDeclaration()
+                .map(NodeWithName::getNameAsString)
+                .orElseThrow(IllegalArgumentException::new);
         String typeName = compilationUnit.getType(0).getNameAsString();
         return packageName.replaceAll("\\.", Matcher.quoteReplacement(File.separator)) + File.separator + typeName + ".java";
     }
@@ -106,14 +110,17 @@ public class JavaSource {
 
     public String getPackageName() {
         //
-        PackageDeclaration packageDeclaration = compilationUnit.getPackageDeclaration().get();
-        return packageDeclaration.getNameAsString();
+        return compilationUnit.getPackageDeclaration()
+                .map(NodeWithName::getNameAsString)
+                .orElse(null);
+        //PackageDeclaration packageDeclaration = compilationUnit.getPackageDeclaration().orElse(null);
+        //return packageDeclaration.getNameAsString();
     }
 
     public void setPackageName(String packageName) {
         //
-        PackageDeclaration packageDeclaration = compilationUnit.getPackageDeclaration().get();
-        packageDeclaration.setName(new Name(packageName));
+        compilationUnit.getPackageDeclaration()
+                .ifPresent(pd -> pd.setName(new Name(packageName)));
     }
 
     public void setImplementedType(JavaSource implementedType) {

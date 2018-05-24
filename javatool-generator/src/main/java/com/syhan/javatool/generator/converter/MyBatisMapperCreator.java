@@ -158,7 +158,7 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
     private ClassType computeReturnClassType(String returnClassName, String tagName, MethodModel daoMethodModel) {
         //
         if (daoMethodModel != null) {
-            return new ClassType(daoMethodModel.getReturnType());
+            return ClassType.copyOf(daoMethodModel.getReturnType());
         }
 
         if (StringUtil.isNotEmpty(returnClassName)) {

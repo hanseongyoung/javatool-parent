@@ -309,4 +309,12 @@ public class OptionalTest {
                 .orElse(null);
         System.out.println(email);
     }
+
+    @Test
+    public void testOrElse2() {
+        String nullName = null;
+        String name = Optional.ofNullable(nullName).orElse(null);
+        System.out.println("name:"+name);
+        Assert.assertNull(name);
+    }
 }

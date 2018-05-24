@@ -66,7 +66,7 @@ public class ClassType {
         this.typeArgument = null;
     }
 
-    public ClassType(ClassType other) {
+    protected ClassType(ClassType other) {
         //
         this.name = other.getName();
         this.packageName = other.getPackageName();
