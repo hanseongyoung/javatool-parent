@@ -266,7 +266,7 @@ public class PackageRule {
         String tmp = packageFrags[fromIndex];
 
         for (int i = 0; i < orderedFrags.length; i++) {
-            if (i >= fromIndex && i < toIndex) {
+            if (i >= fromIndex && i < toIndex && i + 1 < packageFrags.length) {
                 orderedFrags[i] = packageFrags[i + 1];
             } else if (i == toIndex) {
                 orderedFrags[i] = tmp;

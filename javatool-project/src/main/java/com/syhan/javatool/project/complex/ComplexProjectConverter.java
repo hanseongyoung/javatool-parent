@@ -139,8 +139,7 @@ public class ComplexProjectConverter {
                 .setWorkspacePath(param.getTargetWorkspace())
                 .addDependency("junit", "junit")
                 .addDependency("org.slf4j", "slf4j-api")
-                .addDependency("kr.amc.amil", "amil-amcdatafilter", "1.0-SNAPSHOT")
-                .addDependency("kr.amc.amil", "amil-resource", "1.0-SNAPSHOT");
+                .addDependency("kr.amc.amil", "amil-core", "1.0-SNAPSHOT");
 
         // level2 parent
         String nameLevel2 = param.getNewProjectName1() + "-" + param.getNewProjectName2();

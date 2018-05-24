@@ -14,6 +14,7 @@ import com.syhan.javatool.share.data.Pair;
 import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.util.file.PathUtil;
+import com.syhan.javatool.share.util.string.StringUtil;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -375,7 +376,10 @@ public class JavaSource {
             if (wholeChangeImportName != null) {
                 importDeclaration.setName(wholeChangeImportName);
             } else {
-                importDeclaration.setName(changeImportName(importName, nameRule, packageRule));
+                String changed = changeImportName(importName, nameRule, packageRule);
+                if (StringUtil.isNotEmpty(changed) && changed.indexOf(".") > 0) {
+                    importDeclaration.setName(changed);
+                }
             }
         }
     }
@@ -448,6 +452,12 @@ public class JavaSource {
         // TODO : using Logger
         //System.out.println(compilationUnit.toString());
         FileUtils.writeStringToFile(file, compilationUnit.toString(), "UTF-8");
+    }
+
+    @Override
+    public String toString() {
+        //
+        return this.compilationUnit.toString();
     }
 
     public static void main(String[] args) {

@@ -13,6 +13,7 @@ import com.github.javaparser.ast.type.VoidType;
 import com.syhan.javatool.generator.model.ClassType;
 import com.syhan.javatool.generator.model.JavaModel;
 import com.syhan.javatool.generator.model.MethodModel;
+import com.syhan.javatool.share.util.string.StringUtil;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -55,7 +56,9 @@ public abstract class AstMapper {
         // import
         List<String> importClassNames = javaModel.computeImports();
         for (String className : importClassNames) {
-            compilationUnit.addImport(className);
+            if (StringUtil.isNotEmpty(className) && className.indexOf(".") > 0) {
+                compilationUnit.addImport(className);
+            }
         }
 
         // Class

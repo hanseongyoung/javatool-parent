@@ -2,6 +2,7 @@ package com.syhan.javatool.generator.model;
 
 import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
+import com.syhan.javatool.share.util.json.JsonUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -158,12 +159,15 @@ public class JavaModel {
         for (int i = 0; i < nameList.size(); i++) {
             String name = nameList.get(i);
             if (name.toUpperCase().equals("INT")
+                    || name.toUpperCase().equals("INTEGER")
+                    || name.toUpperCase().equals("SHORT")
                     || name.toUpperCase().equals("LONG")
                     || name.toUpperCase().equals("DOUBLE")
                     || name.toUpperCase().equals("FLOAT")
                     || name.toUpperCase().equals("CHAR")
                     || name.toUpperCase().equals("BOOLEAN")
                     || name.toUpperCase().equals("STRING")
+                    || name.toUpperCase().equals("BYTE")
                     ) {
                 //
             } else {
@@ -248,5 +252,10 @@ public class JavaModel {
 
     public void setMethods(List<MethodModel> methods) {
         this.methods = methods;
+    }
+
+    public String toJson() {
+        //
+        return JsonUtil.toJson(this);
     }
 }
