@@ -102,8 +102,22 @@ public class PomCreator {
     private void addModule(Document document, Element modules, List<ProjectModel> models) {
         //
         for (ProjectModel model : models) {
-            modules.appendChild(DomUtil.createTextElement(document, "module", model.getName()));
+            if (!existsModule(modules, model.getName())) {
+                modules.appendChild(DomUtil.createTextElement(document, "module", model.getName()));
+            }
         }
+    }
+
+    private boolean existsModule(Element modules, String name) {
+        //
+        NodeList moduleList = modules.getElementsByTagName("module");
+        for (int i = 0; i < moduleList.getLength(); i++) {
+            Element ele = (Element) moduleList.item(i);
+            if (ele.getTextContent().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Element createProjectElement(Document document, ProjectModel model) {
