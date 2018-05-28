@@ -1,5 +1,6 @@
 package com.syhan.javatool.project.creator;
 
+import com.syhan.javatool.generator.reader.XmlReader;
 import com.syhan.javatool.generator.source.XmlSource;
 import com.syhan.javatool.generator.writer.XmlWriter;
 import com.syhan.javatool.project.model.Dependency;
@@ -8,6 +9,7 @@ import com.syhan.javatool.share.config.ProjectConfiguration;
 import com.syhan.javatool.share.util.xml.DomUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
@@ -17,19 +19,33 @@ import java.util.List;
 public class PomCreator {
     //
     private static final String POM_FILE = "pom.xml";
+    private XmlReader xmlReader;
     private XmlWriter xmlWriter;
 
     public PomCreator(ProjectConfiguration configuration) {
         //
+        this.xmlReader = new XmlReader(configuration);
         this.xmlWriter = new XmlWriter(configuration);
     }
 
     public void create(ProjectModel model) throws IOException {
         //
-        Document document = createDocument(model);
-        XmlSource xmlSource = new XmlSource(document, POM_FILE);
-        xmlSource.setResourceFile(false);
+        XmlSource xmlSource = createOrRead(model);
         xmlWriter.write(xmlSource);
+    }
+
+    private XmlSource createOrRead(ProjectModel model) throws IOException {
+        //
+        XmlSource xmlSource;
+        if (xmlReader.exists(POM_FILE)) {
+            xmlSource = xmlReader.read(POM_FILE);
+            xmlSource = updateModule(xmlSource, model);
+        } else {
+            Document document = createDocument(model);
+            xmlSource = new XmlSource(document, POM_FILE);
+            xmlSource.setResourceFile(false);
+        }
+        return xmlSource;
     }
 
     private Document createDocument(ProjectModel model) {
@@ -48,6 +64,46 @@ public class PomCreator {
         document.appendChild(project);
 
         return document;
+    }
+
+    private XmlSource updateModule(XmlSource xmlSource, ProjectModel model) {
+        //
+        Document document = xmlSource.getDocument();
+        if (model.hasChildren()) {
+            Element modules = findModulesElement(document);
+            addModule(document, modules, model.getChildren());
+        }
+        return xmlSource;
+    }
+
+    private Element findModulesElement(Document document) {
+        //
+        if (document == null) {
+            return null;
+        }
+
+        NodeList projects = document.getElementsByTagName("project");
+        if (projects == null || projects.getLength() <= 0) {
+            return null;
+        }
+
+        Element project = (Element) projects.item(0);
+        NodeList modulesList = project.getElementsByTagName("modules");
+
+        if (modulesList == null || modulesList.getLength() <= 0) {
+            Element modules = document.createElement("modules");
+            project.appendChild(modules);
+            return modules;
+        }
+
+        return (Element) modulesList.item(0);
+    }
+
+    private void addModule(Document document, Element modules, List<ProjectModel> models) {
+        //
+        for (ProjectModel model : models) {
+            modules.appendChild(DomUtil.createTextElement(document, "module", model.getName()));
+        }
     }
 
     private Element createProjectElement(Document document, ProjectModel model) {

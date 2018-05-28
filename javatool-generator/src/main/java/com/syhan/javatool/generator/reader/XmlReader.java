@@ -28,4 +28,10 @@ public class XmlReader implements Reader<XmlSource> {
             throw new RuntimeException(e);
         }
     }
+
+    public boolean exists(String sourceFilePath) {
+        //
+        String physicalSourceFilePath = configuration.makePhysicalResourceFilePath(sourceFilePath);
+        return XmlSource.exists(physicalSourceFilePath);
+    }
 }
