@@ -3,6 +3,8 @@ package com.syhan.javatool.generator.converter;
 import com.syhan.javatool.share.config.ProjectSources;
 import com.syhan.javatool.share.config.SourceFolders;
 import com.syhan.javatool.share.util.file.PathUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,6 +14,8 @@ import java.util.stream.Stream;
 
 public class PackageConverter {
     //
+    private static final Logger logger = LoggerFactory.getLogger(PackageConverter.class);
+
     private ProjectItemConverter converter;
 
     public PackageConverter(ProjectItemConverter converter) {
@@ -47,13 +51,12 @@ public class PackageConverter {
             String physicalPathName = path.toString();
             sourceFile = ProjectSources.extractSourceFilePath(physicalPathName, sourceFolders);
 
-            System.out.println("source file : " + sourceFile);
+            logger.info("source file : {}", sourceFile);
             converter.convert(sourceFile);
 
         } catch (Throwable e) {
-            // TODO : 파일 로깅 처리하고 계속 진행함.
-            System.err.println("Couldn't convert --> " + sourceFile + ", " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Couldn't convert --> {}, {}", sourceFile, e.getMessage());
+            logger.error("Throwable", e);
         }
     }
 

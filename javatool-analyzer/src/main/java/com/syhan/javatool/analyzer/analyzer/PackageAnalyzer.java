@@ -49,9 +49,7 @@ public class PackageAnalyzer implements Analyzer {
 
                 new JavaAnalyzer(configuration, store).analyze(sourceFile);
             } catch (IOException e) {
-                // TODO : 파일 로깅 처리하고 계속 진행함.
-                e.printStackTrace();
-                logger.error(e.getMessage());
+                logger.error("IOException ", e);
             }
         };
     }

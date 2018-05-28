@@ -5,9 +5,13 @@ import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.util.file.PathUtil;
 import com.syhan.javatool.share.util.string.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ClassType {
     //
+    private static final Logger logger = LoggerFactory.getLogger(ClassType.class);
+
     public static final String PRIMITIVE_INT = "INT";
     public static final String PRIMITIVE_BOOLEAN = "BOOLEAN";
     public static final String PRIMITIVE_CHAR = "CHAR";
@@ -164,9 +168,7 @@ public class ClassType {
     public static void main(String[] args) {
         //
         ClassType classType = new ClassType("com.foo.bar.SomeClass");
-        System.out.println(classType.getName());
-        System.out.println(classType.getPackageName());
+        logger.info("classType name {}, packageName {}", classType.getName(), classType.getPackageName());
     }
-
 
 }

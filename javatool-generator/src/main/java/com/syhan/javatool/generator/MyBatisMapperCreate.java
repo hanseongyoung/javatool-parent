@@ -4,11 +4,15 @@ import com.syhan.javatool.generator.converter.MyBatisMapperCreator;
 import com.syhan.javatool.share.args.OptionParser;
 import com.syhan.javatool.share.config.ConfigurationType;
 import com.syhan.javatool.share.config.ProjectConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class MyBatisMapperCreate {
     //
+    private static final Logger logger = LoggerFactory.getLogger(MyBatisMapperCreate.class);
+
     public void execute(String projectHome, String sourceFile) throws IOException {
         //
         ProjectConfiguration sourceConfiguration = new ProjectConfiguration(ConfigurationType.Source, projectHome);
@@ -28,7 +32,7 @@ public class MyBatisMapperCreate {
                 .parse(args);
 
         MyBatisMapperCreate myBatisMapperCreate = new MyBatisMapperCreate();
-        System.out.println(parser);
+        logger.info(parser.toString());
         myBatisMapperCreate.execute(parser.get("projectHome"), parser.get("sourceFile"));
 
     }

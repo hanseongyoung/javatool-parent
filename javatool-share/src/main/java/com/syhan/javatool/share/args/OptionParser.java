@@ -1,11 +1,16 @@
 package com.syhan.javatool.share.args;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class OptionParser {
     //
+    private static final Logger logger = LoggerFactory.getLogger(OptionParser.class);
+
     private List<String> optionKeys = new ArrayList<>();
     private List<String> optionDescriptions = new ArrayList<>();
 
@@ -23,7 +28,7 @@ public class OptionParser {
         for (String optionKey : optionKeys) {
             String value = findFromArguments(optionKey, args);
             if (value == null) {
-                System.out.println(optionKey + " is Required.");
+                logger.info(optionKey + " is Required.");
                 System.exit(0);
             }
             this.options.put(optionKey, value);
@@ -60,6 +65,6 @@ public class OptionParser {
                 .accepts("c", "ccc")
                 .parse(new String[]{"-c", "chare", "-a", "alpha", "-b", "beta"});
 
-        System.out.println(optionParser);
+        logger.info(optionParser.toString());
     }
 }

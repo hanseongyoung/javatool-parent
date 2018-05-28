@@ -17,6 +17,8 @@ import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.util.file.PathUtil;
 import com.syhan.javatool.share.util.string.StringUtil;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,6 +32,8 @@ import java.util.stream.Collectors;
 
 public class JavaSource {
     //
+    private static final Logger logger = LoggerFactory.getLogger(JavaSource.class);
+
     private CompilationUnit compilationUnit;
     private String physicalSourceFile;
 
@@ -471,6 +475,6 @@ public class JavaSource {
         // In the case of Windows replaceAll with File.separator causes 'character to be escaped is missing' error.
         String packageName = "com.foo.bar";
         //System.out.println(packageName.replaceAll("\\.", File.separator));
-        System.out.println(packageName.replaceAll("\\.", Matcher.quoteReplacement(File.separator)));
+        logger.info(packageName.replaceAll("\\.", Matcher.quoteReplacement(File.separator)));
     }
 }

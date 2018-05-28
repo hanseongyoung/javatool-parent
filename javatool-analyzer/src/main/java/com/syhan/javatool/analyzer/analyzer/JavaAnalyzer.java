@@ -7,6 +7,8 @@ import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.syhan.javatool.analyzer.store.JavaDependencyStore;
 import com.syhan.javatool.share.config.ProjectConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,6 +16,8 @@ import java.io.IOException;
 
 public class JavaAnalyzer implements Analyzer {
     //
+    private static final Logger logger = LoggerFactory.getLogger(JavaAnalyzer.class);
+
     private ProjectConfiguration configuration;
     private JavaDependencyStore store;
 
@@ -52,7 +56,7 @@ public class JavaAnalyzer implements Analyzer {
         public void visit(ImportDeclaration importDeclaration, Void arg) {
             super.visit(importDeclaration, arg);
             String referenceName = importDeclaration.getNameAsString();
-            System.out.println(String.format("%s Reference %s", sourceName, referenceName));
+            logger.info("{} Reference {}", sourceName, referenceName);
 
             new PackageDependencyWriter(sourceName, referenceName, store).write();
         }

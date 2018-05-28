@@ -3,6 +3,8 @@ package com.syhan.javatool.generator.converter;
 import com.syhan.javatool.share.config.ProjectSources;
 import com.syhan.javatool.share.config.SourceFolders;
 import com.syhan.javatool.share.util.file.PathUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,6 +16,8 @@ import java.util.stream.Stream;
 
 public class MultiItemPackageConverter {
     //
+    private static final Logger logger = LoggerFactory.getLogger(MultiItemPackageConverter.class);
+
     private List<ProjectItemConverter> converters;
 
     public MultiItemPackageConverter() {
@@ -30,7 +34,7 @@ public class MultiItemPackageConverter {
     public void convert(String packageName) throws IOException {
         // packageName : com.foo.bar -> path : com/foo/bar
         if (converters == null || converters.isEmpty()) {
-            System.err.println("Please add converter.");
+            logger.error("Please add converter.");
             return;
         }
 
@@ -62,13 +66,12 @@ public class MultiItemPackageConverter {
             }
 
             if (!converted) {
-                System.err.println("Couldn't convert --> " + sourceFileName);
+                logger.error("Couldn't convert --> ()", sourceFileName);
             }
 
         } catch (Throwable e) {
-            // TODO : 파일 로깅 처리하고 계속 진행함.
-            System.err.println("Couldn't convert --> " + sourceFileName + ", " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Couldn't convert --> {}, {}", sourceFileName, e.getMessage());
+            logger.error("Throwable : ", e);
         }
     }
 

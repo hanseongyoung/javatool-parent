@@ -19,6 +19,8 @@ import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.util.file.PathUtil;
 import com.syhan.javatool.share.util.string.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,6 +34,8 @@ import java.util.stream.Collectors;
 // [DTO]      com.foo.bar.spec.sdo.SomeDTO
 public class JavaInterfaceAbstracter extends ProjectItemConverter {
     //
+    private static final Logger logger = LoggerFactory.getLogger(JavaInterfaceAbstracter.class);
+
     private static final ClassType Autowired = ClassType.newClassType("org.springframework.beans.factory.annotation.Autowired");
     private static final ClassType FeignClient = ClassType.newClassType("org.springframework.cloud.openfeign.FeignClient");
     private static final ClassType RestController = ClassType.newClassType("org.springframework.web.bind.annotation.RestController");
@@ -77,7 +81,7 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
                 .map(dtoClassName -> {
                     String newName = packageRuleForCheckStubDto.changePackage(dtoClassName);
                     newName = nameRule.changeName(newName);
-                    System.out.println(dtoClassName + " --> " + newName);
+                    logger.info("{} --> {}", dtoClassName, newName);
                     return new PackageRule.ChangeImport(dtoClassName, newName);
                 })
                 .collect(Collectors.toList());
