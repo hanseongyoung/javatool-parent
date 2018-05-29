@@ -7,6 +7,7 @@ import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.VoidType;
+import com.syhan.javatool.generator.checker.JavaSourceChecker;
 import com.syhan.javatool.generator.model.ClassType;
 import com.syhan.javatool.generator.model.JavaModel;
 import com.syhan.javatool.generator.model.MethodModel;
@@ -54,6 +55,8 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
     private PackageRule packageRule;
     private JavaAbstractParam javaAbstractParam;
 
+    private JavaSourceChecker javaSourceChecker;
+
     public JavaInterfaceAbstracter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetStubConfiguration,
                                    ProjectConfiguration targetSkeletonConfiguration, NameRule nameRule, PackageRule packageRule,
                                    JavaAbstractParam javaAbstractParam) {
@@ -91,6 +94,11 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
     public void convert(String sourceFileName) throws IOException {
         //
         JavaSource source = javaReader.read(sourceFileName);
+
+        // check java source
+        if (javaSourceChecker != null) {
+            javaSourceChecker.checkAndWarn(source);
+        }
 
         // write interface
         JavaModel interfaceModel = changeToJavaInterfaceModel(source);
@@ -278,8 +286,6 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
         return source;
     }
 
-
-
     private JavaSource createAdapterSource(JavaModel interfaceModel) {
         //
         String className = interfaceModel.getClassType().getClassName();
@@ -348,5 +354,11 @@ public class JavaInterfaceAbstracter extends ProjectItemConverter {
         } else {
             block.addStatement(new ReturnStmt(call));
         }
+    }
+
+    public JavaInterfaceAbstracter setJavaSourceChecker(JavaSourceChecker javaSourceChecker) {
+        //
+        this.javaSourceChecker = javaSourceChecker;
+        return this;
     }
 }

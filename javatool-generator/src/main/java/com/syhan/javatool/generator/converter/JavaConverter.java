@@ -1,5 +1,6 @@
 package com.syhan.javatool.generator.converter;
 
+import com.syhan.javatool.generator.checker.JavaSourceChecker;
 import com.syhan.javatool.generator.reader.JavaReader;
 import com.syhan.javatool.generator.source.JavaSource;
 import com.syhan.javatool.generator.writer.JavaWriter;
@@ -19,6 +20,8 @@ public class JavaConverter extends ProjectItemConverter {
 
     private Consumer<JavaSource> customCodeHandler;
     private Consumer<PackageRule.ChangeImport> changeInfoHandler;
+
+    private JavaSourceChecker javaSourceChecker;
 
     public JavaConverter(ProjectConfiguration sourceConfiguration, ProjectConfiguration targetConfiguration) {
         //
@@ -50,6 +53,12 @@ public class JavaConverter extends ProjectItemConverter {
     public void convert(String sourceFilePath) throws IOException {
         // sourceFile : com/foo/bar/SampleService.java
         JavaSource source = javaReader.read(sourceFilePath);
+
+        // check java source
+        if (javaSourceChecker != null) {
+            javaSourceChecker.checkAndWarn(source);
+        }
+
         String beforeClassName = source.getClassName();
 
         source.changePackageAndName(nameRule, packageRule);
@@ -70,4 +79,9 @@ public class JavaConverter extends ProjectItemConverter {
         javaWriter.write(source);
     }
 
+    public JavaConverter setJavaSourceChecker(JavaSourceChecker javaSourceChecker) {
+        //
+        this.javaSourceChecker = javaSourceChecker;
+        return this;
+    }
 }

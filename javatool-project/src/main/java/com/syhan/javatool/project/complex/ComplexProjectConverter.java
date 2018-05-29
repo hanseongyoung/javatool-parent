@@ -1,5 +1,6 @@
 package com.syhan.javatool.project.complex;
 
+import com.syhan.javatool.generator.checker.JavaSourceChecker;
 import com.syhan.javatool.generator.converter.*;
 import com.syhan.javatool.project.creator.NestedProjectCreator;
 import com.syhan.javatool.project.model.ProjectModel;
@@ -82,8 +83,8 @@ public class ComplexProjectConverter {
 
         // convert sourcePackage
         new MultiItemPackageConverter()
-                .add(extServiceAbstracter)
-                .add(serviceJavaConverter)
+                .add(extServiceAbstracter.setJavaSourceChecker(new JavaSourceChecker(new String[]{"ExtService"},"TO")))
+                .add(serviceJavaConverter.setJavaSourceChecker(new JavaSourceChecker(new String[]{"Service", "Dao"},"VO")))
                 .convert(param.getSourcePackage());
 
         // convert sourceDtoPackage
