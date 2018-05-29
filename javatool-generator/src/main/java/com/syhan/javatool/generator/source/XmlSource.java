@@ -74,12 +74,6 @@ public class XmlSource {
         }
     }
 
-    public static boolean exists(String physicalSourceFile) {
-        //
-        File file = new File(physicalSourceFile);
-        return file.exists() && !file.isDirectory();
-    }
-
     public String getSourceFilePath() {
         //
         return sourceFilePath;
