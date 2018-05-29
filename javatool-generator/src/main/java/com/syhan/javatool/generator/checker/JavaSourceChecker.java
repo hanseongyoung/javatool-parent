@@ -15,6 +15,9 @@ public class JavaSourceChecker {
     //
     private static Logger logger = LoggerFactory.getLogger(JavaSourceChecker.class);
 
+    private final String[] EXCEPTION_PATTERNS = {"void", "int", "String", "long", "Long", "Integer",
+            "Date", "double", "Double", "float", "Float", "Map", "char", "Char", "short", "Short"};
+
     private String[] targetClassPostfix;
     private String typeNamePostfix;
 
@@ -30,8 +33,9 @@ public class JavaSourceChecker {
             return;
         }
 
-        logger.info("check class {}", source.getName());
-        source.forEachMethod(this::checkMethod);
+        String className = source.getName();
+        logger.info("check class {}", className);
+        source.forEachMethod(methodDeclaration -> checkMethod(methodDeclaration, className));
     }
 
     private boolean contains(JavaSource source) {
@@ -45,7 +49,7 @@ public class JavaSourceChecker {
         return false;
     }
 
-    private void checkMethod(MethodDeclaration methodDeclaration) {
+    private void checkMethod(MethodDeclaration methodDeclaration, String className) {
         //
         if (!methodDeclaration.isPublic()) {
             return;
@@ -53,29 +57,33 @@ public class JavaSourceChecker {
 
         Type returnType = methodDeclaration.getType();
         if (!checkType(returnType)) {
-            warn(methodDeclaration);
+            warn(methodDeclaration, className);
             return;
         }
 
         for (Parameter parameter : methodDeclaration.getParameters()) {
             Type parameterType = parameter.getType();
             if (!checkType(parameterType)) {
-                warn(methodDeclaration);
+                warn(methodDeclaration, className);
                 return;
             }
         }
     }
 
-    private void warn(MethodDeclaration methodDeclaration) {
+    private void warn(MethodDeclaration methodDeclaration, String className) {
         //
         Integer lineNumber = methodDeclaration.getBegin()
                 .map(p -> p.line)
                 .orElse(0);
-        logger.warn("invalid method --> {} : {}", lineNumber, methodDeclaration.getDeclarationAsString());
+        logger.warn("invalid method --> {} {} : {}", className + ".java", lineNumber, methodDeclaration.getDeclarationAsString());
     }
 
     private boolean checkType(Type type) {
         // check type argument
+        if (isException(type)) {
+            return true;
+        }
+
         if (type.isClassOrInterfaceType()) {
             Optional<NodeList<Type>> typeArguments = ((ClassOrInterfaceType) type).getTypeArguments();
             Type typeArg = typeArguments.map(types -> types.get(0)).orElse(null);
@@ -89,6 +97,16 @@ public class JavaSourceChecker {
             return true;
         }
 
+        return false;
+    }
+
+    private boolean isException(Type type) {
+        //
+        for (String pattern : EXCEPTION_PATTERNS) {
+            if (pattern.equals(type.toString())) {
+                return true;
+            }
+        }
         return false;
     }
 }
