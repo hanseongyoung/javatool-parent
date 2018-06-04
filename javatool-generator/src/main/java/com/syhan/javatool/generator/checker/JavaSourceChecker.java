@@ -16,7 +16,7 @@ public class JavaSourceChecker {
     private static Logger logger = LoggerFactory.getLogger(JavaSourceChecker.class);
 
     private final String[] EXCEPTION_PATTERNS = {"void", "int", "String", "long", "Long", "Integer",
-            "Date", "double", "Double", "float", "Float", "Map", "char", "Char", "short", "Short"};
+            "Date", "double", "Double", "float", "Float", "Map", "char", "Char", "short", "Short", "boolean", "Boolean"};
 
     private String[] targetClassPostfix;
     private String typeNamePostfix;
@@ -87,7 +87,7 @@ public class JavaSourceChecker {
         if (type.isClassOrInterfaceType()) {
             Optional<NodeList<Type>> typeArguments = ((ClassOrInterfaceType) type).getTypeArguments();
             Type typeArg = typeArguments.map(types -> types.get(0)).orElse(null);
-            if (typeArg != null && typeArg.toString().endsWith(typeNamePostfix)) {
+            if (typeArg != null && (isException(typeArg) || typeArg.toString().endsWith(typeNamePostfix))) {
                 return true;
             }
         }
@@ -103,7 +103,7 @@ public class JavaSourceChecker {
     private boolean isException(Type type) {
         //
         for (String pattern : EXCEPTION_PATTERNS) {
-            if (pattern.equals(type.toString())) {
+            if (type.toString().startsWith(pattern)) {
                 return true;
             }
         }

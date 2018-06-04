@@ -1,6 +1,7 @@
 package com.syhan.javatool.generator.converter;
 
 import com.syhan.javatool.generator.source.JavaSource;
+import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.util.file.PathUtil;
 
@@ -43,18 +44,24 @@ public class DtoManagingJavaConverter extends ProjectItemConverter {
 
     private void makeDtoCustomCode(JavaSource javaSource) {
         //
-        // extends kr.amc.amil.message.dto.AbstractDTO
-        javaSource.setExtendedType("AbstractDTO", "kr.amc.amil.message.dto");
+        boolean hasVOProperty = javaSource.hasProperty("VO", "TO");
+        System.out.println("has VO Property : "+hasVOProperty);
+        if (hasVOProperty) {
+            javaSource.setExtendedType("AbstractCompositeDTO", "kr.amc.amil.message.dto");
+            javaSource.changePackageAndName(NameRule.newInstance().add("DTO", "CDTO"), null);
+        } else {
+            javaSource.setExtendedType("AbstractDTO", "kr.amc.amil.message.dto");
+        }
 
         // add annotation
         javaSource.addAnnotation("Getter", "lombok");
         javaSource.addAnnotation("Setter", "lombok");
         javaSource.addAnnotation("NoArgsConstructor", "lombok");
-        javaSource.addAnnotation("ToString", "lombok");
+        //javaSource.addAnnotation("ToString", "lombok");
 
         // remove getter / setter / toString
         javaSource.removeGetterAndSetter();
-        javaSource.removeMethod("toString");
+        //javaSource.removeMethod("toString");
 
         // remove default constructor
         javaSource.removeNoArgsConstructor();

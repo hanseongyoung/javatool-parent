@@ -1,7 +1,10 @@
 package com.syhan.javatool.generator.source;
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.*;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.nodeTypes.NodeWithName;
@@ -56,6 +59,28 @@ public class JavaSource {
     public ClassType toClassType() {
         //
         return ClassType.newClassType(getName(), getPackageName());
+    }
+
+    public boolean hasProperty(String... patterns) {
+        //
+        ClassOrInterfaceDeclaration classType = (ClassOrInterfaceDeclaration) compilationUnit.getType(0);
+        for (FieldDeclaration fieldDeclaration : classType.getFields()) {
+            String fieldTypeName = fieldDeclaration.getVariables().get(0).getType().toString();
+            if (containsName(fieldTypeName, patterns)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean containsName(String name, String[] patterns) {
+        //
+        for (String pattern : patterns) {
+            if (name.contains(pattern)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String findFullName(String returnTypeName) {
@@ -319,7 +344,12 @@ public class JavaSource {
     public void changePackageAndName(NameRule nameRule, PackageRule packageRule) {
         //
         String thisClassName = getClassName();
-        String changedClassName = packageRule.findWholeChangeImportName(thisClassName);
+
+        String changedClassName = null;
+        if (packageRule != null) {
+            changedClassName = packageRule.findWholeChangeImportName(thisClassName);
+        }
+
         if (changedClassName != null) {
             Pair<String, String> packageAndName = PathUtil.devideClassName(changedClassName);
             setPackageName(packageAndName.x);
