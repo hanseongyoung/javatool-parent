@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class PackageAnalyzer implements Analyzer {
@@ -36,22 +35,21 @@ public class PackageAnalyzer implements Analyzer {
         try (Stream<Path> paths = Files.walk(Paths.get(physicalSourcePath))) {
             paths
                     .filter(p -> p.toString().endsWith(".java"))
-                    .forEach(javaAnalyze());
+                    .forEach(this::process);
         }
     }
 
-    private Consumer<Path> javaAnalyze() {
-        return path -> {
-            try {
-                SourceFolders sourceFolders = configuration.getSourceFolders();
-                String physicalPathName = path.toString();
-                String sourceFile = ProjectSources.extractSourceFilePath(physicalPathName, sourceFolders);
+    private void process(Path path) {
+        //
+        try {
+            SourceFolders sourceFolders = configuration.getSourceFolders();
+            String physicalPathName = path.toString();
+            String sourceFile = ProjectSources.extractSourceFilePath(physicalPathName, sourceFolders);
 
-                new JavaAnalyzer(configuration, store).analyze(sourceFile);
-            } catch (IOException e) {
-                logger.error("IOException ", e);
-            }
-        };
+            new JavaAnalyzer(configuration, store).analyze(sourceFile);
+        } catch (IOException e) {
+            logger.error("IOException ", e);
+        }
     }
 
     private String convertPath(String packageName) {

@@ -51,7 +51,7 @@ public class StoreConfig {
         //
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource());
-        em.setPackagesToScan(new String[] { "syhan.analysis.pilot" });
+        em.setPackagesToScan(new String[] { "com.syhan.javatool.analyzer" });
 
         JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);

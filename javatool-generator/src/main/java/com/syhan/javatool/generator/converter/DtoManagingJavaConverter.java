@@ -1,14 +1,17 @@
 package com.syhan.javatool.generator.converter;
 
 import com.syhan.javatool.generator.source.JavaSource;
-import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.util.file.PathUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class DtoManagingJavaConverter extends ProjectItemConverter {
     //
+    private static Logger logger = LoggerFactory.getLogger(DtoManagingJavaConverter.class);
+
     private PackageRule packageRule;
     private JavaConverter serviceJavaConverter;
     private JavaConverter stubJavaConverter;
@@ -37,18 +40,15 @@ public class DtoManagingJavaConverter extends ProjectItemConverter {
                         .convert(dtoSourceFileName);
             }
         } catch (IOException e) {
-            // TODO : using Logger
-            System.err.println("Can't convert dto --> " + dtoSourceFileName + ", " + e.getMessage());
+            logger.error("Can't convert dto --> {}, {}", dtoSourceFileName , e.getMessage());
         }
     }
 
     private void makeDtoCustomCode(JavaSource javaSource) {
         //
         boolean hasVOProperty = javaSource.hasProperty("VO", "TO");
-        System.out.println("has VO Property : "+hasVOProperty);
         if (hasVOProperty) {
             javaSource.setExtendedType("AbstractCompositeDTO", "kr.amc.amil.message.dto");
-            javaSource.changePackageAndName(NameRule.newInstance().add("DTO", "CDTO"), null);
         } else {
             javaSource.setExtendedType("AbstractDTO", "kr.amc.amil.message.dto");
         }

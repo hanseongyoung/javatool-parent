@@ -31,5 +31,7 @@ public class DependencyView {
 
         logger.info(new DependencyViewer(list).show());
         logger.info("total : {}", list.size());
+
+        list.forEach(System.out::println);
     }
 }
