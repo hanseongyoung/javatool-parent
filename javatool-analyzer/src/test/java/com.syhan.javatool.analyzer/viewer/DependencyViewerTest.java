@@ -14,7 +14,7 @@ public class DependencyViewerTest {
         List<JavaDependency> list = new ArrayList<>();
         list.add(new JavaDependency("com", 1, "net", 1));
         list.add(new JavaDependency("com", 1, "net", 1));
-        DependencyViewer dependencyViewer = new DependencyViewer(list);
+        DependencyTreeViewer dependencyViewer = new DependencyTreeViewer(list);
         System.out.println(dependencyViewer.show());
     }
 }

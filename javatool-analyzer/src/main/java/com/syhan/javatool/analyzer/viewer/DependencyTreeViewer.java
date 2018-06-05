@@ -4,11 +4,11 @@ import com.syhan.javatool.analyzer.entity.JavaDependency;
 
 import java.util.List;
 
-public class DependencyViewer {
+public class DependencyTreeViewer {
     //
     private ModuleNode root;
 
-    public DependencyViewer(List<JavaDependency> modules) {
+    public DependencyTreeViewer(List<JavaDependency> modules) {
         this.root = new ModuleNode("");
         for (JavaDependency module : modules) {
             this.root.add(module.getToModule());

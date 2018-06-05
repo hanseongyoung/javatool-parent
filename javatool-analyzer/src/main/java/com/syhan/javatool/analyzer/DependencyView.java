@@ -3,7 +3,7 @@ package com.syhan.javatool.analyzer;
 import com.syhan.javatool.analyzer.entity.JavaDependency;
 import com.syhan.javatool.analyzer.store.JavaDependencyStore;
 import com.syhan.javatool.analyzer.store.StoreConfig;
-import com.syhan.javatool.analyzer.viewer.DependencyViewer;
+import com.syhan.javatool.analyzer.viewer.DependencyFlatViewer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -29,7 +29,8 @@ public class DependencyView {
         // 특정 모듈이 참조하는 일부 모듈 조회
         List<JavaDependency> list = store.findByFromModuleAndStartWithToModule("nara.pavilion", "nara", 2);
 
-        logger.info(new DependencyViewer(list).show());
+        //logger.info(new DependencyTreeViewer(list).show());
+        logger.info(new DependencyFlatViewer(list).show());
         logger.info("total : {}", list.size());
 
         list.forEach(System.out::println);
