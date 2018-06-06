@@ -41,6 +41,8 @@ public class ComplexProjectConverterTest extends BaseFileTest {
 
         parameter.setTargetWorkspace(super.testDirName);
 
+        parameter.addDependency("wa", "patient");
+
         JavaAbstractParam javaAbstractParam = new JavaAbstractParam();
         javaAbstractParam.setTargetFilePostfix("ExtService.java");
         javaAbstractParam.setSourcePackage("amis3.mc.oo");

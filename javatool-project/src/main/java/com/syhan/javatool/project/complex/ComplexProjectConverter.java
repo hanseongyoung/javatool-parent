@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 public class ComplexProjectConverter {
     //
@@ -158,6 +159,7 @@ public class ComplexProjectConverter {
 
         ProjectModel serviceModel = new ProjectModel(nameLevel2 + PROJECT_SUFFIX_SERVICE, groupId, version)
                 .addDependency(shareModel)
+                .addDependencies(makeDependencyStubModels(param.getDependencyParameters()))
                 .addDependency("org.mybatis.spring.boot", "mybatis-spring-boot-starter", "1.3.1")
                 .addDependency("org.springframework", "spring-web");
         projectModelLevel2.add(serviceModel);
@@ -178,6 +180,25 @@ public class ComplexProjectConverter {
         projectModelLevel2.add(warModel);
 
         return projectModelLevel1;
+    }
+
+    private List<ProjectModel> makeDependencyStubModels(List<ConvertParameter.DependencyParameter> dependencyParameters) {
+        //
+        if (dependencyParameters == null) {
+            return null;
+        }
+
+        return dependencyParameters.stream()
+                .map(this::makeDependencyStubModel)
+                .collect(Collectors.toList());
+    }
+
+    private ProjectModel makeDependencyStubModel(ConvertParameter.DependencyParameter dependencyParameter) {
+        //
+        String nameLevel2 = dependencyParameter.getProjectName1() + "-" + dependencyParameter.getProjectName2();
+        String groupId = param.getNewBasePackage();
+        ProjectModel stubModel = new ProjectModel(nameLevel2 + PROJECT_SUFFIX_STUB, groupId);
+        return stubModel;
     }
 
 }

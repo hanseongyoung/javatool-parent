@@ -20,6 +20,11 @@ public class ProjectModel {
 
     private String workspacePath;
 
+    public ProjectModel(String name, String groupId) {
+        //
+        this(name, groupId, null, null);
+    }
+
     public ProjectModel(String name, String groupId, String version) {
         //
         this(name, groupId, version, null);
@@ -95,6 +100,16 @@ public class ProjectModel {
     public ProjectModel addDependency(ProjectModel dependencyProject) {
         //
         this.dependencies.add(new Dependency(dependencyProject.groupId, dependencyProject.name, "${project.version}"));
+        return this;
+    }
+
+    public ProjectModel addDependencies(List<ProjectModel> dependencyProjects) {
+        //
+        if (dependencyProjects == null) {
+            return this;
+        }
+
+        dependencyProjects.forEach(dependencyProject -> this.addDependency(dependencyProject));
         return this;
     }
 

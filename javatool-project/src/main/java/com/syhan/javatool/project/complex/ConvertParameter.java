@@ -1,5 +1,8 @@
 package com.syhan.javatool.project.complex;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ConvertParameter {
     //
     // 소스 프로젝트 홈, 소스 패키지, 프로젝트 명칭 1/2레벨, 대상 폴더
@@ -16,6 +19,18 @@ public class ConvertParameter {
     private String newProjectName2;
     private String newBasePackage;
     private String targetWorkspace;
+
+    private List<DependencyParameter> dependencyParameters;
+
+    public ConvertParameter() {
+        //
+        this.dependencyParameters = new ArrayList<>();
+    }
+
+    public void addDependency(String projectName1, String projectName2) {
+        //
+        this.dependencyParameters.add(new DependencyParameter(projectName1, projectName2));
+    }
 
     public String getSourceProjectHomePath() {
         return sourceProjectHomePath;
@@ -103,5 +118,40 @@ public class ConvertParameter {
 
     public void setTargetWorkspace(String targetWorkspace) {
         this.targetWorkspace = targetWorkspace;
+    }
+
+    public List<DependencyParameter> getDependencyParameters() {
+        return dependencyParameters;
+    }
+
+    public void setDependencyParameters(List<DependencyParameter> dependencyParameters) {
+        this.dependencyParameters = dependencyParameters;
+    }
+
+    public class DependencyParameter {
+        //
+        private String projectName1;
+        private String projectName2;
+
+        public DependencyParameter(String projectName1, String projectName2) {
+            this.projectName1 = projectName1;
+            this.projectName2 = projectName2;
+        }
+
+        public String getProjectName1() {
+            return projectName1;
+        }
+
+        public void setProjectName1(String projectName1) {
+            this.projectName1 = projectName1;
+        }
+
+        public String getProjectName2() {
+            return projectName2;
+        }
+
+        public void setProjectName2(String projectName2) {
+            this.projectName2 = projectName2;
+        }
     }
 }

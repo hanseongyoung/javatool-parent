@@ -286,7 +286,7 @@ public class PackageRule {
         return new Pair<>(statement.toPackage, statement.skipSize);
     }
 
-    private boolean exist(int fromIndex, String fromPackage) {
+    public boolean exist(int fromIndex, String fromPackage) {
         //
         for (Statement statement : statements) {
             if (statement.fromIndex == fromIndex && statement.fromPackage.equals(fromPackage)) {
