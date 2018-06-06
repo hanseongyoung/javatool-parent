@@ -3,6 +3,7 @@ package com.syhan.javatool.generator;
 import com.syhan.javatool.generator.model.ClassType;
 import com.syhan.javatool.generator.model.JavaModel;
 import com.syhan.javatool.generator.model.MethodModel;
+import com.syhan.javatool.generator.model.ParameterModel;
 import com.syhan.javatool.generator.source.JavaSource;
 import com.syhan.javatool.generator.writer.JavaWriter;
 import com.syhan.javatool.generator.writer.Writer;
@@ -28,7 +29,8 @@ public class JavaWrite {
         JavaModel javaModel = new JavaModel("com.foo.bar.Test", true);
 
         MethodModel methodModel = new MethodModel("hello", ClassType.newClassType("com.foo.bar.ResultDTO"));
-        methodModel.addParameterType(ClassType.newClassType("com.foo.bar.TestDTO"));
+        ParameterModel parameterModel = new ParameterModel(ClassType.newClassType("com.foo.bar.TestDTO"), "testDTO");
+        methodModel.addParameterModel(parameterModel);
         javaModel.addMethodModel(methodModel);
 
         return new JavaSource(javaModel);

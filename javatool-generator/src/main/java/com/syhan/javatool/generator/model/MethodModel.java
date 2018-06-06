@@ -8,13 +8,13 @@ public class MethodModel {
     private String name;
     private String access;
     private ClassType returnType;
-    private List<ClassType> parameterTypes;
+    private List<ParameterModel> parameterModels;
 
     public MethodModel(String name, ClassType returnType) {
         //
         this.name = name;
         this.returnType = returnType;
-        this.parameterTypes = new ArrayList<>();
+        this.parameterModels = new ArrayList<>();
     }
 
     public MethodModel(MethodModel other) {
@@ -22,15 +22,20 @@ public class MethodModel {
         this.name = other.name;
         this.access = other.access;
         this.returnType = ClassType.copyOf(other.returnType);
-        this.parameterTypes = new ArrayList<>();
-        for (ClassType parameterType : other.parameterTypes) {
-            this.parameterTypes.add(new ClassType(parameterType));
+        this.parameterModels = new ArrayList<>();
+        for (ParameterModel parameterModel : other.parameterModels) {
+            this.parameterModels.add(new ParameterModel(parameterModel));
         }
     }
 
-    public void addParameterType(ClassType classType) {
+    public int parameterSize() {
         //
-        this.parameterTypes.add(classType);
+        return parameterModels.size();
+    }
+
+    public void addParameterModel(ParameterModel parameterModel) {
+        //
+        this.parameterModels.add(parameterModel);
     }
 
     public boolean isVoid() {
@@ -64,12 +69,12 @@ public class MethodModel {
         this.returnType = returnType;
     }
 
-    public List<ClassType> getParameterTypes() {
-        return parameterTypes;
+    public List<ParameterModel> getParameterModels() {
+        return parameterModels;
     }
 
-    public void setParameterTypes(List<ClassType> parameterTypes) {
-        this.parameterTypes = parameterTypes;
+    public void setParameterModels(List<ParameterModel> parameterModels) {
+        this.parameterModels = parameterModels;
     }
 
     public String getAccess() {

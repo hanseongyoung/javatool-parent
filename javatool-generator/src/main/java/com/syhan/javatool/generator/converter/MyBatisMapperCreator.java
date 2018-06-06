@@ -1,9 +1,6 @@
 package com.syhan.javatool.generator.converter;
 
-import com.syhan.javatool.generator.model.AnnotationType;
-import com.syhan.javatool.generator.model.ClassType;
-import com.syhan.javatool.generator.model.JavaModel;
-import com.syhan.javatool.generator.model.MethodModel;
+import com.syhan.javatool.generator.model.*;
 import com.syhan.javatool.generator.reader.JavaReader;
 import com.syhan.javatool.generator.reader.XmlReader;
 import com.syhan.javatool.generator.source.JavaSource;
@@ -142,7 +139,7 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
         MethodModel daoMethodModel = findDaoMethodModel(daoModel, methodName);
         MethodModel methodModel = new MethodModel(methodName, computeReturnClassType(returnClassName, tagName, daoMethodModel));
         if (StringUtil.isNotEmpty(parameterClassName)) {
-            methodModel.addParameterType(ClassType.newClassType(parameterClassName));
+            methodModel.addParameterModel(computeParameterModel(parameterClassName, daoMethodModel));
         }
         return methodModel;
     }
@@ -171,6 +168,19 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
         }
 
         return null;
+    }
+
+    private ParameterModel computeParameterModel(String parameterClassName, MethodModel daoMethodModel) {
+        //
+        ClassType parameterType = ClassType.newClassType(parameterClassName);
+
+        String parameterName;
+        if (daoMethodModel != null && daoMethodModel.parameterSize() == 1) {
+            parameterName = daoMethodModel.getParameterModels().get(0).getVarName();
+        } else {
+            parameterName = parameterType.getRecommendedVariableName();
+        }
+        return new ParameterModel(parameterType, parameterName);
     }
 
 }

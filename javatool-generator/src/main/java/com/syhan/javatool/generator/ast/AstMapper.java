@@ -13,6 +13,7 @@ import com.github.javaparser.ast.type.VoidType;
 import com.syhan.javatool.generator.model.ClassType;
 import com.syhan.javatool.generator.model.JavaModel;
 import com.syhan.javatool.generator.model.MethodModel;
+import com.syhan.javatool.generator.model.ParameterModel;
 import com.syhan.javatool.share.util.string.StringUtil;
 
 import java.util.EnumSet;
@@ -92,7 +93,9 @@ public abstract class AstMapper {
         methodModel.setAccess(access.asString());
         for(Parameter parameter : method.getParameters()) {
             ClassType parameterType = toClassType(parameter.getType(), fullNameProvider);
-            methodModel.addParameterType(parameterType);
+            // FIXME parameterName check
+            String parameterName = parameter.getNameAsString();
+            methodModel.addParameterModel(new ParameterModel(parameterType, parameterName));
         }
 
         return methodModel;
@@ -108,8 +111,8 @@ public abstract class AstMapper {
         method.setBody(null);
 
         // Parameter
-        for (ClassType parameterType : methodModel.getParameterTypes()) {
-            Parameter parameter = createParameter(parameterType);
+        for (ParameterModel parameterModel : methodModel.getParameterModels()) {
+            Parameter parameter = createParameter(parameterModel);
             method.addParameter(parameter);
         }
         return method;
@@ -149,11 +152,11 @@ public abstract class AstMapper {
         return createClassOrInterfaceType(classType);
     }
 
-    // Model:ClassType -> Ast:Parameter
-    public static Parameter createParameter(ClassType classType) {
+    // Model:ParameterModel -> Ast:Parameter
+    public static Parameter createParameter(ParameterModel parameterModel) {
         //
-        Type type = createType(classType);
-        Parameter parameter = new Parameter(type, classType.getRecommendedVariableName());
+        Type type = createType(parameterModel.getType());
+        Parameter parameter = new Parameter(type, parameterModel.getVarName());
         return parameter;
     }
 

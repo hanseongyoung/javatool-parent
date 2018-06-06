@@ -68,7 +68,8 @@ public class JavaModel {
             changeClassTypeName(returnType, nameRule, packageRule);
             changeTypeArgumentName(returnType, nameRule, packageRule);
 
-            for (ClassType parameterType : methodModel.getParameterTypes()) {
+            for (ParameterModel parameterModel : methodModel.getParameterModels()) {
+                ClassType parameterType = parameterModel.getType();
                 changeClassTypeName(parameterType, nameRule, packageRule);
                 changeTypeArgumentName(parameterType, nameRule, packageRule);
             }
@@ -212,7 +213,8 @@ public class JavaModel {
                     classNames.add(returnType.getTypeArgument().getClassName());
                 }
             }
-            for (ClassType parameterType : methodModel.getParameterTypes()) {
+            for (ParameterModel parameterModel : methodModel.getParameterModels()) {
+                ClassType parameterType = parameterModel.getType();
                 classNames.add(parameterType.getClassName());
                 if (parameterType.hasTypeArgument()) {
                     classNames.add(parameterType.getTypeArgument().getClassName());
