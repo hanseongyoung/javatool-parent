@@ -53,7 +53,8 @@ public class XmlSource {
         //
         createParentDirectory(physicalTargetFilePath);
 
-        Transformer transformer = DomUtil.newTransformer();
+        Transformer transformer = DomUtil.newTransformer(this.document.getDoctype());
+        this.document.setXmlStandalone(true);
         DOMSource source = new DOMSource(this.document);
         // File write
         StreamResult result = new StreamResult(new File(physicalTargetFilePath));

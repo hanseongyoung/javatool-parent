@@ -7,6 +7,7 @@ import java.io.File;
 public class MyBatisMapperCreateTest {
     //
     private static final String PROJECT_HOME = "../source-project";
+    private static final String TARGET_HOME = "../target-mybatis-project";
     private static final String SOURCE_FILE = "foo/bar/SampleSqlMap.xml";
     private static final String SOURCE_FILE2 = "com/foo/bar/dao/mapper/Sample.xml";
 
@@ -14,7 +15,14 @@ public class MyBatisMapperCreateTest {
     public void testExecute() throws Exception {
         //
         MyBatisMapperCreate myBatisMapperCreate = new MyBatisMapperCreate();
-        myBatisMapperCreate.execute(PROJECT_HOME, SOURCE_FILE);
+        myBatisMapperCreate.execute(PROJECT_HOME, PROJECT_HOME, SOURCE_FILE);
+    }
+
+    @Test
+    public void testExecuteToTarget() throws Exception {
+        //
+        MyBatisMapperCreate myBatisMapperCreate = new MyBatisMapperCreate();
+        myBatisMapperCreate.execute(PROJECT_HOME, TARGET_HOME, SOURCE_FILE);
     }
 
     @Test
@@ -22,7 +30,7 @@ public class MyBatisMapperCreateTest {
         // Requirements
         // 1. return List type with Dao class.
         MyBatisMapperCreate myBatisMapperCreate = new MyBatisMapperCreate();
-        myBatisMapperCreate.execute(PROJECT_HOME, SOURCE_FILE2);
+        myBatisMapperCreate.execute(PROJECT_HOME, PROJECT_HOME, SOURCE_FILE2);
     }
 
     static final String PATH_DELIM = File.separator;

@@ -1,6 +1,7 @@
 package com.syhan.javatool.share.util.xml;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -20,13 +21,19 @@ public abstract class DomUtil {
         return builder;
     }
 
-    public static Transformer newTransformer() throws TransformerConfigurationException {
+    public static Transformer newTransformer(DocumentType doctype) throws TransformerConfigurationException {
         //
         TransformerFactory factory = TransformerFactory.newInstance();
         Transformer transformer = factory.newTransformer();
         transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+
+        if(doctype != null) {
+            transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, doctype.getPublicId());
+            transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, doctype.getSystemId());
+        }
+
         return transformer;
     }
 

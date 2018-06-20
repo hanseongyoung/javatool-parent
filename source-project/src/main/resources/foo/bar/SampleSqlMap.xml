@@ -3,6 +3,14 @@
 <!-- 처방타이틀 -->
 <mapper namespace="com.foo.bar.store.mapper.OrdrTitl">
 
+    <insert id="insertOrdrTitl" parameterType="com.foo.bar.spec.sdo.OrdrTitlVO">
+        <selectKey keyProperty="scrnTrgetSn" resultType="com.foo.bar.spec.sdo.OrdrTitlVO">
+            SELECT NVL(MAX(SCTG.SCRN_TRGET_SN), 0) + 1
+             FROM PHDSMSCTG SCTG
+            WHERE SCTG.ORDR_NO = #{ordrNo, jdbcType=VARCHAR}
+        </selectKey>
+    </insert>
+
     <!-- 처방타이틀조회(단건) -->
     <select id="retrieveOrdrTitl"
             parameterType="com.foo.bar.spec.sdo.OrdrTitlVO"

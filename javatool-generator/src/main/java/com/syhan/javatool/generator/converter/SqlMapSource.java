@@ -5,6 +5,7 @@ import com.syhan.javatool.share.data.Pair;
 import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.util.file.PathUtil;
+import com.syhan.javatool.share.util.string.StringUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -54,18 +55,27 @@ public class SqlMapSource {
 
         List<Element> sqlElements = findSqlElements();
         for (Element element : sqlElements) {
-            String parameterClassName = element.getAttribute("parameterType");
-            if (parameterClassName != null) {
-                String changedParam = changeTypeName(parameterClassName, javaNameRule, javaPackageRule);
-                element.setAttribute("parameterType", changedParam);
-            }
+            changeAttribute(element, "parameterType", javaNameRule, javaPackageRule);
+            changeAttribute(element, "resultType", javaNameRule, javaPackageRule);
 
-            String returnClassName = element.getAttribute("resultType");
-            if (returnClassName != null) {
-                String changedReturn = changeTypeName(returnClassName, javaNameRule, javaPackageRule);
-                element.setAttribute("resultType", changedReturn);
-            }
+            Element selectKey = findFirstElementByTagName(element, "selectKey");
+            changeAttribute(selectKey, "resultType", javaNameRule, javaPackageRule);
         }
+    }
+
+    private void changeAttribute(Element element, String attributeName, NameRule javaNameRule, PackageRule javaPackageRule) {
+        //
+        if (element == null) {
+            return;
+        }
+
+        String attributeText = element.getAttribute(attributeName);
+        if (StringUtil.isEmpty(attributeText)) {
+            return;
+        }
+
+        String changedText = changeTypeName(attributeText, javaNameRule, javaPackageRule);
+        element.setAttribute(attributeName, changedText);
     }
 
     private String changeTypeName(String typeName, NameRule nameRule, PackageRule packageRule) {
@@ -115,15 +125,29 @@ public class SqlMapSource {
 
         List<Element> elements = new ArrayList<>();
         for(String sqlTagName : sqlTagNames) {
-            List<Element> sqlElements = findSqlElementsByTagName(mapper, sqlTagName);
+            List<Element> sqlElements = findElementsByTagName(mapper, sqlTagName);
             elements.addAll(sqlElements);
         }
         return elements;
     }
 
-    private List<Element> findSqlElementsByTagName(Element mapperElement, String sqlTagName) {
+    private Element findFirstElementByTagName(Element parentElement, String tagName) {
         //
-        NodeList nodeList = mapperElement.getElementsByTagName(sqlTagName);
+        NodeList nodeList = parentElement.getElementsByTagName(tagName);
+
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Node node = nodeList.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                Element element = (Element) node;
+                return element;
+            }
+        }
+        return null;
+    }
+
+    private List<Element> findElementsByTagName(Element parentElement, String tagName) {
+        //
+        NodeList nodeList = parentElement.getElementsByTagName(tagName);
 
         List<Element> sqlElements = new ArrayList<>();
         for (int i = 0; i < nodeList.getLength(); i++) {

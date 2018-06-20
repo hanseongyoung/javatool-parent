@@ -13,10 +13,10 @@ public class MyBatisMapperCreate {
     //
     private static final Logger logger = LoggerFactory.getLogger(MyBatisMapperCreate.class);
 
-    public void execute(String projectHome, String sourceFile) throws IOException {
+    public void execute(String sourceProjectHome, String targetProjectHome, String sourceFile) throws IOException {
         //
-        ProjectConfiguration sourceConfiguration = new ProjectConfiguration(ConfigurationType.Source, projectHome);
-        ProjectConfiguration targetConfiguration = new ProjectConfiguration(ConfigurationType.Target, projectHome);
+        ProjectConfiguration sourceConfiguration = new ProjectConfiguration(ConfigurationType.Source, sourceProjectHome);
+        ProjectConfiguration targetConfiguration = new ProjectConfiguration(ConfigurationType.Target, targetProjectHome);
 
         MyBatisMapperCreator myBatisMapperCreator = new MyBatisMapperCreator(sourceConfiguration, sourceConfiguration,
                 targetConfiguration);
@@ -27,13 +27,15 @@ public class MyBatisMapperCreate {
     public static void main(String[] args) throws Exception {
         //
         OptionParser parser = new OptionParser();
-        parser.accepts("projectHome", "The project home path")
+        parser
+                .accepts("sourceProjectHome", "The source project home path")
+                .accepts("targetProjectHome", "The target project home path")
                 .accepts("sourceFile", "SqlMap file")
                 .parse(args);
 
         MyBatisMapperCreate myBatisMapperCreate = new MyBatisMapperCreate();
         logger.info(parser.toString());
-        myBatisMapperCreate.execute(parser.get("projectHome"), parser.get("sourceFile"));
+        myBatisMapperCreate.execute(parser.get("sourceProjectHome"), parser.get("targetProjectHome"), parser.get("sourceFile"));
 
     }
 
