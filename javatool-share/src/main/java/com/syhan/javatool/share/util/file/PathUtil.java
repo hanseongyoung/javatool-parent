@@ -30,6 +30,24 @@ public abstract class PathUtil {
         return new Pair<>(sb.toString(), packageFrags[length - 1]);
     }
 
+    // com/foo/bar/SampleDto.xml -> com/foo/bar, SampleDto.xml
+    public static Pair<String, String> devideResourceName(String sourceFilePath) {
+        //
+        String[] paths = sourceFilePath.split(ProjectSources.PATH_DELIM.equals("\\") ? "\\\\" : ProjectSources.PATH_DELIM); // for Windows
+        int length = paths.length;
+
+        StringBuffer sb = new StringBuffer();
+
+        for (int i = 0; i < length - 1; i++) {
+            sb.append(paths[i]);
+            if (i < length - 2) {
+                sb.append(".");
+            }
+        }
+
+        return new Pair<>(sb.toString(), paths[length - 1]);
+    }
+
     // com/foo/bar/SampleDto.java -> com.foo.bar.SampleDto
     public static String toClassName(String sourceFilePath) {
         //

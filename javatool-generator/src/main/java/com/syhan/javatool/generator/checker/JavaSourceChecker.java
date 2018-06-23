@@ -33,7 +33,7 @@ public class JavaSourceChecker {
             return;
         }
 
-        String className = source.getName();
+        String className = source.getClassName();
         logger.info("check class {}", className);
         source.forEachMethod(methodDeclaration -> checkMethod(methodDeclaration, className));
     }
