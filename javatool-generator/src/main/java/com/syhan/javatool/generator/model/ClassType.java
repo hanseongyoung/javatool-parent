@@ -28,7 +28,39 @@ public class ClassType {
 
     public static ClassType newClassType(String className) {
         //
+        if (isPrimitiveType(className)) {
+            return new ClassType(className.toLowerCase(), true);
+        }
         return new ClassType(className);
+    }
+
+    private static boolean isPrimitiveType(String className) {
+        //
+        if (PRIMITIVE_INT.toLowerCase().equals(className)) {
+            return true;
+        }
+        if (PRIMITIVE_BOOLEAN.toLowerCase().equals(className)) {
+            return true;
+        }
+        if (PRIMITIVE_CHAR.toLowerCase().equals(className)) {
+            return true;
+        }
+        if (PRIMITIVE_BYTE.toLowerCase().equals(className)) {
+            return true;
+        }
+        if (PRIMITIVE_SHORT.toLowerCase().equals(className)) {
+            return true;
+        }
+        if (PRIMITIVE_LONG.toLowerCase().equals(className)) {
+            return true;
+        }
+        if (PRIMITIVE_FLOAT.toLowerCase().equals(className)) {
+            return true;
+        }
+        if (PRIMITIVE_DOUBLE.toLowerCase().equals(className)) {
+            return true;
+        }
+        return false;
     }
 
     public static ClassType newClassType(String name, String packageName) {

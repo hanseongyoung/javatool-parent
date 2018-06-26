@@ -98,6 +98,9 @@ public abstract class AstMapper {
             methodModel.addParameterModel(new ParameterModel(parameterType, parameterName));
         }
 
+        // Comment
+        methodModel.setComment(method.getComment().orElse(null));
+
         return methodModel;
     }
 
@@ -115,6 +118,9 @@ public abstract class AstMapper {
             Parameter parameter = createParameter(parameterModel);
             method.addParameter(parameter);
         }
+
+        // Comment
+        method.setComment(methodModel.getComment());
         return method;
     }
 

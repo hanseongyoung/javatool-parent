@@ -1,5 +1,7 @@
 package com.syhan.javatool.generator.model;
 
+import com.github.javaparser.ast.comments.Comment;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +11,7 @@ public class MethodModel {
     private String access;
     private ClassType returnType;
     private List<ParameterModel> parameterModels;
+    private Comment comment;
 
     public MethodModel(String name, ClassType returnType) {
         //
@@ -83,5 +86,13 @@ public class MethodModel {
 
     public void setAccess(String access) {
         this.access = access;
+    }
+
+    public Comment getComment() {
+        return comment;
+    }
+
+    public void setComment(Comment comment) {
+        this.comment = comment;
     }
 }

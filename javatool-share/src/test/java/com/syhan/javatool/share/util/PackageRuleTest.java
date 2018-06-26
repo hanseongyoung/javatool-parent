@@ -78,6 +78,20 @@ public class PackageRuleTest {
     }
 
     @Test
+    public void testComplexRule() {
+        // amis3.vo.mc.oo.od -> amis3.mc.oo.ext.spec.sdo.od
+        PackageRule packageRule = PackageRule.newInstance();
+        // amis3.vo.mc.oo.od --> amis3.mc.oo.vo.od
+        packageRule.set(1, "vo", 3);
+        // amis3.mc.oo.vo.od --> amis3.mc.oo.ext.spec.sdo.od
+        packageRule.set(3, "vo", "ext.spec.sdo");
+
+        String changed = packageRule.changePackage("amis3.vo.mc.oo.od");
+        System.out.println(changed);
+        Assert.assertEquals(changed, "amis3.mc.oo.ext.spec.sdo.od");
+    }
+
+    @Test
     public void testMovePosition() {
         String[] arr = {"a", "b", "c", "d", "e"};
 

@@ -86,6 +86,16 @@ public class PackageRule {
         return this;
     }
 
+    public PackageRule set(int fromIndex, String fromPackage, int toIndex) {
+        //
+        Statement exists = find(fromIndex, fromPackage);
+        if (exists != null) {
+            this.statements.remove(exists);
+        }
+        this.statements.add(new Statement(fromIndex, fromPackage, toIndex));
+        return this;
+    }
+
     public PackageRule add(int fromIndex, String fromPackage, String toPackage) {
         //
         return add(fromIndex, fromPackage, toPackage, 0);

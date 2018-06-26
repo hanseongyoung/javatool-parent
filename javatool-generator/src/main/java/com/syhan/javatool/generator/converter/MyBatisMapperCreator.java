@@ -141,6 +141,9 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
         if (StringUtil.isNotEmpty(parameterClassName)) {
             methodModel.addParameterModel(computeParameterModel(parameterClassName, daoMethodModel));
         }
+        if (daoMethodModel != null) {
+            methodModel.setComment(daoMethodModel.getComment());
+        }
         return methodModel;
     }
 
