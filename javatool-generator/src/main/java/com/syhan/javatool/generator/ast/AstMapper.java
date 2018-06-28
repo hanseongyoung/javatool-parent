@@ -6,10 +6,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.Name;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.type.PrimitiveType;
-import com.github.javaparser.ast.type.Type;
-import com.github.javaparser.ast.type.VoidType;
+import com.github.javaparser.ast.type.*;
 import com.syhan.javatool.generator.model.ClassType;
 import com.syhan.javatool.generator.model.JavaModel;
 import com.syhan.javatool.generator.model.MethodModel;
@@ -43,6 +40,11 @@ public abstract class AstMapper {
                 javaModel.addMethodModel(toMethodModel(method, fullNameProvider));
             }
         }
+
+        // Comment
+        javaModel.setNodeComment(compilationUnit.getComment().orElse(null));
+        javaModel.setTypeComment(classType.getComment().orElse(null));
+
         return javaModel;
     }
 
@@ -75,7 +77,13 @@ public abstract class AstMapper {
             classType.addMember(methodDeclaration);
         }
 
+        // Type Comment
+        classType.setComment(javaModel.getTypeComment());
+
         compilationUnit.addType(classType);
+
+        // Node Comment
+        compilationUnit.setComment(javaModel.getNodeComment());
 
         return compilationUnit;
     }
@@ -130,6 +138,11 @@ public abstract class AstMapper {
         if (type.isPrimitiveType()) {
             String primitiveName = type.asString();
             return ClassType.newPrimitiveType(primitiveName);
+        } else if (type.isArrayType()) {
+            ArrayType arrayType = (ArrayType) type;
+            Type componentType = arrayType.getComponentType();
+            ClassType compClassType = toClassType(componentType, fullNameProvider);
+            return ClassType.newArrayType(compClassType);
         } else if (type.isVoidType()) {
             return null;
         }
@@ -153,6 +166,12 @@ public abstract class AstMapper {
 
         if (classType.isPrimitive()) {
             return new PrimitiveType(PrimitiveType.Primitive.valueOf(classType.getName().toUpperCase()));
+        }
+
+        if (classType.isArray()) {
+            ClassType elementType = ClassType.newArrayElementType(classType);
+            Type componentType = createType(elementType);
+            return new ArrayType(componentType);
         }
 
         return createClassOrInterfaceType(classType);

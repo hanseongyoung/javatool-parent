@@ -1,5 +1,6 @@
 package com.syhan.javatool.generator.model;
 
+import com.github.javaparser.ast.comments.Comment;
 import com.syhan.javatool.share.rule.NameRule;
 import com.syhan.javatool.share.rule.PackageRule;
 import com.syhan.javatool.share.util.json.JsonUtil;
@@ -14,6 +15,9 @@ public class JavaModel {
     private boolean isInterface;
 
     private List<MethodModel> methods;
+
+    private Comment nodeComment;
+    private Comment typeComment;
 
     public JavaModel(String className, boolean isInterface) {
         //
@@ -38,6 +42,8 @@ public class JavaModel {
         for (MethodModel method : other.methods) {
             this.methods.add(new MethodModel(method));
         }
+        this.nodeComment = other.nodeComment;
+        this.typeComment = other.typeComment;
     }
 
     public void changeName(NameRule nameRule) {
@@ -254,6 +260,22 @@ public class JavaModel {
 
     public void setMethods(List<MethodModel> methods) {
         this.methods = methods;
+    }
+
+    public Comment getNodeComment() {
+        return nodeComment;
+    }
+
+    public void setNodeComment(Comment nodeComment) {
+        this.nodeComment = nodeComment;
+    }
+
+    public Comment getTypeComment() {
+        return typeComment;
+    }
+
+    public void setTypeComment(Comment typeComment) {
+        this.typeComment = typeComment;
     }
 
     public String toJson() {

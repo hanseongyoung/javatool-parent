@@ -29,6 +29,7 @@ public class MethodModel {
         for (ParameterModel parameterModel : other.parameterModels) {
             this.parameterModels.add(new ParameterModel(parameterModel));
         }
+        this.comment = other.comment;
     }
 
     public int parameterSize() {

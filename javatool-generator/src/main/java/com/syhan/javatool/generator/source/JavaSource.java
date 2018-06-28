@@ -283,14 +283,28 @@ public class JavaSource {
             VariableDeclarator variableDeclarator = fieldDeclaration.getVariable(0);
             String varName = variableDeclarator.getNameAsString();
             MethodDeclaration getter = findGetter(varName);
-            if (getter != null) {
+            if (getter != null && isPureGetterSetter(getter)) {
                 getter.remove();
             }
             MethodDeclaration setter = findSetter(varName);
-            if (setter != null) {
+            if (setter != null && isPureGetterSetter(setter)) {
                 setter.remove();
             }
         }
+    }
+
+    private boolean isPureGetterSetter(MethodDeclaration gettsetter) {
+        //
+        if (gettsetter.getAnnotations().size() > 0) {
+            return false;
+        }
+
+        int stmtSize = gettsetter.getBody().map(blockStmt -> blockStmt.getStatements().size()).orElse(0);
+        if (stmtSize > 1) {
+            return false;
+        }
+
+        return true;
     }
 
     public void forEachMethod(Consumer<MethodDeclaration> methodConsumer) {

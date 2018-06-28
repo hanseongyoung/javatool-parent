@@ -126,6 +126,12 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
                 javaModel.addMethodModel(createMyBatisMapperMethodModel(element, daoModel));
             }
         }
+
+        // Copy dao Comment if exists.
+        if (daoModel != null) {
+            javaModel.setNodeComment(daoModel.getNodeComment());
+            javaModel.setTypeComment(daoModel.getTypeComment());
+        }
         return javaModel;
     }
 
@@ -141,6 +147,7 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
         if (StringUtil.isNotEmpty(parameterClassName)) {
             methodModel.addParameterModel(computeParameterModel(parameterClassName, daoMethodModel));
         }
+        // Copy daoMethod Comment if exists.
         if (daoMethodModel != null) {
             methodModel.setComment(daoMethodModel.getComment());
         }

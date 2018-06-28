@@ -24,6 +24,7 @@ public class ClassType {
     private String name;
     private String packageName;
     private boolean primitive;
+    private boolean array;
     private ClassType typeArgument;
 
     public static ClassType newClassType(String className) {
@@ -73,6 +74,19 @@ public class ClassType {
         return new ClassType(primitiveName, true);
     }
 
+    public static ClassType newArrayType(ClassType componentType) {
+        //
+        ClassType classType = new ClassType(componentType);
+        classType.array = true;
+        return classType;
+    }
+
+    public static ClassType newArrayElementType(ClassType arrayType) {
+        ClassType eleType = new ClassType(arrayType);
+        eleType.array = false;
+        return eleType;
+    }
+
     public static ClassType copyOf(ClassType other) {
         //
         if (other == null) {
@@ -107,6 +121,7 @@ public class ClassType {
         this.name = other.getName();
         this.packageName = other.getPackageName();
         this.primitive = other.isPrimitive();
+        this.array = other.isArray();
         if (other.hasTypeArgument()) {
             this.typeArgument = new ClassType(other.getTypeArgument());
         }
@@ -195,6 +210,10 @@ public class ClassType {
 
     public void setTypeArgument(ClassType typeArgument) {
         this.typeArgument = typeArgument;
+    }
+
+    public boolean isArray() {
+        return array;
     }
 
     public static void main(String[] args) {
