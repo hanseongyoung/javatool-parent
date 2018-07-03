@@ -91,7 +91,9 @@ public class JavaModel {
             return;
         }
 
-        changeClassTypeName(classType.getTypeArgument(), nameRule, packageRule);
+        for (ClassType typeArgument : classType.getTypeArguments()) {
+            changeClassTypeName(typeArgument, nameRule, packageRule);
+        }
     }
 
     private void changeClassTypeName(ClassType classType, NameRule nameRule, PackageRule packageRule) {
@@ -216,14 +218,18 @@ public class JavaModel {
             if (returnType != null && !returnType.isPrimitive()) {
                 classNames.add(returnType.getClassName());
                 if (returnType.hasTypeArgument()) {
-                    classNames.add(returnType.getTypeArgument().getClassName());
+                    for (ClassType typeArgument : returnType.getTypeArguments()) {
+                        classNames.add(typeArgument.getClassName());
+                    }
                 }
             }
             for (ParameterModel parameterModel : methodModel.getParameterModels()) {
                 ClassType parameterType = parameterModel.getType();
                 classNames.add(parameterType.getClassName());
                 if (parameterType.hasTypeArgument()) {
-                    classNames.add(parameterType.getTypeArgument().getClassName());
+                    for (ClassType typeArgument : parameterType.getTypeArguments()) {
+                        classNames.add(typeArgument.getClassName());
+                    }
                 }
             }
         }

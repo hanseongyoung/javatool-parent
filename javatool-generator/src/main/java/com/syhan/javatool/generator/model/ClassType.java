@@ -8,6 +8,9 @@ import com.syhan.javatool.share.util.string.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ClassType {
     //
     private static final Logger logger = LoggerFactory.getLogger(ClassType.class);
@@ -25,7 +28,7 @@ public class ClassType {
     private String packageName;
     private boolean primitive;
     private boolean array;
-    private ClassType typeArgument;
+    private List<ClassType> typeArguments;
 
     public static ClassType newClassType(String className) {
         //
@@ -106,6 +109,7 @@ public class ClassType {
             this.packageName = null;
         }
         this.primitive = false;
+        this.typeArguments = new ArrayList<>();
     }
 
     private ClassType(String name, boolean primitive) {
@@ -113,7 +117,7 @@ public class ClassType {
         this.name = name;
         this.primitive = primitive;
         this.packageName = null;
-        this.typeArgument = null;
+        this.typeArguments = new ArrayList<>();
     }
 
     protected ClassType(ClassType other) {
@@ -122,8 +126,11 @@ public class ClassType {
         this.packageName = other.getPackageName();
         this.primitive = other.isPrimitive();
         this.array = other.isArray();
+        this.typeArguments = new ArrayList<>();
         if (other.hasTypeArgument()) {
-            this.typeArgument = new ClassType(other.getTypeArgument());
+            for (ClassType typeArg : other.getTypeArguments()) {
+                this.typeArguments.add(new ClassType(typeArg));
+            }
         }
     }
 
@@ -131,6 +138,12 @@ public class ClassType {
         //
         this.name = name;
         this.packageName = packageName;
+        this.typeArguments = new ArrayList<>();
+    }
+
+    public void addTypeArgument(ClassType typeArgument) {
+        //
+        this.typeArguments.add(typeArgument);
     }
 
     public boolean changeWholePackageAndName(PackageRule packageRule) {
@@ -181,7 +194,7 @@ public class ClassType {
 
     public boolean hasTypeArgument() {
         //
-        return typeArgument != null;
+        return typeArguments != null && typeArguments.size() > 0;
     }
 
     public String getName() {
@@ -204,12 +217,8 @@ public class ClassType {
         return primitive;
     }
 
-    public ClassType getTypeArgument() {
-        return typeArgument;
-    }
-
-    public void setTypeArgument(ClassType typeArgument) {
-        this.typeArgument = typeArgument;
+    public List<ClassType> getTypeArguments() {
+        return typeArguments;
     }
 
     public boolean isArray() {

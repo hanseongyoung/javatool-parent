@@ -152,7 +152,7 @@ public abstract class AstMapper {
         ClassType classType = ClassType.newClassType(returnTypeFullName);
 
         // if return type has Generic type (List<SampleDTO>)
-        ifPresentTypeArgument(type, fullNameProvider, typeArgument -> classType.setTypeArgument(typeArgument));
+        ifPresentTypeArgument(type, fullNameProvider, typeArgument -> classType.addTypeArgument(typeArgument));
 
         return classType;
     }
@@ -190,9 +190,10 @@ public abstract class AstMapper {
         ClassOrInterfaceType returnType = JavaParser.parseClassOrInterfaceType(classType.getName());
 
         if (classType.hasTypeArgument()) {
-            ClassType modelArgumentType = classType.getTypeArgument();
             NodeList<Type> typeArguments = new NodeList<>();
-            typeArguments.add(JavaParser.parseClassOrInterfaceType(modelArgumentType.getName()));
+            for (ClassType modelArgumentType : classType.getTypeArguments()) {
+                typeArguments.add(JavaParser.parseClassOrInterfaceType(modelArgumentType.getName()));
+            }
             returnType.setTypeArguments(typeArguments);
         }
         return returnType;
@@ -242,9 +243,11 @@ public abstract class AstMapper {
 
         Optional<NodeList<Type>> returnTypeArguments = ((ClassOrInterfaceType)type).getTypeArguments();
         returnTypeArguments.ifPresent(nodeList -> {
-            String returnTypeArgumentName = nodeList.get(0).asString();
-            String returnTypeArgumentFullName = fullNameProvider.findFullName(returnTypeArgumentName);
-            classTypeConsumer.accept(ClassType.newClassType(returnTypeArgumentFullName));
+            for (Type typeArg : nodeList) {
+                String returnTypeArgumentName = typeArg.asString();
+                String returnTypeArgumentFullName = fullNameProvider.findFullName(returnTypeArgumentName);
+                classTypeConsumer.accept(ClassType.newClassType(returnTypeArgumentFullName));
+            }
         });
     }
 
