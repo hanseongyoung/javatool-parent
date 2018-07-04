@@ -169,7 +169,10 @@ public class MyBatisMapperCreator extends ProjectItemConverter {
         }
 
         if (StringUtil.isNotEmpty(returnClassName)) {
-            return ClassType.newClassType(returnClassName);
+            ClassType returnType = ClassType.newClassType(returnClassName);
+            ClassType defaultListType = ClassType.newClassType("List");
+            defaultListType.addTypeArgument(returnType);
+            return defaultListType;
         }
 
         // returnClassName is empty.
