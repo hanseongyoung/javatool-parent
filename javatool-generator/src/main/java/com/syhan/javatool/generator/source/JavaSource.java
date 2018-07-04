@@ -8,6 +8,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.nodeTypes.NodeWithName;
+import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.syhan.javatool.generator.ast.AstMapper;
@@ -300,11 +301,36 @@ public class JavaSource {
         }
 
         int stmtSize = gettsetter.getBody().map(blockStmt -> blockStmt.getStatements().size()).orElse(0);
+
+        if (stmtSize == 0) {
+            return true;
+        }
+
         if (stmtSize > 1) {
             return false;
         }
 
-        return true;
+        // stmtSize == 1
+        Statement stmt = gettsetter.getBody().orElse(null).getStatement(0);
+
+        //stmt must be return or expression.
+        /*
+        System.out.println("*** stmt try        ? "+ stmt.isTryStmt());
+        System.out.println("*** stmt block      ? "+ stmt.isBlockStmt());
+        System.out.println("*** stmt do         ? "+ stmt.isDoStmt());
+        System.out.println("*** stmt empty      ? "+ stmt.isEmptyStmt());
+        System.out.println("*** stmt expression ? "+ stmt.isExpressionStmt());
+        System.out.println("*** stmt labeled    ? "+ stmt.isLabeledStmt());
+        System.out.println("*** stmt return     ? "+ stmt.isReturnStmt());
+        System.out.println("*** stmt unparsable ? "+ stmt.isUnparsableStmt());
+        System.out.println(stmt);
+        */
+
+        if (stmt.isExpressionStmt() || stmt.isReturnStmt()) {
+            return true;
+        }
+
+        return false;
     }
 
     public void forEachMethod(Consumer<MethodDeclaration> methodConsumer) {

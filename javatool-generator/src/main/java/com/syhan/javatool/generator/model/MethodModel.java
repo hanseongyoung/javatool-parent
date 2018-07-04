@@ -11,6 +11,7 @@ public class MethodModel {
     private String access;
     private ClassType returnType;
     private List<ParameterModel> parameterModels;
+    private List<ClassType> throwns;
     private Comment comment;
 
     public MethodModel(String name, ClassType returnType) {
@@ -18,6 +19,7 @@ public class MethodModel {
         this.name = name;
         this.returnType = returnType;
         this.parameterModels = new ArrayList<>();
+        this.throwns = new ArrayList<>();
     }
 
     public MethodModel(MethodModel other) {
@@ -28,6 +30,10 @@ public class MethodModel {
         this.parameterModels = new ArrayList<>();
         for (ParameterModel parameterModel : other.parameterModels) {
             this.parameterModels.add(new ParameterModel(parameterModel));
+        }
+        this.throwns = new ArrayList<>();
+        for (ClassType thrown : other.throwns) {
+            this.throwns.add(ClassType.copyOf(thrown));
         }
         this.comment = other.comment;
     }
@@ -40,6 +46,11 @@ public class MethodModel {
     public void addParameterModel(ParameterModel parameterModel) {
         //
         this.parameterModels.add(parameterModel);
+    }
+
+    public void addThrown(ClassType thrown) {
+        //
+        this.throwns.add(thrown);
     }
 
     public boolean isVoid() {
@@ -95,5 +106,9 @@ public class MethodModel {
 
     public void setComment(Comment comment) {
         this.comment = comment;
+    }
+
+    public List<ClassType> getThrowns() {
+        return throwns;
     }
 }

@@ -106,6 +106,13 @@ public abstract class AstMapper {
             methodModel.addParameterModel(new ParameterModel(parameterType, parameterName));
         }
 
+        // throws
+        for (ReferenceType thrown : method.getThrownExceptions()) {
+            String typeName = ((ClassOrInterfaceType)thrown).getName().asString();
+            ClassType thrownClassType = ClassType.newClassType(typeName);
+            methodModel.addThrown(thrownClassType);
+        }
+
         // Comment
         methodModel.setComment(method.getComment().orElse(null));
 
@@ -125,6 +132,11 @@ public abstract class AstMapper {
         for (ParameterModel parameterModel : methodModel.getParameterModels()) {
             Parameter parameter = createParameter(parameterModel);
             method.addParameter(parameter);
+        }
+
+        // throws
+        for (ClassType thrown : methodModel.getThrowns()) {
+            method.addThrownException(createClassOrInterfaceType(thrown));
         }
 
         // Comment
