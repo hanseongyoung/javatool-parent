@@ -15,6 +15,8 @@ public class ProjectConfiguration {
     private final String physicalTestPath;
     private final String physicalTestResourcesPath;
 
+    private final boolean lexicalPreserving = false;
+
     // - Terms
     // sourceFolder         : 소스 폴더                                      : src/main/java
     // sourcePath           : 소스 폴더 내의 Path                             : com/foo/bar
@@ -91,5 +93,9 @@ public class ProjectConfiguration {
 
     public SourceFolders getSourceFolders() {
         return sourceFolders;
+    }
+
+    public boolean isLexicalPreserving() {
+        return lexicalPreserving;
     }
 }

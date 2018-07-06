@@ -18,7 +18,7 @@ public class JavaReader implements Reader<JavaSource> {
     public JavaSource read(String sourceFilePath) throws IOException {
         //
         String physicalSourceFilePath = configuration.makePhysicalJavaSourceFilePath(sourceFilePath);
-        return new JavaSource(physicalSourceFilePath);
+        return new JavaSource(physicalSourceFilePath, configuration.isLexicalPreserving());
     }
 
     public boolean exists(String sourceFilePath) {

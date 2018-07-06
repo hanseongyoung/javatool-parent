@@ -1,6 +1,9 @@
 package com.syhan.javatool.generator.source;
 
 import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParseResult;
+import com.github.javaparser.ParseStart;
+import com.github.javaparser.StreamProvider;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
@@ -11,6 +14,7 @@ import com.github.javaparser.ast.nodeTypes.NodeWithName;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.syhan.javatool.generator.ast.AstMapper;
 import com.syhan.javatool.generator.model.ClassType;
 import com.syhan.javatool.generator.model.JavaModel;
@@ -41,11 +45,28 @@ public class JavaSource {
     private CompilationUnit compilationUnit;
     private String physicalSourceFile;
 
-    public JavaSource(String physicalSourceFile) throws FileNotFoundException {
+    private LexicalPreservingPrinter lpp;
+
+    public JavaSource(String physicalSourceFile, boolean lexicalPreserving) throws FileNotFoundException {
         //
-        this.compilationUnit = JavaParser.parse(new FileInputStream(physicalSourceFile));
         this.physicalSourceFile = physicalSourceFile;
+
+        //
+        if (lexicalPreserving) {
+            com.github.javaparser.utils.Pair<ParseResult<CompilationUnit>, LexicalPreservingPrinter> result;
+            try {
+                result = LexicalPreservingPrinter.setup(ParseStart.COMPILATION_UNIT, new StreamProvider(new FileInputStream(physicalSourceFile)));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            compilationUnit = result.a.getResult().get();
+            lpp = result.b;
+        } else {
+            this.compilationUnit = JavaParser.parse(new FileInputStream(physicalSourceFile));
+        }
     }
+
+
 
     public JavaSource(JavaModel model) {
         //
@@ -532,7 +553,15 @@ public class JavaSource {
         File file = new File(physicalTargetFilePath);
         // TODO : using Logger
         //System.out.println(compilationUnit.toString());
-        FileUtils.writeStringToFile(file, compilationUnit.toString(), "UTF-8");
+        FileUtils.writeStringToFile(file, generate(), "UTF-8");
+    }
+
+    public String generate() {
+        //
+        if (lpp != null) {
+            return lpp.print(compilationUnit);
+        }
+        return compilationUnit.toString();
     }
 
     @Override
